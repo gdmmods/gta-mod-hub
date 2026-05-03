@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import HoverActions from "./HoverActionsClient";
+import ModCard from "./ModCard";
 
 type Mod = {
   id: string;
@@ -24,18 +25,18 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
     selectedIndex !== null ? mods[selectedIndex] : null;
 
   /* ---------------- keyboard ---------------- */
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (selectedIndex === null) return;
+ useEffect(() => {
+  const handleKey = (e: KeyboardEvent) => {
+    if (selectedIndex === null) return;
 
-      if (e.key === "Escape") setSelectedIndex(null);
-      if (e.key === "ArrowRight") goNext();
-      if (e.key === "ArrowLeft") goPrev();
-    };
+    if (e.key === "Escape") setSelectedIndex(null);
+    if (e.key === "ArrowRight") goNext();
+    if (e.key === "ArrowLeft") goPrev();
+  };
 
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [selectedIndex]);
+  window.addEventListener("keydown", handleKey);
+  return () => window.removeEventListener("keydown", handleKey);
+}, [selectedIndex]);
 
   /* ---------------- scroll lock ---------------- */
   useEffect(() => {
