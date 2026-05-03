@@ -12,15 +12,14 @@ type Mod = {
   category?: string;
   description?: string;
   likes?: number;
+  downloads?: number;
   source_url?: string;
 };
 
 export default function ModsGridClient({ mods }: { mods: Mod[] }) {
-
-console.log("GRID MODS:", mods);
-
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [likesMap, setLikesMap] = useState<Record<string, number>>({});
+  const [downloadsMap, setDownloadsMap] = useState<Record<string, number>>({});
   const touchStartX = useRef<number | null>(null);
 
   const selectedMod =
@@ -80,7 +79,9 @@ console.log("GRID MODS:", mods);
   /* ---------------- like ---------------- */
   const handleLike = async (id: string) => {
     const current =
-      likesMap[id] ?? mods.find((m) => m.id === id)?.likes ?? 0;
+      likesMap[id] !== undefined
+        ? likesMap[id]
+        : mods.find((m) => m.id === id)?.likes || 0;
 
     setLikesMap((prev) => ({
       ...prev,
@@ -101,25 +102,84 @@ console.log("GRID MODS:", mods);
     }
   };
 
+  /* ---------------- download ---------------- */
+  const handleDownload = async (id: string, source_url?: string) => {
+    const current =
+      downloadsMap[id] !== undefined
+        ? downloadsMap[id]
+        : mods.find((m) => m.id === id)?.downloads || 0;
+
+    setDownloadsMap((prev) => ({
+      ...prev,
+      [id]: current + 1,
+    }));
+
+    try {
+      await fetch("/api/download", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+    } catch {
+      setDownloadsMap((prev) => ({
+        ...prev,
+        [id]: current,
+      }));
+    }
+
+    if (source_url) {
+      window.open(source_url, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  /* 🔥 LIVE VALUES FOR MODAL */
+  const selectedLikes =
+    selectedMod
+      ? likesMap[selectedMod.id] !== undefined
+        ? likesMap[selectedMod.id]
+        : selectedMod.likes || 0
+      : 0;
+
+  const selectedDownloads =
+    selectedMod
+      ? downloadsMap[selectedMod.id] !== undefined
+        ? downloadsMap[selectedMod.id]
+        : selectedMod.downloads || 0
+      : 0;
+
   return (
     <>
       {/* GRID */}
       <div className="max-w-6xl mx-auto px-6 mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
         {mods
-  .filter((mod) => mod.id) // 🔥 prevent invalid navigation
-  .map((mod, index) => {
-    const likes = likesMap[mod.id] ?? mod.likes ?? 0;
+          .filter((mod) => mod && mod.id)
+          .map((mod, index) => {
+            const likes =
+              likesMap[mod.id] !== undefined
+                ? likesMap[mod.id]
+                : mod.likes || 0;
 
-    return (
-      <ModCard
-        key={mod.id}
-        mod={mod}
-        likes={likes}
-        onLike={() => handleLike(mod.id)}
-        onOpen={() => setSelectedIndex(index)}
-      />
-    );
-  })}
+            const downloads =
+              downloadsMap[mod.id] !== undefined
+                ? downloadsMap[mod.id]
+                : mod.downloads || 0;
+
+            return (
+              <ModCard
+                key={`${mod.id}-${downloads}`} // 🔥 FORCE re-render
+                mod={mod}
+                likes={likes}
+                downloads={downloads}
+                onLike={() => handleLike(mod.id)}
+                onOpen={() => setSelectedIndex(index)}
+                onDownload={() =>
+                  handleDownload(mod.id, mod.source_url)
+                }
+              />
+            );
+          })}
       </div>
 
       {/* MODAL */}
@@ -134,7 +194,6 @@ console.log("GRID MODS:", mods);
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
-            {/* CLOSE */}
             <button
               onClick={() => setSelectedIndex(null)}
               className="absolute top-3 right-3 text-gray-400 hover:text-white"
@@ -142,7 +201,6 @@ console.log("GRID MODS:", mods);
               ✕
             </button>
 
-            {/* IMAGE */}
             <div className="relative mb-4">
               <img
                 src={selectedMod.image}
@@ -191,16 +249,20 @@ console.log("GRID MODS:", mods);
                 onClick={() => handleLike(selectedMod.id)}
                 className="bg-pink-600 text-white px-4 py-2 rounded-lg text-sm"
               >
-                ❤️ {likesMap[selectedMod.id] ?? selectedMod.likes ?? 0}
+                ❤️ {selectedLikes}
               </button>
 
-              <a
-                href={selectedMod.source_url || "#"}
-                target="_blank"
+              <button
+                onClick={() =>
+                  handleDownload(
+                    selectedMod.id,
+                    selectedMod.source_url
+                  )
+                }
                 className="bg-white text-black px-4 py-2 rounded-lg text-sm"
               >
-                ⬇ Download
-              </a>
+                ⬇ {selectedDownloads}
+              </button>
 
               <Link
                 href={`/mods/${selectedMod.id}`}
