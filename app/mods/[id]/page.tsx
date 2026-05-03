@@ -13,8 +13,11 @@ export default async function ModPage({
 }) {
   const { id } = await params;
 
-  console.log("PAGE ID:", id); // 🔥 debug
+  console.log("PAGE ID:", id);
 
+  // -----------------------------
+  // FETCH MOD
+  // -----------------------------
   const { data: mod, error } = await supabase
     .from("mods")
     .select("*")
@@ -26,6 +29,33 @@ export default async function ModPage({
     return <div className="text-white p-10">Mod not found</div>;
   }
 
+  // -----------------------------
+  // FETCH CREATORS (RELIABLE)
+  // -----------------------------
+  const { data: creatorsData, error: creatorsError } = await supabase
+    .from("mod_creators")
+    .select(`
+      creators (
+        id,
+        name
+      )
+    `)
+    .eq("mod_id", id);
+
+    console.log("CREATORS FETCH RESULT:", creatorsData);
+
+  if (creatorsError) {
+    console.log("CREATORS FETCH ERROR:", creatorsError);
+  }
+
+  const creators =
+    creatorsData?.map((c: any) => c.creators).filter(Boolean) || [];
+
+  console.log("CREATORS:", creators);
+
+  // -----------------------------
+  // IMAGES
+  // -----------------------------
   let images: string[] = [];
   try {
     if (Array.isArray(mod.images)) {
@@ -49,34 +79,48 @@ export default async function ModPage({
         {/* RIGHT */}
         <div>
           <div className="flex justify-between items-start gap-4">
-  <h1 className="text-4xl font-bold leading-tight max-w-[85%]">
-    {mod.title}
-  </h1>
+            <h1 className="text-4xl font-bold leading-tight max-w-[85%]">
+              {mod.title}
+            </h1>
 
-  {mod.verified && (
-  <div className="relative group shrink-0">
-    <span className="bg-blue-600/90 text-white text-xs px-3 py-1.5 rounded-lg shadow transition duration-200 group-hover:bg-blue-500 group-hover:shadow-lg cursor-default">
-      ✔ Verified
-    </span>
+            {mod.verified && (
+              <div className="relative group shrink-0">
+                <span className="bg-blue-600/90 text-white text-xs px-3 py-1.5 rounded-lg shadow transition duration-200 group-hover:bg-blue-500 group-hover:shadow-lg cursor-default">
+                  ✔ Verified
+                </span>
 
-    {/* TOOLTIP */}
-    <div className="absolute right-0 top-full mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition duration-200">
-      <div className="bg-neutral-800 text-white text-[11px] px-2 py-1 rounded shadow whitespace-nowrap">
-        Verified by ModVault
-      </div>
-    </div>
-  </div>
-)}
-</div>
+                <div className="absolute right-0 top-full mt-2 opacity-0 group-hover:opacity-100 pointer-events-none transition duration-200">
+                  <div className="bg-neutral-800 text-white text-[11px] px-2 py-1 rounded shadow whitespace-nowrap">
+                    Verified by ModVault
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
+          {/* ✅ CREATORS */}
           <p className="text-gray-400 mt-2">
             by{" "}
-            <Link
-              href={`/creator/${encodeURIComponent(mod.creator)}`}
-              className="text-purple-400 hover:underline"
-            >
-              {mod.creator || "Unknown"}
-            </Link>
+            {creators.length ? (
+              creators.map((creator: any, i: number) => (
+                <span key={creator.id}>
+                  <Link
+                    href={`/creator/${encodeURIComponent(creator.name)}`}
+                    className="text-purple-400 hover:underline"
+                  >
+                    {creator.name}
+                  </Link>
+                  {i < creators.length - 1 && " • "}
+                </span>
+              ))
+            ) : (
+              <Link
+                href={`/creator/${encodeURIComponent(mod.creator || "")}`}
+                className="text-purple-400 hover:underline"
+              >
+                {mod.creator || "Unknown"}
+              </Link>
+            )}
           </p>
 
           <div className="flex gap-6 text-sm text-gray-400 mt-2">
@@ -133,7 +177,6 @@ export default async function ModPage({
 
           <div className="mt-8 flex gap-4 items-center">
             <DownloadButton url={mod.source_url} id={mod.id} />
-
             <LikeButton id={mod.id} initialLikes={mod.likes ?? 0} />
 
             <a
