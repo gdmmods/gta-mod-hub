@@ -9,6 +9,7 @@ type Mod = {
   image: string;
   creator?: string;
   likes?: number;
+  downloads?: number;
   source_url?: string;
 };
 
@@ -61,6 +62,10 @@ export default function ModCard({
           <h2 className="text-sm font-semibold line-clamp-2 hover:underline">
             {mod.title}
           </h2>
+          <div className="flex gap-3 text-xs text-gray-400 mt-1">
+  <span>❤️ {likes}</span>
+  <span>⬇ {mod.downloads ?? 0}</span>
+</div>
         </Link>
 
         {showCreator && (
