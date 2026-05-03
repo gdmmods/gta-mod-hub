@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import HoverActions from "./HoverActionsClient";
 import ModCard from "./ModCard";
 
 type Mod = {
@@ -25,18 +24,18 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
     selectedIndex !== null ? mods[selectedIndex] : null;
 
   /* ---------------- keyboard ---------------- */
- useEffect(() => {
-  const handleKey = (e: KeyboardEvent) => {
-    if (selectedIndex === null) return;
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (selectedIndex === null) return;
 
-    if (e.key === "Escape") setSelectedIndex(null);
-    if (e.key === "ArrowRight") goNext();
-    if (e.key === "ArrowLeft") goPrev();
-  };
+      if (e.key === "Escape") setSelectedIndex(null);
+      if (e.key === "ArrowRight") goNext();
+      if (e.key === "ArrowLeft") goPrev();
+    };
 
-  window.addEventListener("keydown", handleKey);
-  return () => window.removeEventListener("keydown", handleKey);
-}, [selectedIndex]);
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [selectedIndex]);
 
   /* ---------------- scroll lock ---------------- */
   useEffect(() => {
@@ -107,58 +106,13 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
           const likes = likesMap[mod.id] ?? mod.likes ?? 0;
 
           return (
-            <div
+            <ModCard
               key={mod.id}
-              className="group bg-neutral-900 rounded-xl overflow-hidden hover:-translate-y-1 transition"
-            >
-              {/* IMAGE */}
-              <div
-                className="relative cursor-pointer"
-                onClick={() => setSelectedIndex(index)}
-              >
-                <img
-                  src={mod.image}
-                  className="w-full h-36 object-cover group-hover:scale-[1.03] transition"
-                  alt={mod.title}
-                />
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-
-                {/* HOVER */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition">
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <HoverActions
-                      id={mod.id}
-                      likes={likes}
-                      source_url={mod.source_url || "#"}
-                      onLike={() => handleLike(mod.id)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* TEXT */}
-              <div className="p-3">
-                <Link href={`/mods/${mod.id}`}>
-                  <h2 className="text-sm font-semibold line-clamp-2 hover:underline">
-                    {mod.title}
-                  </h2>
-                </Link>
-
-                <p className="text-xs text-gray-400">
-                  by{" "}
-                  <Link
-                    href={`/creator/${encodeURIComponent(
-                      mod.creator || ""
-                    )}`}
-                    className="text-purple-400 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {mod.creator || "Unknown"}
-                  </Link>
-                </p>
-              </div>
-            </div>
+              mod={mod}
+              likes={likes}
+              onLike={() => handleLike(mod.id)}
+              onOpen={() => setSelectedIndex(index)}
+            />
           );
         })}
       </div>
@@ -190,7 +144,6 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
                 className="w-full rounded-lg"
               />
 
-              {/* arrows */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();

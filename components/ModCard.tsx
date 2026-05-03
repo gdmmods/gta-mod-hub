@@ -1,35 +1,84 @@
-import Link from "next/link";
+"use client";
 
-type ModCardProps = {
-  id: string; //
+import Link from "next/link";
+import HoverActions from "./HoverActionsClient";
+
+type Mod = {
+  id: string;
   title: string;
-  description: string;
   image: string;
   creator?: string;
-  sourceUrl?: string;
+  likes?: number;
+  source_url?: string;
 };
 
-export default function ModCard({ id, title, description, image, creator }: ModCardProps) {
-console.log("CREATOR PROP:", creator);
+export default function ModCard({
+  mod,
+  likes,
+  onLike,
+  onOpen,
+  showCreator = true,
+}: {
+  mod: Mod;
+  likes: number;
+  onLike: () => void;
+  onOpen: () => void;
+  showCreator?: boolean;
+}) {
+
+  // DEBUG (remove later)
+  console.log("MOD CARD DATA:", mod);
+
   return (
-  <Link
-    href={`/mods/${id}`}
-    className="block"
-  >
-    <div className="bg-zinc-900 p-4 rounded-xl hover:bg-zinc-800 transition cursor-pointer">
-      <img
-        src={image || "https://via.placeholder.com/400x200"}
-        className="rounded-lg"
-      />
+    <div className="group bg-neutral-900 rounded-xl overflow-hidden hover:-translate-y-1 transition">
+      
+      <div
+        className="relative cursor-pointer"
+        onClick={onOpen}
+      >
+        <img
+          src={mod.image || "/placeholder.jpg"}
+          className="w-full h-36 object-cover group-hover:scale-[1.03] transition"
+          alt={mod.title}
+        />
 
-      <h3 className="mt-3 font-semibold">{title}</h3>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
 
-      <p className="text-sm text-gray-400">{description}</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition pointer-events-none">
+          <div
+            className="pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <HoverActions
+              id={mod.id}
+              likes={likes}
+              source_url={mod.source_url || "#"}
+              onLike={onLike}
+            />
+          </div>
+        </div>
+      </div>
 
-      <p className="text-xs text-gray-500 mt-1">
-        by {creator || "Unknown"}
-      </p>
+      <div className="p-3">
+        <Link href={`/mods/${mod.id}`}>
+          <h2 className="text-sm font-semibold line-clamp-2 hover:underline">
+            {mod.title}
+          </h2>
+        </Link>
+
+        {showCreator && (
+          <p className="text-xs text-gray-400">
+            by{" "}
+            <Link
+              href={`/creator/${encodeURIComponent(mod.creator || "Unknown")}`}
+              className="text-purple-400 hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {mod.creator || "Unknown"}
+            </Link>
+          </p>
+        )}
+      </div>
     </div>
-  </Link>
-);
+  );
 }
