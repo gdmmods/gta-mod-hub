@@ -2,55 +2,48 @@
 
 import Link from "next/link";
 import HoverActions from "./HoverActionsClient";
+import { getCreators } from "@/lib/getCreators";
+
+type Creator = {
+  id: string;
+  name: string;
+};
 
 type Mod = {
   id: string;
   title: string;
   image: string;
-  creator?: string;
-  likes?: number;
-  downloads?: number;
+  creator?: string; // fallback (legacy)
   source_url?: string;
+
+  mod_creators?: {
+    creators: Creator;
+  }[];
 };
 
 export default function ModCard({
   mod,
   likes,
+  downloads,
   onLike,
   onOpen,
+  onDownload,
   showCreator = true,
 }: {
   mod: Mod;
   likes: number;
+  downloads: number;
   onLike: () => void;
   onOpen: () => void;
+  onDownload: () => void;
   showCreator?: boolean;
 }) {
-
-  // ✅ ADD THIS
-  const handleDownload = async () => {
-    console.log("DOWNLOAD CLICKED", mod.id);
-
-    try {
-      await fetch("/api/download", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: mod.id }),
-      });
-    } catch (e) {
-      console.error("Download tracking failed");
-    }
-
-    if (mod.source_url) {
-      window.open(mod.source_url, "_blank", "noopener,noreferrer");
-    }
-  };
+  const creators = getCreators(mod);
 
   return (
     <div className="group bg-neutral-900 rounded-xl overflow-hidden hover:-translate-y-1 transition">
 
+      {/* IMAGE */}
       <div
         className="relative cursor-pointer"
         onClick={onOpen}
@@ -63,44 +56,50 @@ export default function ModCard({
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
 
-        {/* 🔥 FIXED: removed pointer-events-none */}
+        {/* HOVER */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition">
-          <div
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div onClick={(e) => e.stopPropagation()}>
             <HoverActions
               id={mod.id}
               likes={likes}
               source_url={mod.source_url || "#"}
               onLike={onLike}
-              onDownload={handleDownload} // ✅ THIS WAS MISSING
+              onDownload={onDownload}
             />
           </div>
         </div>
       </div>
 
+      {/* CONTENT */}
       <div className="p-3">
         <Link href={mod.id ? `/mods/${mod.id}` : "#"}>
           <h2 className="text-sm font-semibold line-clamp-2 hover:underline">
             {mod.title}
           </h2>
 
+          {/* STATS */}
           <div className="flex gap-3 text-xs mt-1">
             <span className="text-pink-500">❤️ {likes}</span>
-            <span className="text-blue-400">⬇ {mod.downloads ?? 0}</span>
+            <span className="text-blue-400">⬇ {downloads}</span>
           </div>
         </Link>
 
+        {/* ✅ MULTI-CREATORS */}
         {showCreator && (
           <p className="text-xs text-gray-400 mt-1">
             by{" "}
-            <Link
-              href={`/creator/${encodeURIComponent(mod.creator || "Unknown")}`}
-              className="text-purple-400 hover:underline"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {mod.creator || "Unknown"}
-            </Link>
+            {creators.map((name, i) => (
+              <span key={name}>
+                <Link
+                  href={`/creator/${encodeURIComponent(name)}`}
+                  className="text-purple-400 hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {name}
+                </Link>
+                {i < creators.length - 1 && " • "}
+              </span>
+            ))}
           </p>
         )}
       </div>

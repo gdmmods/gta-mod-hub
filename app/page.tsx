@@ -10,17 +10,29 @@ export default async function Home(props: {
   const searchParams = await props.searchParams;
   const sort = searchParams?.sort;
 
-  let query = supabase.from("mods").select("*");
+  let query = supabase
+  .from("mods")
+  .select(`
+    *,
+    mod_creators (
+      creators (
+        id,
+        name
+      )
+    )
+  `);
 
-  if (sort === "likes") {
-    query = query.order("likes", { ascending: false });
-  } else if (sort === "downloads") {
-    query = query.order("downloads", { ascending: false });
-  } else {
-    query = query.order("created_at", { ascending: false });
-  }
+if (sort === "likes") {
+  query = query.order("likes", { ascending: false });
+} else if (sort === "downloads") {
+  query = query.order("downloads", { ascending: false });
+} else {
+  query = query.order("created_at", { ascending: false });
+}
 
-  const { data, error } = await query;
+const { data, error } = await query;
+
+console.log("HOME MOD SAMPLE:", data?.[0]);
 
   if (error) {
     console.error(error);
@@ -37,11 +49,12 @@ export default async function Home(props: {
         image: m.image ?? m.image_url ?? "/placeholder.jpg",
 
         creator:
-          m.creator && m.creator.trim() !== ""
-            ? m.creator
-            : m.user && m.user.trim() !== ""
-            ? m.user
-            : "Unknown",
+  m.mod_creators?.length
+    ? m.mod_creators
+        .map((mc: any) => mc.creators?.name)
+        .filter(Boolean)
+        .join(" • ")
+    : m.creator || "Unknown",
 
         category: m.category ?? null,
         description: m.description ?? "",
