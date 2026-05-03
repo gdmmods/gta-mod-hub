@@ -9,7 +9,7 @@ export default async function CreatorPage({
 }: {
   params: Promise<{ name: string }>;
 }) {
-  const { name } = await params; // ✅ REQUIRED
+  const { name } = await params;
 
   const creatorName = decodeURIComponent(name || "");
 
