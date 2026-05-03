@@ -27,9 +27,30 @@ export default function ModCard({
   showCreator?: boolean;
 }) {
 
+  // ✅ ADD THIS
+  const handleDownload = async () => {
+    console.log("DOWNLOAD CLICKED", mod.id);
+
+    try {
+      await fetch("/api/download", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: mod.id }),
+      });
+    } catch (e) {
+      console.error("Download tracking failed");
+    }
+
+    if (mod.source_url) {
+      window.open(mod.source_url, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
     <div className="group bg-neutral-900 rounded-xl overflow-hidden hover:-translate-y-1 transition">
-      
+
       <div
         className="relative cursor-pointer"
         onClick={onOpen}
@@ -42,9 +63,9 @@ export default function ModCard({
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
 
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition pointer-events-none">
+        {/* 🔥 FIXED: removed pointer-events-none */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition">
           <div
-            className="pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <HoverActions
@@ -52,6 +73,7 @@ export default function ModCard({
               likes={likes}
               source_url={mod.source_url || "#"}
               onLike={onLike}
+              onDownload={handleDownload} // ✅ THIS WAS MISSING
             />
           </div>
         </div>
@@ -62,14 +84,15 @@ export default function ModCard({
           <h2 className="text-sm font-semibold line-clamp-2 hover:underline">
             {mod.title}
           </h2>
-          <div className="flex gap-3 text-xs text-gray-400 mt-1">
-  <span>❤️ {likes}</span>
-  <span>⬇ {mod.downloads ?? 0}</span>
-</div>
+
+          <div className="flex gap-3 text-xs mt-1">
+            <span className="text-pink-500">❤️ {likes}</span>
+            <span className="text-blue-400">⬇ {mod.downloads ?? 0}</span>
+          </div>
         </Link>
 
         {showCreator && (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 mt-1">
             by{" "}
             <Link
               href={`/creator/${encodeURIComponent(mod.creator || "Unknown")}`}

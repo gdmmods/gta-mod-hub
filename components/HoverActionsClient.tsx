@@ -4,35 +4,33 @@ type Props = {
   id: string;
   likes: number;
   source_url: string;
-  onLike?: () => void;
+  onLike: () => void;
+  onDownload: () => void; // ✅ new
 };
 
 export default function HoverActions({
   likes,
-  source_url,
   onLike,
+  onDownload,
 }: Props) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex gap-3">
 
       {/* LIKE */}
       <button
-        onClick={() => onLike?.()}
-        className="flex items-center justify-center gap-1 h-9 px-3 bg-pink-600 hover:bg-pink-500 text-white rounded-lg text-sm transition active:scale-95"
+        onClick={onLike}
+        className="bg-pink-600/90 hover:bg-pink-600 text-white px-3 py-1.5 rounded-lg text-sm flex items-center gap-1"
       >
-        ❤️ <span>{likes}</span>
+        ❤️ {likes}
       </button>
 
       {/* DOWNLOAD */}
-      <a
-        href={source_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => e.stopPropagation()}
-        className="flex items-center justify-center gap-1 h-9 px-3 bg-white text-black rounded-lg text-sm font-medium hover:opacity-90 transition"
+      <button
+        onClick={onDownload}
+        className="bg-white/90 hover:bg-white text-black px-3 py-1.5 rounded-lg text-sm flex items-center gap-1"
       >
         ⬇ Download
-      </a>
+      </button>
 
     </div>
   );
