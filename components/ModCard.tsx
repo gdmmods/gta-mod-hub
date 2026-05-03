@@ -26,9 +26,6 @@ export default function ModCard({
   showCreator?: boolean;
 }) {
 
-  // DEBUG (remove later)
-  console.log("MOD CARD DATA:", mod);
-
   return (
     <div className="group bg-neutral-900 rounded-xl overflow-hidden hover:-translate-y-1 transition">
       
@@ -60,7 +57,7 @@ export default function ModCard({
       </div>
 
       <div className="p-3">
-        <Link href={`/mods/${mod.id}`}>
+        <Link href={mod.id ? `/mods/${mod.id}` : "#"}>
           <h2 className="text-sm font-semibold line-clamp-2 hover:underline">
             {mod.title}
           </h2>

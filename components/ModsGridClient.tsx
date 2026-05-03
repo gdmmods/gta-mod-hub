@@ -16,6 +16,9 @@ type Mod = {
 };
 
 export default function ModsGridClient({ mods }: { mods: Mod[] }) {
+
+console.log("GRID MODS:", mods);
+
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [likesMap, setLikesMap] = useState<Record<string, number>>({});
   const touchStartX = useRef<number | null>(null);
@@ -102,19 +105,21 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
     <>
       {/* GRID */}
       <div className="max-w-6xl mx-auto px-6 mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-        {mods.map((mod, index) => {
-          const likes = likesMap[mod.id] ?? mod.likes ?? 0;
+        {mods
+  .filter((mod) => mod.id) // 🔥 prevent invalid navigation
+  .map((mod, index) => {
+    const likes = likesMap[mod.id] ?? mod.likes ?? 0;
 
-          return (
-            <ModCard
-              key={mod.id}
-              mod={mod}
-              likes={likes}
-              onLike={() => handleLike(mod.id)}
-              onOpen={() => setSelectedIndex(index)}
-            />
-          );
-        })}
+    return (
+      <ModCard
+        key={mod.id}
+        mod={mod}
+        likes={likes}
+        onLike={() => handleLike(mod.id)}
+        onOpen={() => setSelectedIndex(index)}
+      />
+    );
+  })}
       </div>
 
       {/* MODAL */}
