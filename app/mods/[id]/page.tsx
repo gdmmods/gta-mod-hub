@@ -30,7 +30,7 @@ export default async function ModPage({
   }
 
   // -----------------------------
-  // FETCH CREATORS (RELIABLE)
+  // FETCH CREATORS (RELATIONAL)
   // -----------------------------
   const { data: creatorsData, error: creatorsError } = await supabase
     .from("mod_creators")
@@ -42,16 +42,12 @@ export default async function ModPage({
     `)
     .eq("mod_id", id);
 
-    console.log("CREATORS FETCH RESULT:", creatorsData);
-
   if (creatorsError) {
     console.log("CREATORS FETCH ERROR:", creatorsError);
   }
 
   const creators =
     creatorsData?.map((c: any) => c.creators).filter(Boolean) || [];
-
-  console.log("CREATORS:", creators);
 
   // -----------------------------
   // IMAGES
@@ -98,14 +94,14 @@ export default async function ModPage({
             )}
           </div>
 
-          {/* ✅ CREATORS */}
+          {/* ✅ CREATORS (ID-BASED) */}
           <p className="text-gray-400 mt-2">
             by{" "}
             {creators.length ? (
               creators.map((creator: any, i: number) => (
                 <span key={creator.id}>
                   <Link
-                    href={`/creator/${encodeURIComponent(creator.name)}`}
+                    href={`/creator/${creator.id}`}
                     className="text-purple-400 hover:underline"
                   >
                     {creator.name}
@@ -114,12 +110,7 @@ export default async function ModPage({
                 </span>
               ))
             ) : (
-              <Link
-                href={`/creator/${encodeURIComponent(mod.creator || "")}`}
-                className="text-purple-400 hover:underline"
-              >
-                {mod.creator || "Unknown"}
-              </Link>
+              "Unknown"
             )}
           </p>
 

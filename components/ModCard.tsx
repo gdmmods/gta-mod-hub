@@ -13,12 +13,13 @@ type Mod = {
   id: string;
   title: string;
   image: string;
-  creator?: string; // fallback (legacy)
   source_url?: string;
 
   mod_creators?: {
     creators: Creator;
   }[];
+
+  creator?: string; // legacy fallback
 };
 
 export default function ModCard({
@@ -84,22 +85,33 @@ export default function ModCard({
           </div>
         </Link>
 
-        {/* ✅ MULTI-CREATORS */}
+        {/* CREATORS */}
         {showCreator && (
           <p className="text-xs text-gray-400 mt-1">
             by{" "}
-            {creators.map((name, i) => (
-              <span key={name}>
-                <Link
-                  href={`/creator/${encodeURIComponent(name)}`}
-                  className="text-purple-400 hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {name}
-                </Link>
-                {i < creators.length - 1 && " • "}
-              </span>
-            ))}
+            {creators.length > 0 ? (
+              creators.map((c, i) => {
+                const isLegacy = c.id.startsWith("legacy-");
+
+                return (
+                  <span key={c.id || `${c.name}-${i}`}>
+                    <Link
+                      href={isLegacy ? "#" : `/creator/${c.id}`}
+                      className="text-purple-400 hover:underline"
+                      onClick={(e) => {
+                        if (isLegacy) e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      {c.name || "Unknown"}
+                    </Link>
+                    {i < creators.length - 1 && " • "}
+                  </span>
+                );
+              })
+            ) : (
+              "Unknown"
+            )}
           </p>
         )}
       </div>

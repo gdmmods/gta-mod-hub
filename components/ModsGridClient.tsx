@@ -14,7 +14,6 @@ type Mod = {
   id: string;
   title: string;
   image: string;
-  creator?: string; // fallback only
   category?: string;
   description?: string;
   likes?: number;
@@ -35,7 +34,7 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
   const selectedMod =
     selectedIndex !== null ? mods[selectedIndex] : null;
 
-  const selectedCreators = selectedMod
+  const selectedCreators: Creator[] = selectedMod
     ? getCreators(selectedMod)
     : [];
 
@@ -148,7 +147,7 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
     }
   };
 
-  /* ---------------- live modal values ---------------- */
+  /* ---------------- modal values ---------------- */
   const selectedLikes =
     selectedMod
       ? likesMap[selectedMod.id] !== undefined
@@ -182,7 +181,7 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
 
             return (
               <ModCard
-                key={`${mod.id}-${downloads}`}
+                key={mod.id} // ✅ stable key
                 mod={mod}
                 likes={likes}
                 downloads={downloads}
@@ -220,42 +219,21 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
                 src={selectedMod.image}
                 className="w-full rounded-lg"
               />
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  goPrev();
-                }}
-                className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 w-10 h-10 rounded-full text-white"
-              >
-                ←
-              </button>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  goNext();
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 w-10 h-10 rounded-full text-white"
-              >
-                →
-              </button>
             </div>
 
             <h2 className="text-lg font-semibold">
               {selectedMod.title}
             </h2>
 
-            {/* ✅ FIXED MULTI-CREATORS */}
             <p className="text-sm text-gray-400 mt-1">
               {selectedMod.category || "Unknown"} •{" "}
-              {selectedCreators.map((name, i) => (
-                <span key={name}>
+              {selectedCreators.map((c, i) => (
+                <span key={c.id || `${c.name}-${i}`}>
                   <Link
-                    href={`/creator/${encodeURIComponent(name)}`}
+                    href={`/creator/${c.id}`}
                     className="text-purple-400 hover:underline"
                   >
-                    {name}
+                    {c.name}
                   </Link>
                   {i < selectedCreators.length - 1 && " • "}
                 </span>

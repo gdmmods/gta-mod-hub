@@ -13,57 +13,70 @@ export default async function Home(props: {
   let query = supabase
   .from("mods")
   .select(`
-    *,
+    id,
+    title,
+    image,
+    category,
+    description,
+    likes,
+    downloads,
+    source_url,
+    created_at,
     mod_creators (
-      creators (
+      creators:creator_id (
         id,
         name
       )
     )
   `);
 
-if (sort === "likes") {
-  query = query.order("likes", { ascending: false });
-} else if (sort === "downloads") {
-  query = query.order("downloads", { ascending: false });
-} else {
-  query = query.order("created_at", { ascending: false });
-}
+  if (sort === "likes") {
+    query = query.order("likes", { ascending: false });
+  } else if (sort === "downloads") {
+    query = query.order("downloads", { ascending: false });
+  } else {
+    query = query.order("created_at", { ascending: false });
+  }
 
-const { data, error } = await query;
-
-console.log("HOME MOD SAMPLE:", data?.[0]);
+  const { data, error } = await query;
 
   if (error) {
-    console.error(error);
+    console.error("SUPABASE ERROR:", JSON.stringify(error, null, 2));
     return <div className="text-white p-10">Error loading mods</div>;
   }
 
-  // 🔥 HARDENED NORMALIZATION (NO BAD DATA PASSES)
+  /* -----------------------------
+     CLEAN NORMALIZATION (NO LEGACY)
+  ----------------------------- */
   const mods =
     data
-      ?.filter((m: any) => m && m.id) // remove broken rows
+      ?.filter((m: any) => m && m.id)
       .map((m: any) => ({
         id: m.id,
-        title: m.title ?? m.name ?? "Untitled",
-        image: m.image ?? m.image_url ?? "/placeholder.jpg",
-
-        creator:
-  m.mod_creators?.length
-    ? m.mod_creators
-        .map((mc: any) => mc.creators?.name)
-        .filter(Boolean)
-        .join(" • ")
-    : m.creator || "Unknown",
-
+        title: m.title ?? "Untitled",
+        image: m.image ?? "/placeholder.jpg",
         category: m.category ?? null,
         description: m.description ?? "",
         likes: m.likes ?? 0,
         downloads: m.downloads ?? 0,
         source_url: m.source_url ?? "#",
+
+        // ✅ KEEP RELATIONAL DATA ONLY
+        mod_creators: m.mod_creators ?? [],
       })) || [];
 
   const featured = mods[0];
+
+  /* -----------------------------
+     FEATURED CREATOR STRING (UI ONLY)
+  ----------------------------- */
+  const featuredCreators =
+    featured?.mod_creators?.length
+      ? featured.mod_creators
+          .map((mc: any) => mc.creators?.name)
+          .filter(Boolean)
+          .join(" • ")
+      : "Unknown";
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -112,7 +125,7 @@ console.log("HOME MOD SAMPLE:", data?.[0]);
               <div className="absolute bottom-0 p-6">
                 <h2 className="text-2xl font-bold">{featured.title}</h2>
                 <p className="text-gray-300 text-sm">
-                  by {featured.creator}
+                  by {featuredCreators}
                 </p>
               </div>
             </div>
