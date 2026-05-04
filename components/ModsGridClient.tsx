@@ -3,17 +3,27 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import ModCard from "./ModCard";
+import { getCreators } from "@/lib/getCreators";
+
+type Creator = {
+  id: string;
+  name: string;
+};
 
 type Mod = {
   id: string;
   title: string;
   image: string;
-  creator?: string;
+  creator?: string; // fallback only
   category?: string;
   description?: string;
   likes?: number;
   downloads?: number;
   source_url?: string;
+
+  mod_creators?: {
+    creators: Creator;
+  }[];
 };
 
 export default function ModsGridClient({ mods }: { mods: Mod[] }) {
@@ -24,6 +34,10 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
 
   const selectedMod =
     selectedIndex !== null ? mods[selectedIndex] : null;
+
+  const selectedCreators = selectedMod
+    ? getCreators(selectedMod)
+    : [];
 
   /* ---------------- keyboard ---------------- */
   useEffect(() => {
@@ -134,7 +148,7 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
     }
   };
 
-  /* 🔥 LIVE VALUES FOR MODAL */
+  /* ---------------- live modal values ---------------- */
   const selectedLikes =
     selectedMod
       ? likesMap[selectedMod.id] !== undefined
@@ -168,7 +182,7 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
 
             return (
               <ModCard
-                key={`${mod.id}-${downloads}`} // 🔥 FORCE re-render
+                key={`${mod.id}-${downloads}`}
                 mod={mod}
                 likes={likes}
                 downloads={downloads}
@@ -232,16 +246,20 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
               {selectedMod.title}
             </h2>
 
+            {/* ✅ FIXED MULTI-CREATORS */}
             <p className="text-sm text-gray-400 mt-1">
               {selectedMod.category || "Unknown"} •{" "}
-              <Link
-                href={`/creator/${encodeURIComponent(
-                  selectedMod.creator || ""
-                )}`}
-                className="text-purple-400 hover:underline"
-              >
-                {selectedMod.creator || "Unknown"}
-              </Link>
+              {selectedCreators.map((name, i) => (
+                <span key={name}>
+                  <Link
+                    href={`/creator/${encodeURIComponent(name)}`}
+                    className="text-purple-400 hover:underline"
+                  >
+                    {name}
+                  </Link>
+                  {i < selectedCreators.length - 1 && " • "}
+                </span>
+              ))}
             </p>
 
             <div className="mt-5 flex gap-3">
