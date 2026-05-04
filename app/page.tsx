@@ -86,7 +86,7 @@ export default async function Home(props: {
 
         <div className="flex gap-6 text-sm text-gray-400 items-center">
           <Link href="/" className="hover:text-white">Mods</Link>
-          <Link href="/" className="hover:text-white">Creators</Link>
+          <Link href="/creators" className="hover:text-white">Creators</Link>
           <Link href="/?sort=likes" className="hover:text-white">Trending</Link>
 
           <Link
