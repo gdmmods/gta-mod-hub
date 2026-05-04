@@ -89,6 +89,10 @@ export default async function Home(props: {
           <Link href="/creators" className="hover:text-white">Creators</Link>
           <Link href="/?sort=likes" className="hover:text-white">Trending</Link>
 
+          <Link href="/roadmap" className="hover:text-white">
+            Roadmap
+          </Link>
+
           <Link
             href="/upload"
             className="ml-4 bg-white text-black px-4 py-1.5 rounded-lg text-sm hover:opacity-80 transition"
