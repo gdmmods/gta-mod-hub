@@ -15,11 +15,13 @@ type Mod = {
   image: string;
   source_url?: string;
 
+  favorites?: number;
+
   mod_creators?: {
     creators: Creator;
   }[];
 
-  creator?: string; // legacy fallback
+  creator?: string;
 };
 
 export default function ModCard({
@@ -42,7 +44,7 @@ export default function ModCard({
   const creators = getCreators(mod);
 
   return (
-    <div className="group bg-neutral-900 rounded-xl overflow-hidden hover:-translate-y-1 transition">
+    <div className="group bg-neutral-900 rounded-xl overflow-hidden hover:-translate-y-1 transition border border-zinc-800 hover:border-zinc-700">
 
       {/* IMAGE */}
       <div
@@ -51,11 +53,11 @@ export default function ModCard({
       >
         <img
           src={mod.image || "/placeholder.jpg"}
-          className="w-full h-36 object-cover group-hover:scale-[1.03] transition"
+          className="w-full h-36 object-cover group-hover:scale-[1.03] transition duration-500"
           alt={mod.title}
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
 
         {/* HOVER */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition">
@@ -73,38 +75,63 @@ export default function ModCard({
 
       {/* CONTENT */}
       <div className="p-3">
+
         <Link href={mod.id ? `/mods/${mod.id}` : "#"}>
+
           <h2 className="text-sm font-semibold line-clamp-2 hover:underline">
             {mod.title}
           </h2>
 
           {/* STATS */}
-          <div className="flex gap-3 text-xs mt-1">
-            <span className="text-pink-500">❤️ {likes}</span>
-            <span className="text-blue-400">⬇ {downloads}</span>
+          <div className="flex gap-3 text-xs mt-2">
+
+            <span className="text-pink-500">
+              ❤️ {likes}
+            </span>
+
+            <span className="text-blue-400">
+              ⬇ {downloads}
+            </span>
+
+            <span className="text-yellow-400">
+              ❤ {mod.favorites || 0}
+            </span>
+
           </div>
         </Link>
 
         {/* CREATORS */}
         {showCreator && (
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 mt-2">
+
             by{" "}
+
             {creators.length > 0 ? (
               creators.map((c, i) => {
-                const isLegacy = c.id.startsWith("legacy-");
+                const isLegacy =
+                  c.id.startsWith("legacy-");
 
                 return (
                   <span key={c.id || `${c.name}-${i}`}>
+
                     <Link
-                      href={isLegacy ? "#" : `/creator/${c.id}`}
+                      href={
+                        isLegacy
+                          ? "#"
+                          : `/creator/${c.id}`
+                      }
                       className="text-purple-400 hover:underline"
                       onClick={(e) => {
-                        if (isLegacy) e.preventDefault();
+                        if (isLegacy) {
+                          e.preventDefault();
+                        }
+
                         e.stopPropagation();
                       }}
                     >
                       {c.name || "Unknown"}
                     </Link>
+
                     {i < creators.length - 1 && " • "}
                   </span>
                 );

@@ -1,5 +1,6 @@
 "use client";
 
+import UserMenu from "./UserMenu";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import ModCard from "./ModCard";
@@ -161,6 +162,8 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
         ? downloadsMap[selectedMod.id]
         : selectedMod.downloads || 0
       : 0;
+
+<UserMenu />
 
   return (
     <>
