@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import UserMenu from "@/components/UserMenu";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ModsGridClient from "@/components/ModsGridClient";
@@ -129,12 +130,7 @@ export default async function Home(props: {
             Roadmap
           </Link>
 
-          <Link
-            href="/favorites"
-            className="hover:text-white"
-          >
-            Favorites
-          </Link>
+          <UserMenu />
 
         </div>
       </div>

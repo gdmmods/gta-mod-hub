@@ -15,8 +15,6 @@ type Mod = {
   image: string;
   source_url?: string;
 
-  favorites?: number;
-
   mod_creators?: {
     creators: Creator;
   }[];
@@ -91,10 +89,6 @@ export default function ModCard({
 
             <span className="text-blue-400">
               ⬇ {downloads}
-            </span>
-
-            <span className="text-yellow-400">
-              ❤ {mod.favorites || 0}
             </span>
 
           </div>
