@@ -71,8 +71,9 @@ export default function RoadmapPage() {
 
           <p className="text-gray-400 mt-6 text-lg leading-relaxed">
             ModVault is evolving into a premium creator-first
-            platform focused on discovery, presentation,
-            community, and long-term ecosystem tools.
+            ecosystem focused on immersive presentation,
+            discovery systems, creator identity, and
+            long-term platform scalability.
           </p>
 
           <div className="flex gap-4 mt-8 flex-wrap">
@@ -83,17 +84,17 @@ export default function RoadmapPage() {
               </p>
 
               <p className="font-semibold mt-1">
-                Platform Expansion
+                Discovery Expansion
               </p>
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 px-4 py-3 rounded-xl">
               <p className="text-sm text-gray-400">
-                Completed Phases
+                Latest Upgrade
               </p>
 
               <p className="font-semibold mt-1">
-                3 Milestones
+                Interactive Mod Pages
               </p>
             </div>
 
@@ -103,7 +104,7 @@ export default function RoadmapPage() {
               </p>
 
               <p className="font-semibold mt-1">
-                Creator Experience
+                Retention & Ecosystem
               </p>
             </div>
 
@@ -122,12 +123,14 @@ export default function RoadmapPage() {
           </h2>
 
           <p className="text-gray-400 text-sm mt-4 leading-relaxed">
-            ModVault aims to replace cluttered browsing with a
-            cleaner, faster, and more premium ecosystem built
-            around discovery and creator identity.
+            ModVault aims to replace outdated browsing
+            experiences with a cleaner, faster, more
+            immersive ecosystem centered around creators,
+            discovery, and premium presentation.
           </p>
 
           <div className="mt-6 border-t border-zinc-700 pt-5">
+
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">
                 Development Status
@@ -143,8 +146,9 @@ export default function RoadmapPage() {
                 Platform Version
               </span>
 
-              <span>0.3 Alpha</span>
+              <span>0.4 Alpha</span>
             </div>
+
           </div>
         </div>
       </div>
@@ -215,7 +219,7 @@ export default function RoadmapPage() {
       {/* TIMELINE */}
       <div className="max-w-[1400px] mx-auto px-6 mt-16 relative">
 
-        <div className="h-[2px] bg-gradient-to-r from-purple-500/50 via-zinc-700 to-zinc-700 w-full relative rounded-full">
+        <div className="h-[2px] bg-gradient-to-r from-purple-500/50 via-blue-500/50 to-zinc-700 w-full relative rounded-full">
 
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 bg-purple-500 rounded-full shadow-[0_0_20px_#a855f7]" />
 
@@ -228,9 +232,9 @@ export default function RoadmapPage() {
 
         <div className="flex justify-between mt-3 text-xs text-gray-500">
           <span>Foundation</span>
-          <span>Creators</span>
+          <span>Creator Systems</span>
           <span className="text-blue-400">
-            Current Expansion
+            Interactive Expansion
           </span>
           <span>Future Ecosystem</span>
         </div>
@@ -281,44 +285,47 @@ export default function RoadmapPage() {
           </p>
 
           <h2 className="text-3xl font-bold">
-            Recent Platform Progress
+            Latest Development Session
           </h2>
 
           <div className="grid md:grid-cols-3 gap-6 mt-8">
 
             <div>
               <p className="text-white font-semibold">
-                Favorites System
+                Interactive Mod Architecture
               </p>
 
               <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-                Added persistent favorites, account
-                dropdown navigation, and dedicated
-                collection pages.
+                Refactored monolithic mod pages into
+                reusable modular components including
+                hero sections, sidebars, tabs, meta grids,
+                quick tags, and scalable page systems.
               </p>
             </div>
 
             <div>
               <p className="text-white font-semibold">
-                Creator Redesign
+                Immersive Media Experience
               </p>
 
               <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-                Upgraded creator pages with featured
-                mods, statistics, premium layouts,
-                and improved presentation.
+                Added fullscreen gallery lightbox,
+                keyboard navigation, thumbnail interactions,
+                hover effects, hidden scrollbars, and
+                modernized media presentation systems.
               </p>
             </div>
 
             <div>
               <p className="text-white font-semibold">
-                Platform Identity
+                Discovery & Retention Systems
               </p>
 
               <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-                About page overhaul, roadmap polish,
-                refined navigation, and stronger
-                visual consistency across the platform.
+                Introduced interactive tabs and
+                related mods browsing to improve
+                discovery flow, browsing continuity,
+                session depth, and overall platform retention.
               </p>
             </div>
 
@@ -333,13 +340,13 @@ export default function RoadmapPage() {
 
           <div>
             <p className="text-xl font-semibold">
-              Built Together
+              Built for Long-Term Growth
             </p>
 
             <p className="text-gray-400 text-sm mt-2">
-              Every feature and refinement pushes
-              ModVault closer to becoming the premium
-              home for GTA mod creators.
+              Every system added to ModVault is designed
+              to strengthen creator identity, discovery,
+              immersion, and long-term ecosystem growth.
             </p>
           </div>
 

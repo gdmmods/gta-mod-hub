@@ -11,31 +11,55 @@ export default function Gallery({
   main,
   images,
 }: GalleryProps) {
-  const allImages = [main, ...(images || [])];
 
-  const [selected, setSelected] = useState(main);
-  const [open, setOpen] = useState(false);
+  const allImages = [
+    main,
+    ...(images || []),
+  ];
 
-  const currentIndex = allImages.indexOf(selected);
+  const [selected, setSelected] =
+    useState(main);
 
+  const [open, setOpen] =
+    useState(false);
+
+  const currentIndex =
+    allImages.indexOf(selected);
+
+  /* -----------------------------
+     NAVIGATION
+  ----------------------------- */
   const next = () => {
     const nextIndex =
-      (currentIndex + 1) % allImages.length;
+      (currentIndex + 1) %
+      allImages.length;
 
-    setSelected(allImages[nextIndex]);
+    setSelected(
+      allImages[nextIndex]
+    );
   };
 
   const prev = () => {
     const prevIndex =
-      (currentIndex - 1 + allImages.length) %
+      (currentIndex -
+        1 +
+        allImages.length) %
       allImages.length;
 
-    setSelected(allImages[prevIndex]);
+    setSelected(
+      allImages[prevIndex]
+    );
   };
 
-  /* KEYBOARD CONTROLS */
+  /* -----------------------------
+     KEYBOARD CONTROLS
+  ----------------------------- */
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
+
+    const handleKey = (
+      e: KeyboardEvent
+    ) => {
+
       if (!open) return;
 
       if (e.key === "ArrowRight") {
@@ -49,40 +73,89 @@ export default function Gallery({
       if (e.key === "Escape") {
         setOpen(false);
       }
+
     };
 
-    window.addEventListener("keydown", handleKey);
+    window.addEventListener(
+      "keydown",
+      handleKey
+    );
 
     return () =>
       window.removeEventListener(
         "keydown",
         handleKey
       );
+
   }, [open, currentIndex]);
 
   return (
     <div className="w-full">
 
       {/* MAIN IMAGE */}
-      <div className="relative group">
+      <div className="relative group overflow-hidden rounded-3xl">
+
+        {/* IMAGE */}
         <img
           src={selected}
           alt="Main"
           onClick={() => setOpen(true)}
           className="
-            rounded-2xl
+            rounded-3xl
             w-full
-            h-[420px]
+            h-[520px]
             object-cover
             cursor-pointer
             border
             border-zinc-800
             shadow-2xl
-            transition
-            duration-300
+            transition-all
+            duration-500
+            group-hover:scale-[1.01]
             group-hover:opacity-95
           "
         />
+
+        {/* OVERLAY */}
+        <div
+          className="
+            absolute
+            inset-0
+            bg-gradient-to-t
+            from-black/40
+            via-transparent
+            to-transparent
+            opacity-0
+            group-hover:opacity-100
+            transition
+            duration-300
+            pointer-events-none
+          "
+        />
+
+        {/* EXPAND HINT */}
+        <div
+          className="
+            absolute
+            top-4
+            right-4
+            bg-black/60
+            backdrop-blur-md
+            border
+            border-zinc-700
+            px-4
+            py-2
+            rounded-full
+            text-xs
+            text-zinc-300
+            opacity-0
+            group-hover:opacity-100
+            transition
+            duration-300
+          "
+        >
+          Click to expand
+        </div>
 
         {/* IMAGE COUNT */}
         <div
@@ -95,57 +168,94 @@ export default function Gallery({
             border
             border-zinc-700
             px-3
-            py-1
+            py-1.5
             rounded-full
             text-xs
-            text-gray-300
+            text-zinc-300
           "
         >
           {currentIndex + 1} / {allImages.length}
         </div>
+
       </div>
 
       {/* THUMBNAILS */}
       <div
-        className="
-          flex
-          gap-3
-          overflow-x-auto
-          scrollbar-hide
-          mt-3
-          pb-1
-        "
-      >
-        {allImages.map((img, i) => (
-          <button
-            key={i}
-            onClick={() => setSelected(img)}
-            className="
-              relative
-              flex-shrink-0
-              outline-none
-            "
-          >
-            <img
-              src={img}
-              alt={`Thumbnail ${i}`}
-              className={`
-                h-20
-                w-36
-                object-cover
-                rounded-xl
-                border-2
-                transition
-                duration-200
-                ${
-                  selected === img
-                    ? "border-purple-500 scale-[1.02]"
-                    : "border-zinc-800 hover:border-zinc-600"
-                }
-              `}
-            />
-          </button>
-        ))}
+  className="
+    flex
+    gap-3
+    overflow-x-auto
+    scrollbar-hide
+    mt-4
+    pb-1
+  "
+>
+
+        {allImages.map((img, i) => {
+
+          const active =
+            selected === img;
+
+          return (
+            <button
+              key={i}
+              onClick={() =>
+                setSelected(img)
+              }
+              className="
+                relative
+                flex-shrink-0
+                outline-none
+                group
+              "
+            >
+
+              <img
+                src={img}
+                alt={`Thumbnail ${i}`}
+                className={`
+                  h-24
+                  w-40
+                  object-cover
+                  rounded-2xl
+                  border-2
+                  transition-all
+                  duration-300
+
+                  ${
+                    active
+                      ? `
+                        border-purple-500
+                        scale-[1.02]
+                        shadow-lg
+                      `
+                      : `
+                        border-zinc-800
+                        hover:border-zinc-600
+                        hover:scale-[1.01]
+                      `
+                  }
+                `}
+              />
+
+              {/* ACTIVE GLOW */}
+              {active && (
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    rounded-2xl
+                    ring-2
+                    ring-purple-500/40
+                    pointer-events-none
+                  "
+                />
+              )}
+
+            </button>
+          );
+        })}
+
       </div>
 
       {/* LIGHTBOX */}
@@ -154,19 +264,24 @@ export default function Gallery({
           className="
             fixed
             inset-0
-            z-50
+            z-[999]
             bg-black/95
-            backdrop-blur-md
+            backdrop-blur-xl
             flex
             items-center
             justify-center
             p-6
+            animate-in
+            fade-in
+            duration-200
           "
         >
 
           {/* CLOSE */}
           <button
-            onClick={() => setOpen(false)}
+            onClick={() =>
+              setOpen(false)
+            }
             className="
               absolute
               top-6
@@ -213,14 +328,23 @@ export default function Gallery({
           </button>
 
           {/* IMAGE */}
-          <div className="relative max-w-[92vw]">
+          <div
+            className="
+              relative
+              max-w-[94vw]
+              animate-in
+              zoom-in-95
+              duration-300
+            "
+          >
+
             <img
               src={selected}
               alt="Fullscreen"
               className="
                 max-h-[88vh]
                 max-w-full
-                rounded-2xl
+                rounded-3xl
                 shadow-2xl
                 border
                 border-zinc-800
@@ -243,11 +367,12 @@ export default function Gallery({
                 py-2
                 rounded-full
                 text-sm
-                text-gray-300
+                text-zinc-300
               "
             >
               {currentIndex + 1} / {allImages.length}
             </div>
+
           </div>
 
           {/* NEXT */}
@@ -277,6 +402,7 @@ export default function Gallery({
 
         </div>
       )}
+
     </div>
   );
 }

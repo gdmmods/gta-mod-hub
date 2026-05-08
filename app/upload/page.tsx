@@ -234,7 +234,7 @@ export default function UploadPage() {
 
                   <textarea
                     name="images"
-                    placeholder='["https://img1.jpg", "https://img2.jpg"]'
+                    placeholder=''
                     value={form.images}
                     onChange={handleChange}
                     rows={4}
