@@ -130,6 +130,8 @@ export default async function Home(props: {
             Roadmap
           </Link>
 
+          <Link href="/about">About</Link>
+
           <UserMenu />
 
         </div>

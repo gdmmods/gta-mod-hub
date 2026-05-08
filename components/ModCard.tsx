@@ -42,8 +42,7 @@ export default function ModCard({
   const creators = getCreators(mod);
 
   return (
-    <div className="group bg-neutral-900 rounded-xl overflow-hidden hover:-translate-y-1 transition border border-zinc-800 hover:border-zinc-700">
-
+    <div className="group relative bg-neutral-900 rounded-xl overflow-hidden hover:-translate-y-1 transition duration-300 border border-zinc-800 hover:border-pink-500/40 hover:shadow-[0_0_25px_rgba(236,72,153,0.15)]">
       {/* IMAGE */}
       <div
         className="relative cursor-pointer"
@@ -55,7 +54,7 @@ export default function ModCard({
           alt={mod.title}
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 pointer-events-none bg-gradient-to-br from-pink-500/5 via-transparent to-purple-500/5" />
 
         {/* HOVER */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition">

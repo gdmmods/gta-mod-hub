@@ -11,17 +11,16 @@ export async function POST(req: Request) {
     const { id } = await req.json();
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Missing ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing ID" }, { status: 400 });
     }
 
-    // ⚠️ temporary user (replace later with auth)
+    console.log("API HIT:", id);
+
+    // ⚠️ TEMP USER (MUST EXIST OR FK WILL FAIL)
     const user_id = "00000000-0000-0000-0000-000000000000";
 
     // -----------------------------
-    // CHECK EXISTING LIKE (FIXED)
+    // CHECK EXISTING LIKE
     // -----------------------------
     const { data: existing, error: checkError } = await supabaseServer
       .from("likes")
@@ -30,12 +29,11 @@ export async function POST(req: Request) {
       .eq("mod_id", id)
       .limit(1);
 
+    console.log("EXISTING:", existing, checkError);
+
     if (checkError) {
       console.error("CHECK ERROR:", checkError);
-      return NextResponse.json(
-        { error: "DB check failed" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "DB check failed" }, { status: 500 });
     }
 
     const alreadyLiked = existing && existing.length > 0;
@@ -50,21 +48,17 @@ export async function POST(req: Request) {
         .eq("user_id", user_id)
         .eq("mod_id", id);
 
+      console.log("DELETE ERROR:", deleteError);
+
       if (deleteError) {
-        console.error("DELETE ERROR:", deleteError);
-        return NextResponse.json(
-          { error: "Delete failed" },
-          { status: 500 }
-        );
+        return NextResponse.json({ error: deleteError.message }, { status: 500 });
       }
 
       const { error: rpcError } = await supabaseServer.rpc("decrement_likes", {
         row_id: id,
       });
 
-      if (rpcError) {
-        console.error("RPC DECREMENT ERROR:", rpcError);
-      }
+      console.log("RPC DECREMENT:", rpcError);
 
       return NextResponse.json({ liked: false });
     }
@@ -72,17 +66,20 @@ export async function POST(req: Request) {
     // -----------------------------
     // LIKE
     // -----------------------------
-    const { error: insertError } = await supabaseServer
+    const { data: insertData, error: insertError } = await supabaseServer
       .from("likes")
       .insert({
         user_id,
         mod_id: id,
-      });
+      })
+      .select();
+
+    console.log("INSERT DATA:", insertData);
+    console.log("INSERT ERROR:", insertError);
 
     if (insertError) {
-      console.error("INSERT ERROR:", insertError);
       return NextResponse.json(
-        { error: "Insert failed" },
+        { error: insertError.message },
         { status: 500 }
       );
     }
@@ -91,16 +88,14 @@ export async function POST(req: Request) {
       row_id: id,
     });
 
-    if (rpcError) {
-      console.error("RPC INCREMENT ERROR:", rpcError);
-    }
+    console.log("RPC INCREMENT:", rpcError);
 
     return NextResponse.json({ liked: true });
 
-  } catch (err) {
+  } catch (err: any) {
     console.error("API ERROR:", err);
     return NextResponse.json(
-      { error: "Server error" },
+      { error: err.message || "Server error" },
       { status: 500 }
     );
   }

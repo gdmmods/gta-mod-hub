@@ -2,9 +2,12 @@ import Link from "next/link";
 import { roadmap } from "@/lib/roadmap";
 
 const phaseColors: Record<string, string> = {
-  complete: "from-purple-500/20 to-purple-700/10 border-purple-500/30",
-  "in-progress": "from-blue-500/20 to-blue-700/10 border-blue-500/30",
-  planned: "from-zinc-700/30 to-zinc-800/10 border-zinc-700",
+  complete:
+    "from-purple-500/20 to-purple-700/10 border-purple-500/30",
+  "in-progress":
+    "from-blue-500/20 to-blue-700/10 border-blue-500/30",
+  planned:
+    "from-zinc-700/30 to-zinc-800/10 border-zinc-700",
 };
 
 export default function RoadmapPage() {
@@ -13,84 +16,196 @@ export default function RoadmapPage() {
 
       {/* NAV */}
       <div className="flex justify-between items-center px-10 py-6 border-b border-zinc-800">
-        <Link href="/" className="text-xl font-bold tracking-tight">
+
+        <Link
+          href="/"
+          className="text-xl font-bold tracking-tight"
+        >
           <span className="text-purple-500">M</span> ModVault
         </Link>
 
         <div className="flex gap-6 text-sm text-gray-400">
-          <Link href="/">Mods</Link>
-          <Link href="/creators">Creators</Link>
-          <Link href="/roadmap" className="text-white">Roadmap</Link>
+
+          <Link href="/" className="hover:text-white transition">
+            Mods
+          </Link>
+
+          <Link
+            href="/creators"
+            className="hover:text-white transition"
+          >
+            Creators
+          </Link>
+
+          <Link
+            href="/about"
+            className="hover:text-white transition"
+          >
+            About
+          </Link>
+
+          <Link
+            href="/roadmap"
+            className="text-white"
+          >
+            Roadmap
+          </Link>
         </div>
       </div>
 
       {/* HERO */}
-      <div className="max-w-[1400px] mx-auto px-6 mt-14 flex flex-col md:flex-row justify-between gap-10 items-start">
+      <div className="max-w-[1400px] mx-auto px-6 mt-16 flex flex-col lg:flex-row justify-between gap-12 items-start">
 
-        <div>
-          <p className="text-purple-400 text-sm mb-2 tracking-wide">
-            ROADMAP
+        <div className="max-w-2xl">
+
+          <p className="text-purple-400 text-sm mb-3 tracking-[0.2em]">
+            PLATFORM ROADMAP
           </p>
 
-          <h1 className="text-5xl font-bold leading-tight">
-            The Future of{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
-              ModVault
+          <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+            Building the future of{" "}
+            <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+              GTA mod discovery
             </span>
           </h1>
 
-          <p className="text-gray-400 mt-4 max-w-lg">
-            We're building ModVault with the community.
-            Every feature here is a step toward a better mod ecosystem.
+          <p className="text-gray-400 mt-6 text-lg leading-relaxed">
+            ModVault is evolving into a premium creator-first
+            platform focused on discovery, presentation,
+            community, and long-term ecosystem tools.
           </p>
+
+          <div className="flex gap-4 mt-8 flex-wrap">
+
+            <div className="bg-zinc-900 border border-zinc-800 px-4 py-3 rounded-xl">
+              <p className="text-sm text-gray-400">
+                Current Stage
+              </p>
+
+              <p className="font-semibold mt-1">
+                Platform Expansion
+              </p>
+            </div>
+
+            <div className="bg-zinc-900 border border-zinc-800 px-4 py-3 rounded-xl">
+              <p className="text-sm text-gray-400">
+                Completed Phases
+              </p>
+
+              <p className="font-semibold mt-1">
+                3 Milestones
+              </p>
+            </div>
+
+            <div className="bg-zinc-900 border border-zinc-800 px-4 py-3 rounded-xl">
+              <p className="text-sm text-gray-400">
+                Focus
+              </p>
+
+              <p className="font-semibold mt-1">
+                Creator Experience
+              </p>
+            </div>
+
+          </div>
         </div>
 
-        <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 p-6 rounded-2xl w-full md:w-[320px] shadow-xl">
-          <p className="text-sm font-semibold mb-2">🚩 Our Mission</p>
-          <p className="text-gray-400 text-sm">
-            Build the best GTA mod platform — curated, fast, and creator-first.
+        {/* MISSION PANEL */}
+        <div className="w-full lg:w-[360px] bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-3xl p-7 shadow-2xl">
+
+          <p className="text-sm text-purple-400 tracking-wide mb-2">
+            🚩 OUR MISSION
           </p>
+
+          <h2 className="text-2xl font-bold leading-tight">
+            A platform worthy of the creators behind the mods.
+          </h2>
+
+          <p className="text-gray-400 text-sm mt-4 leading-relaxed">
+            ModVault aims to replace cluttered browsing with a
+            cleaner, faster, and more premium ecosystem built
+            around discovery and creator identity.
+          </p>
+
+          <div className="mt-6 border-t border-zinc-700 pt-5">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-400">
+                Development Status
+              </span>
+
+              <span className="text-blue-400">
+                Active
+              </span>
+            </div>
+
+            <div className="flex justify-between text-sm mt-2">
+              <span className="text-gray-400">
+                Platform Version
+              </span>
+
+              <span>0.3 Alpha</span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* FIRST ROW */}
-      <div className="max-w-[1400px] mx-auto px-6 mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="max-w-[1400px] mx-auto px-6 mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
         {roadmap.slice(0, 4).map((phase, i) => (
           <div
             key={i}
-            className={`relative p-5 rounded-2xl border bg-gradient-to-br ${phaseColors[phase.status]} backdrop-blur-xl shadow-lg hover:scale-[1.02] transition`}
+            className={`relative p-6 rounded-3xl border bg-gradient-to-br ${phaseColors[phase.status]} backdrop-blur-xl shadow-lg hover:scale-[1.02] transition duration-300`}
           >
+
             {phase.status === "in-progress" && (
-              <div className="absolute top-3 right-3 text-xs bg-purple-600 px-2 py-1 rounded-full">
+              <div className="absolute top-4 right-4 text-[10px] bg-blue-600 px-2 py-1 rounded-full font-semibold tracking-wide">
                 CURRENT
               </div>
             )}
 
-            <p className="text-xs text-gray-400">{phase.phase}</p>
+            {phase.status === "complete" && (
+              <div className="absolute top-4 right-4 text-[10px] bg-purple-600 px-2 py-1 rounded-full font-semibold tracking-wide">
+                COMPLETE
+              </div>
+            )}
 
-            <h2 className="text-lg font-semibold mt-1">
+            <p className="text-xs tracking-wide text-gray-400">
+              {phase.phase}
+            </p>
+
+            <h2 className="text-xl font-semibold mt-2">
               {phase.title}
             </h2>
 
-            <ul className="mt-4 space-y-2 text-sm">
+            <ul className="mt-5 space-y-3 text-sm">
               {phase.items.map((item, idx) => (
-                <li key={idx} className="flex gap-2 text-gray-300">
-                  <span className="text-purple-400">•</span>
-                  {item}
+                <li
+                  key={idx}
+                  className="flex gap-3 text-gray-300"
+                >
+                  <span className="text-purple-400 mt-[1px]">
+                    •
+                  </span>
+
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-5">
-              <div className="w-full bg-black/40 h-2 rounded">
+            <div className="mt-6">
+              <div className="w-full bg-black/40 h-2 rounded-full overflow-hidden">
+
                 <div
-                  className="h-2 bg-gradient-to-r from-purple-500 to-purple-400 rounded"
-                  style={{ width: `${phase.progress}%` }}
+                  className="h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                  style={{
+                    width: `${phase.progress}%`,
+                  }}
                 />
               </div>
 
-              <p className="text-xs text-right mt-1 text-gray-400">
-                {phase.progress}%
+              <p className="text-xs text-right mt-2 text-gray-400">
+                {phase.progress}% complete
               </p>
             </div>
           </div>
@@ -98,36 +213,57 @@ export default function RoadmapPage() {
       </div>
 
       {/* TIMELINE */}
-      <div className="max-w-[1400px] mx-auto px-6 mt-12 relative">
-        <div className="h-[2px] bg-gradient-to-r from-purple-500/40 via-zinc-700 to-zinc-700 w-full relative rounded">
+      <div className="max-w-[1400px] mx-auto px-6 mt-16 relative">
 
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-purple-500 rounded-full shadow-[0_0_10px_#a855f7]" />
-          <div className="absolute left-1/3 top-1/2 -translate-y-1/2 w-3 h-3 bg-zinc-500 rounded-full" />
-          <div className="absolute left-2/3 top-1/2 -translate-y-1/2 w-3 h-3 bg-zinc-500 rounded-full" />
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-zinc-500 rounded-full" />
+        <div className="h-[2px] bg-gradient-to-r from-purple-500/50 via-zinc-700 to-zinc-700 w-full relative rounded-full">
+
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 bg-purple-500 rounded-full shadow-[0_0_20px_#a855f7]" />
+
+          <div className="absolute left-1/3 top-1/2 -translate-y-1/2 w-4 h-4 bg-purple-500 rounded-full shadow-[0_0_10px_#a855f7]" />
+
+          <div className="absolute left-2/3 top-1/2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full shadow-[0_0_10px_#3b82f6]" />
+
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-zinc-500 rounded-full" />
         </div>
 
-        <p className="text-xs text-purple-400 mt-2">NOW</p>
+        <div className="flex justify-between mt-3 text-xs text-gray-500">
+          <span>Foundation</span>
+          <span>Creators</span>
+          <span className="text-blue-400">
+            Current Expansion
+          </span>
+          <span>Future Ecosystem</span>
+        </div>
       </div>
 
-      {/* SECOND ROW — FULL WIDTH FIX */}
-      <div className="max-w-[1400px] mx-auto px-6 mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+      {/* SECOND ROW */}
+      <div className="max-w-[1400px] mx-auto px-6 mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
         {roadmap.slice(4).map((phase, i) => (
           <div
             key={i}
-            className="p-4 rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-black shadow-md hover:scale-[1.02] transition"
+            className="p-5 rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-black shadow-md hover:scale-[1.02] transition duration-300"
           >
-            <p className="text-xs text-gray-400">{phase.phase}</p>
 
-            <h2 className="text-base font-semibold mt-1">
+            <p className="text-xs text-gray-500 tracking-wide">
+              {phase.phase}
+            </p>
+
+            <h2 className="text-lg font-semibold mt-2">
               {phase.title}
             </h2>
 
-            <ul className="mt-4 space-y-2 text-sm">
+            <ul className="mt-5 space-y-3 text-sm">
               {phase.items.map((item, idx) => (
-                <li key={idx} className="flex gap-2 text-gray-400">
-                  <span>○</span>
-                  {item}
+                <li
+                  key={idx}
+                  className="flex gap-3 text-gray-400"
+                >
+                  <span className="text-zinc-500">
+                    ○
+                  </span>
+
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
@@ -135,23 +271,85 @@ export default function RoadmapPage() {
         ))}
       </div>
 
+      {/* DEV NOTES */}
+      <div className="max-w-[1400px] mx-auto px-6 mt-20">
+
+        <div className="bg-gradient-to-br from-zinc-900 to-black border border-zinc-800 rounded-3xl p-8">
+
+          <p className="text-sm text-purple-400 tracking-wide mb-3">
+            DEVLOG SNAPSHOT
+          </p>
+
+          <h2 className="text-3xl font-bold">
+            Recent Platform Progress
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-6 mt-8">
+
+            <div>
+              <p className="text-white font-semibold">
+                Favorites System
+              </p>
+
+              <p className="text-gray-400 text-sm mt-2 leading-relaxed">
+                Added persistent favorites, account
+                dropdown navigation, and dedicated
+                collection pages.
+              </p>
+            </div>
+
+            <div>
+              <p className="text-white font-semibold">
+                Creator Redesign
+              </p>
+
+              <p className="text-gray-400 text-sm mt-2 leading-relaxed">
+                Upgraded creator pages with featured
+                mods, statistics, premium layouts,
+                and improved presentation.
+              </p>
+            </div>
+
+            <div>
+              <p className="text-white font-semibold">
+                Platform Identity
+              </p>
+
+              <p className="text-gray-400 text-sm mt-2 leading-relaxed">
+                About page overhaul, roadmap polish,
+                refined navigation, and stronger
+                visual consistency across the platform.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       {/* CTA */}
-      <div className="max-w-[1400px] mx-auto px-6 mt-16">
-        <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 border border-zinc-700 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl">
+      <div className="max-w-[1400px] mx-auto px-6 mt-16 pb-20">
+
+        <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 border border-zinc-700 p-8 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl">
+
           <div>
-            <p className="font-semibold">Built Together</p>
-            <p className="text-gray-400 text-sm">
-              Your feedback shapes what we build next.
+            <p className="text-xl font-semibold">
+              Built Together
+            </p>
+
+            <p className="text-gray-400 text-sm mt-2">
+              Every feature and refinement pushes
+              ModVault closer to becoming the premium
+              home for GTA mod creators.
             </p>
           </div>
 
-          <button className="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg transition">
-            Join the Journey →
+          <button className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl transition font-medium shadow-lg shadow-purple-900/30">
+            Follow Development →
           </button>
         </div>
 
-        <p className="text-center text-gray-500 text-sm mt-6">
-          💜 Thank you for being part of ModVault.
+        <p className="text-center text-gray-600 text-sm mt-8">
+          💜 Thank you for supporting the journey.
         </p>
       </div>
     </main>
