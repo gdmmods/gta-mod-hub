@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
-import ModCard from "@/components/mod/ModCard";
+import CategoryGridClient from "@/components/category/CategoryGridClient";
 
 export const dynamic = "force-dynamic";
 
@@ -107,63 +107,8 @@ export default async function CategoryPage({
 
       </div>
 
-      {/* GRID */}
-      <div className="max-w-[1600px] mx-auto px-6 py-12">
-
-        {!mods?.length ? (
-
-          <div
-            className="
-              rounded-3xl
-              border
-              border-zinc-800
-              bg-zinc-900/40
-              p-10
-              text-center
-            "
-          >
-
-            <h2 className="text-2xl font-bold">
-              No Mods Found
-            </h2>
-
-            <p className="text-zinc-500 mt-3">
-              This category is currently empty.
-            </p>
-
-          </div>
-
-        ) : (
-
-          <div
-            className="
-              grid
-              grid-cols-1
-              sm:grid-cols-2
-              md:grid-cols-3
-              xl:grid-cols-4
-              2xl:grid-cols-5
-              gap-6
-            "
-          >
-
-            {mods.map((mod) => (
-
-              <ModCard
-                key={mod.id}
-                mod={mod}
-                likes={mod.likes ?? 0}
-                downloads={mod.downloads ?? 0}
-              />
-
-            ))}
-
-          </div>
-
-        )}
-
-      </div>
-
+      <CategoryGridClient mods={mods || []} />
+      
     </main>
   );
 }
