@@ -56,7 +56,7 @@ export default function ModCard({
 
   const imageHeight =
     variant === "featured"
-      ? "h-52"
+      ? "h-[190px]"
       : variant === "compact"
       ? "h-28"
       : "h-36";
@@ -66,121 +66,155 @@ export default function ModCard({
       className="
         group
         relative
-        bg-neutral-900
-        rounded-2xl
+        h-full
+        min-h-[390px]
+        flex
+        flex-col
         overflow-hidden
+        rounded-[26px]
         border
         border-zinc-800
-        hover:border-pink-500/40
-        hover:-translate-y-1
-        hover:shadow-[0_0_25px_rgba(236,72,153,0.15)]
+        bg-gradient-to-b
+        from-zinc-900
+        to-zinc-950
         transition-all
         duration-300
+        hover:-translate-y-1.5
+        hover:border-purple-500/40
+        hover:shadow-[0_0_35px_rgba(168,85,247,0.18)]
       "
     >
 
       {/* IMAGE */}
-      <div
-        className="relative cursor-pointer overflow-hidden"
-        onClick={onOpen || undefined}
+      <Link
+        href={
+          mod.id
+            ? `/mods/${mod.id}`
+            : "#"
+        }
       >
 
-        <img
-          src={
-            mod.image ||
-            "/placeholder.jpg"
-          }
-          className={`
-            w-full
-            ${imageHeight}
-            object-cover
-            group-hover:scale-[1.03]
-            transition-transform
-            duration-500
-          `}
-          alt={mod.title}
-        />
-
-        {/* OVERLAY */}
         <div
           className="
-            absolute
-            inset-0
-            opacity-0
-            group-hover:opacity-100
-            transition
-            duration-500
-            pointer-events-none
-            bg-gradient-to-br
-            from-pink-500/5
-            via-transparent
-            to-purple-500/5
+            relative
+            overflow-hidden
+            cursor-pointer
           "
-        />
+          onClick={onOpen || undefined}
+        >
 
-        {/* VERIFIED */}
-        {mod.verified && (
+          <img
+            src={
+              mod.image ||
+              "/placeholder.jpg"
+            }
+            alt={mod.title}
+            className={`
+              w-full
+              ${imageHeight}
+              object-cover
+              transition-transform
+              duration-700
+              group-hover:scale-[1.04]
+            `}
+          />
+
+          {/* IMAGE OVERLAY */}
           <div
             className="
               absolute
-              top-3
-              right-3
-              bg-blue-600
-              text-white
-              text-[10px]
-              px-2.5
-              py-1
-              rounded-lg
-              font-medium
-              shadow-lg
+              inset-0
+              bg-gradient-to-t
+              from-black/50
+              via-transparent
+              to-black/10
+            "
+          />
+
+          {/* VERIFIED */}
+          {mod.verified && (
+            <div
+              className="
+                absolute
+                top-3
+                right-3
+                rounded-xl
+                bg-blue-600
+                px-3
+                py-1
+                text-[11px]
+                font-medium
+                text-white
+                shadow-lg
+                backdrop-blur-xl
+              "
+            >
+              ✔ Verified
+            </div>
+          )}
+
+          {/* HOVER ACTIONS */}
+          <div
+            className="
+              absolute
+              inset-0
+              flex
+              items-center
+              justify-center
+              opacity-0
+              group-hover:opacity-100
+              transition-all
+              duration-300
+              bg-black/45
+              backdrop-blur-[2px]
             "
           >
-            ✔ Verified
-          </div>
-        )}
 
-        {/* HOVER ACTIONS */}
-        <div
-          className="
-            absolute
-            inset-0
-            flex
-            items-center
-            justify-center
-            bg-black/40
-            opacity-0
-            group-hover:opacity-100
-            transition
-          "
-        >
+            <div
+              className="
+                translate-y-3
+                group-hover:translate-y-0
+                transition-transform
+                duration-300
+              "
+              onClick={(e) =>
+                e.stopPropagation()
+              }
+            >
 
-          <div
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-            <HoverActions
-              id={mod.id}
-              likes={likes}
-              source_url={
-                mod.source_url || "#"
-              }
-              onLike={
-                onLike || (() => {})
-              }
-              onDownload={
-                onDownload || (() => {})
-              }
-            />
+              <HoverActions
+                id={mod.id}
+                likes={likes}
+                source_url={
+                  mod.source_url || "#"
+                }
+                onLike={
+                  onLike || (() => {})
+                }
+                onDownload={
+                  onDownload || (() => {})
+                }
+              />
+
+            </div>
+
           </div>
 
         </div>
 
-      </div>
+      </Link>
 
       {/* CONTENT */}
-      <div className="p-4">
+      <div
+        className="
+          flex
+          flex-1
+          flex-col
+          p-5
+        "
+      >
 
+        {/* TITLE */}
         <Link
           href={
             mod.id
@@ -189,59 +223,79 @@ export default function ModCard({
           }
         >
 
-          {/* TITLE */}
           <h2
             className="
-              text-sm
-              font-semibold
+              text-[20px]
+              font-bold
+              leading-snug
               line-clamp-2
-              hover:text-purple-300
-              transition
+              text-white
+              transition-colors
+              group-hover:text-purple-300
             "
           >
             {mod.title}
           </h2>
 
-          {/* STATS */}
-          <div className="flex gap-3 text-xs mt-3">
+        </Link>
 
-            <span className="text-pink-500">
-              ❤️ {likes}
-            </span>
+        {/* STATS */}
+        <div
+          className="
+            flex
+            items-center
+            gap-4
+            mt-4
+            text-sm
+          "
+        >
 
-            <span className="text-blue-400">
-              ⬇ {downloads}
+          <span className="text-pink-500">
+            ❤️ {likes}
+          </span>
+
+          <span className="text-blue-400">
+            ⬇ {downloads}
+          </span>
+
+        </div>
+
+        {/* CATEGORY */}
+        {mod.category && (
+          <div className="mt-4">
+
+            <span
+              className="
+                inline-flex
+                items-center
+                rounded-full
+                border
+                border-zinc-700
+                bg-black/30
+                px-3
+                py-1
+                text-[11px]
+                text-zinc-400
+              "
+            >
+              {mod.category}
             </span>
 
           </div>
+        )}
 
-          {/* CATEGORY */}
-          {mod.category && (
-            <div className="mt-3">
-
-              <span
-                className="
-                  text-[10px]
-                  px-2
-                  py-1
-                  rounded-full
-                  border
-                  border-zinc-700
-                  text-zinc-400
-                  bg-black/30
-                "
-              >
-                {mod.category}
-              </span>
-
-            </div>
-          )}
-
-        </Link>
+        {/* PUSH CREATOR DOWN */}
+        <div className="flex-1" />
 
         {/* CREATORS */}
         {showCreator && (
-          <p className="text-xs text-gray-400 mt-3">
+          <div
+            className="
+              pt-5
+              text-sm
+              text-zinc-500
+            "
+          >
 
             by{" "}
 
@@ -270,7 +324,8 @@ export default function ModCard({
                       }
                       className="
                         text-purple-400
-                        hover:underline
+                        transition
+                        hover:text-purple-300
                       "
                       onClick={(e) => {
 
@@ -287,8 +342,7 @@ export default function ModCard({
                     </Link>
 
                     {i <
-                      creators.length -
-                        1 &&
+                      creators.length - 1 &&
                       " • "}
 
                   </span>
@@ -299,7 +353,7 @@ export default function ModCard({
               "Unknown"
             )}
 
-          </p>
+          </div>
         )}
 
       </div>

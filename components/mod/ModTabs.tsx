@@ -9,6 +9,7 @@ export default function ModTabs({
   const tabs = [
     {
       title: "Overview",
+      icon: "◈",
       content:
         mod.description ||
         "No description provided.",
@@ -16,21 +17,25 @@ export default function ModTabs({
 
     mod.features && {
       title: "Features",
+      icon: "✔",
       content: mod.features,
     },
 
     mod.requirements && {
       title: "Requirements",
+      icon: "⚡",
       content: mod.requirements,
     },
 
     mod.notes && {
       title: "Changelog",
+      icon: "↺",
       content: mod.notes,
     },
 
     mod.credits && {
       title: "Credits",
+      icon: "✦",
       content: mod.credits,
     },
 
@@ -42,27 +47,33 @@ export default function ModTabs({
   return (
     <div
       className="
-        mt-8
-        rounded-3xl
-        border
-        border-zinc-800
-        bg-zinc-900/50
-        backdrop-blur-xl
         overflow-hidden
+        rounded-[30px]
+        border
+        border-zinc-900
+        bg-gradient-to-b
+        from-zinc-950/90
+        to-black/60
+        backdrop-blur-2xl
       "
     >
 
-      {/* TAB NAV */}
+      {/* TOP NAV */}
       <div
         className="
+          sticky
+          top-0
+          z-10
           flex
+          items-center
           gap-2
           overflow-x-auto
-          scrollbar-hide
           border-b
-          border-zinc-800
+          border-zinc-900
+          bg-black/30
           px-4
-          pt-4
+          py-4
+          backdrop-blur-xl
         "
       >
 
@@ -72,44 +83,84 @@ export default function ModTabs({
             activeTab === i;
 
           return (
+
             <button
               key={i}
               onClick={() =>
                 setActiveTab(i)
               }
               className={`
+                group
+                relative
+                flex
+                items-center
+                gap-2
+                whitespace-nowrap
+                rounded-2xl
                 px-5
                 py-3
-                rounded-t-2xl
-                whitespace-nowrap
                 text-sm
                 transition-all
-                duration-200
+                duration-300
 
                 ${
                   active
                     ? `
-                      bg-zinc-800
-                      text-white
-                      shadow-lg
+                      bg-white
+                      text-black
+                      shadow-[0_0_25px_rgba(255,255,255,0.08)]
                     `
                     : `
-                      text-zinc-400
+                      bg-zinc-900/40
+                      text-zinc-500
+                      hover:bg-zinc-800
                       hover:text-white
-                      hover:bg-zinc-800/70
                     `
                 }
               `}
             >
-              {tab.title}
+
+              <span
+                className={`
+                  text-xs
+                  transition-opacity
+
+                  ${
+                    active
+                      ? "opacity-100"
+                      : "opacity-60 group-hover:opacity-100"
+                  }
+                `}
+              >
+                {tab.icon}
+              </span>
+
+              <span
+                className={`
+                  ${
+                    active
+                      ? "font-semibold"
+                      : "font-medium"
+                  }
+                `}
+              >
+                {tab.title}
+              </span>
+
             </button>
+
           );
         })}
 
       </div>
 
-      {/* ACTIVE CONTENT */}
-      <div className="p-8 min-h-[300px]">
+      {/* CONTENT */}
+      <div
+        className="
+          p-6
+          md:p-8
+        "
+      >
 
         <div
           key={activeTab}
@@ -120,16 +171,80 @@ export default function ModTabs({
           "
         >
 
-          <h2 className="text-3xl font-bold mb-7">
-            {tabs[activeTab].title}
-          </h2>
+          {/* HEADER */}
+          <div
+            className="
+              flex
+              items-center
+              gap-3
+              mb-6
+            "
+          >
 
-          <div className="text-zinc-300 whitespace-pre-line leading-relaxed">
+            <div
+              className="
+                flex
+                h-11
+                w-11
+                items-center
+                justify-center
+                rounded-2xl
+                border
+                border-zinc-800
+                bg-zinc-900
+                text-sm
+                text-zinc-300
+              "
+            >
+              {tabs[activeTab].icon}
+            </div>
+
+            <div>
+
+              <h2
+                className="
+                  text-2xl
+                  md:text-3xl
+                  font-bold
+                  tracking-tight
+                "
+              >
+                {tabs[activeTab].title}
+              </h2>
+
+              <p
+                className="
+                  mt-1
+                  text-sm
+                  text-zinc-500
+                "
+              >
+                Mod information and details
+              </p>
+
+            </div>
+
+          </div>
+
+          {/* CONTENT */}
+          <div
+            className="
+              text-[15px]
+              leading-8
+              text-zinc-400
+              whitespace-pre-line
+            "
+          >
 
             {tabs[activeTab].title ===
             "Features" ? (
 
-              <ul className="space-y-4">
+              <ul
+                className="
+                  grid
+                  gap-4
+                "
+              >
 
                 {tabs[
                   activeTab
@@ -141,25 +256,68 @@ export default function ModTabs({
                       feature: string,
                       i: number
                     ) => (
+
                       <li
                         key={i}
-                        className="flex gap-4"
+                        className="
+                          flex
+                          items-start
+                          gap-4
+                          rounded-2xl
+                          border
+                          border-zinc-900
+                          bg-zinc-950/70
+                          p-4
+                        "
                       >
-                        <span className="text-emerald-400">
-                          ✔
-                        </span>
 
-                        <span>
+                        <div
+                          className="
+                            mt-[2px]
+                            flex
+                            h-6
+                            w-6
+                            shrink-0
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-emerald-500/10
+                            text-xs
+                            text-emerald-400
+                          "
+                        >
+                          ✔
+                        </div>
+
+                        <span className="text-zinc-300">
                           {feature}
                         </span>
+
                       </li>
+
                     )
                   )}
 
               </ul>
 
             ) : (
-              tabs[activeTab].content
+
+              <div
+                className="
+                  rounded-3xl
+                  border
+                  border-zinc-900
+                  bg-zinc-950/50
+                  p-6
+                "
+              >
+
+                <div className="space-y-5">
+                  {tabs[activeTab].content}
+                </div>
+
+              </div>
+
             )}
 
           </div>

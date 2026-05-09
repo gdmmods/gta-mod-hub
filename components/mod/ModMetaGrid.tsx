@@ -1,38 +1,101 @@
-import MetaItem from "./MetaItem";
-
 export default function ModMetaGrid({
   mod,
   creators,
   images,
 }: any) {
+
+  const items = [
+    {
+      label: "Category",
+      value:
+        mod.category ||
+        "Vehicle",
+    },
+
+    {
+      label: "Status",
+      value:
+        mod.verified
+          ? "Verified"
+          : "Community",
+    },
+
+    {
+      label: "Media",
+      value: `${
+        images.length + 1
+      } Images`,
+    },
+
+    {
+      label: "Creators",
+      value: `${creators.length}`,
+    },
+
+  ];
+
   return (
-    <div className="mt-8 grid grid-cols-2 gap-4">
+    <div
+      className="
+        mt-5
+        rounded-2xl
+        border
+        border-zinc-900
+        bg-black/20
+        overflow-hidden
+      "
+    >
 
-      <MetaItem
-        label="Category"
-        value={
-          mod.category || "Vehicle"
-        }
-      />
+      {items.map(
+        (item, index) => (
 
-      <MetaItem
-        label="Status"
-        value={
-          mod.verified
-            ? "Verified"
-            : "Community"
-        }
-      />
+          <div
+            key={item.label}
+            className={`
+              flex
+              items-center
+              justify-between
+              gap-4
+              px-4
+              py-3
 
-      <MetaItem
-        label="Media"
-        value={`${images.length + 1} Images`}
-      />
+              ${
+                index !==
+                items.length - 1
+                  ? "border-b border-zinc-900"
+                  : ""
+              }
+            `}
+          >
 
-      <MetaItem
-        label="Creators"
-        value={`${creators.length}`}
-      />
+            {/* LABEL */}
+            <div
+              className="
+                text-[11px]
+                uppercase
+                tracking-[0.18em]
+                text-zinc-500
+              "
+            >
+              {item.label}
+            </div>
+
+            {/* VALUE */}
+            <div
+              className="
+                text-sm
+                font-medium
+                text-white
+                text-right
+              "
+            >
+              {item.value}
+            </div>
+
+          </div>
+
+        )
+      )}
 
     </div>
   );
