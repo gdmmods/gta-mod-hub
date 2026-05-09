@@ -3,7 +3,7 @@
 import UserMenu from "./UserMenu";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import ModCard from "./ModCard";
+import ModCard from "./mod/ModCard";
 import { getCreators } from "@/lib/getCreators";
 
 type Creator = {
@@ -150,23 +150,21 @@ export default function ModsGridClient({ mods }: { mods: Mod[] }) {
 
   /* ---------------- modal values ---------------- */
   const selectedLikes =
-    selectedMod
-      ? likesMap[selectedMod.id] !== undefined
-        ? likesMap[selectedMod.id]
-        : selectedMod.likes || 0
-      : 0;
+  selectedMod
+    ? likesMap[selectedMod.id] !== undefined
+      ? likesMap[selectedMod.id]
+      : selectedMod.likes || 0
+    : 0;
 
-  const selectedDownloads =
-    selectedMod
-      ? downloadsMap[selectedMod.id] !== undefined
-        ? downloadsMap[selectedMod.id]
-        : selectedMod.downloads || 0
-      : 0;
+const selectedDownloads =
+  selectedMod
+    ? downloadsMap[selectedMod.id] !== undefined
+      ? downloadsMap[selectedMod.id]
+      : selectedMod.downloads || 0
+    : 0;
 
-<UserMenu />
-
-  return (
-    <>
+return (
+  <>
       {/* GRID */}
       <div className="max-w-6xl mx-auto px-6 mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
         {mods

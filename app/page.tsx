@@ -4,6 +4,7 @@ import UserMenu from "@/components/UserMenu";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ModsGridClient from "@/components/ModsGridClient";
+import CategoryHub from "@/components/CategoryHub";
 
 
 export default async function Home(props: {
@@ -151,6 +152,8 @@ export default async function Home(props: {
           curated and easy to explore.
         </p>
       </div>
+
+      <CategoryHub />
 
       {/* FEATURED */}
       {featured && (

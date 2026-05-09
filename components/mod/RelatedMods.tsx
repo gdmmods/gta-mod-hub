@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import ModCard from "./ModCard";
 
 type RelatedModsProps = {
   mods: any[];
@@ -41,130 +43,13 @@ export default function RelatedMods({
 
         {mods.map((mod) => (
 
-          <Link
-            key={mod.id}
-            href={`/mods/${mod.id}`}
-            className="
-              group
-              rounded-3xl
-              overflow-hidden
-              border
-              border-zinc-800
-              bg-zinc-900/60
-              backdrop-blur-xl
-              transition-all
-              duration-300
-              hover:border-zinc-700
-              hover:-translate-y-1
-            "
-          >
-
-            {/* IMAGE */}
-            <div className="relative overflow-hidden">
-
-              <img
-                src={mod.image}
-                alt={mod.title}
-                className="
-                  w-full
-                  h-52
-                  object-cover
-                  transition-transform
-                  duration-500
-                  group-hover:scale-[1.03]
-                "
-              />
-
-              {/* OVERLAY */}
-              <div
-                className="
-                  absolute
-                  inset-0
-                  bg-gradient-to-t
-                  from-black/70
-                  via-transparent
-                  to-transparent
-                "
-              />
-
-              {/* VERIFIED */}
-              {mod.verified && (
-                <div
-                  className="
-                    absolute
-                    top-4
-                    right-4
-                    bg-blue-600
-                    text-white
-                    text-xs
-                    px-3
-                    py-1.5
-                    rounded-xl
-                    font-medium
-                  "
-                >
-                  ✔ Verified
-                </div>
-              )}
-
-            </div>
-
-            {/* CONTENT */}
-            <div className="p-5">
-
-              <h3
-                className="
-                  text-xl
-                  font-semibold
-                  line-clamp-1
-                  group-hover:text-purple-300
-                  transition
-                "
-              >
-                {mod.title}
-              </h3>
-
-              <p className="text-zinc-500 text-sm mt-2">
-                {mod.category || "Mod"}
-              </p>
-
-              <div className="flex gap-3 flex-wrap mt-5">
-
-                <div
-                  className="
-                    px-3
-                    py-1.5
-                    rounded-xl
-                    border
-                    border-zinc-800
-                    bg-black/30
-                    text-xs
-                    text-zinc-300
-                  "
-                >
-                  ⬇ {mod.downloads ?? 0}
-                </div>
-
-                <div
-                  className="
-                    px-3
-                    py-1.5
-                    rounded-xl
-                    border
-                    border-zinc-800
-                    bg-black/30
-                    text-xs
-                    text-zinc-300
-                  "
-                >
-                  ❤️ {mod.likes ?? 0}
-                </div>
-
-              </div>
-
-            </div>
-
-          </Link>
+          <ModCard
+  key={mod.id}
+  mod={mod}
+  likes={mod.likes ?? 0}
+  downloads={mod.downloads ?? 0}
+  variant="featured"
+/>
 
         ))}
 
