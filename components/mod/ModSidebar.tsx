@@ -4,74 +4,76 @@ import DownloadButton from "@/components/DownloadButton";
 import LikeButton from "@/components/LikeButton";
 import FavoriteModButton from "@/components/FavoriteModButton";
 
-import ModMetaGrid from "./ModMetaGrid";
-
 export default function ModSidebar({
   mod,
   creators,
   favoritesCount,
-  images,
 }: any) {
 
   return (
     <div
       className="
-        overflow-hidden
+        flex
+        flex-col
+        justify-between
         rounded-[30px]
         border
         border-zinc-900
-        bg-gradient-to-b
-        from-zinc-950/95
-        to-black/80
+        bg-zinc-950/85
         backdrop-blur-2xl
+        p-5
+        min-h-[620px]
+        h-full
       "
     >
 
-      {/* TOP STRIP */}
-      <div
-        className="
-          border-b
-          border-zinc-900
-          bg-gradient-to-r
-          from-purple-500/5
-          via-transparent
-          to-pink-500/5
-          px-5
-          py-3
-        "
-      >
+      {/* TOP CONTENT */}
+      <div>
 
+        {/* HEADER */}
         <div
           className="
             flex
-            items-center
+            items-start
             justify-between
             gap-3
           "
         >
 
-          <div
-            className="
-              flex
-              items-center
-              gap-2
-              text-[11px]
-              uppercase
-              tracking-[0.25em]
-              text-zinc-500
-            "
-          >
+          <div className="min-w-0">
 
             <div
               className="
-                h-2
-                w-2
-                rounded-full
-                bg-emerald-400
+                flex
+                items-center
+                gap-2
+                text-[11px]
+                uppercase
+                tracking-[0.3em]
+                text-zinc-500
+                mb-4
               "
-            />
+            >
 
-            Active Mod
+              <div className="w-2 h-2 rounded-full bg-emerald-400" />
+
+              Active Mod
+
+            </div>
+
+            <h1
+              className="
+  text-[25px]
+  md:text-[20px]
+  xl:text-[32px]
+  font-black
+  leading-[0.95]
+  tracking-[-0.03em]
+  break-words
+"
+            >
+              {mod.title}
+            </h1>
 
           </div>
 
@@ -79,13 +81,14 @@ export default function ModSidebar({
 
             <div
               className="
+                shrink-0
+                px-3
+                py-1.5
                 rounded-xl
                 bg-blue-600
-                px-3
-                py-1
-                text-[11px]
-                font-medium
                 text-white
+                text-xs
+                font-medium
               "
             >
               ✔ Verified
@@ -95,83 +98,58 @@ export default function ModSidebar({
 
         </div>
 
-      </div>
+        {/* CREATORS */}
+        <div
+          className="
+            mt-5
+            text-sm
+            text-zinc-500
+          "
+        >
 
-      {/* CONTENT */}
-      <div className="p-5">
+          by{" "}
 
-        {/* TITLE */}
-        <div>
+          {creators.length ? (
+            creators.map(
+              (
+                creator: any,
+                i: number
+              ) => (
 
-          <h1
-            className="
-              text-3xl
-              xl:text-[38px]
-              font-black
-              leading-[0.95]
-              tracking-tight
-              text-white
-            "
-          >
-            {mod.title}
-          </h1>
+                <span key={creator.id}>
 
-          {/* CREATORS */}
-          <div
-            className="
-              mt-4
-              text-sm
-              text-zinc-500
-            "
-          >
+                  <Link
+                    href={`/creator/${creator.id}`}
+                    className="
+                      text-purple-400
+                      hover:text-purple-300
+                      transition
+                    "
+                  >
+                    {creator.name}
+                  </Link>
 
-            by{" "}
+                  {i <
+                    creators.length - 1 &&
+                    " • "}
 
-            {creators.length ? (
+                </span>
 
-              creators.map(
-                (
-                  creator: any,
-                  i: number
-                ) => (
-
-                  <span key={creator.id}>
-
-                    <Link
-                      href={`/creator/${creator.id}`}
-                      className="
-                        text-purple-400
-                        transition
-                        hover:text-purple-300
-                      "
-                    >
-                      {creator.name}
-                    </Link>
-
-                    {i <
-                      creators.length - 1 &&
-                      " • "}
-
-                  </span>
-
-                )
               )
-
-            ) : (
-              "Unknown"
-            )}
-
-          </div>
+            )
+          ) : (
+            "Unknown"
+          )}
 
         </div>
 
         {/* STATS */}
         <div
           className="
-            mt-6
             grid
             grid-cols-3
             gap-3
+            mt-7
           "
         >
 
@@ -179,26 +157,30 @@ export default function ModSidebar({
             className="
               rounded-2xl
               border
-              border-zinc-800
+              border-zinc-900
               bg-black/40
-              p-3
+              p-4
             "
           >
 
-            <div className="text-xs text-zinc-500">
-              Downloads
-            </div>
-
-            <div
+            <p
               className="
-                mt-1
-                text-lg
+                text-xs
+                text-zinc-500
+              "
+            >
+              Downloads
+            </p>
+
+            <p
+              className="
+                text-3xl
                 font-bold
-                text-white
+                mt-2
               "
             >
               {mod.downloads ?? 0}
-            </div>
+            </p>
 
           </div>
 
@@ -206,26 +188,31 @@ export default function ModSidebar({
             className="
               rounded-2xl
               border
-              border-zinc-800
+              border-zinc-900
               bg-black/40
-              p-3
+              p-4
             "
           >
 
-            <div className="text-xs text-zinc-500">
-              Likes
-            </div>
-
-            <div
+            <p
               className="
-                mt-1
-                text-lg
+                text-xs
+                text-zinc-500
+              "
+            >
+              Likes
+            </p>
+
+            <p
+              className="
+                text-3xl
                 font-bold
-                text-pink-400
+                mt-2
+                text-pink-500
               "
             >
               {mod.likes ?? 0}
-            </div>
+            </p>
 
           </div>
 
@@ -233,98 +220,82 @@ export default function ModSidebar({
             className="
               rounded-2xl
               border
-              border-zinc-800
+              border-zinc-900
               bg-black/40
-              p-3
+              p-4
             "
           >
 
-            <div className="text-xs text-zinc-500">
-              Favorites
-            </div>
-
-            <div
+            <p
               className="
-                mt-1
-                text-lg
+                text-xs
+                text-zinc-500
+              "
+            >
+              Favorites
+            </p>
+
+            <p
+              className="
+                text-3xl
                 font-bold
-                text-white
+                mt-2
               "
             >
               {favoritesCount}
-            </div>
+            </p>
 
           </div>
 
         </div>
 
-        {/* META */}
-        <div className="mt-6">
+      </div>
 
-          <ModMetaGrid
-            mod={mod}
-            creators={creators}
-            images={images}
-          />
+      {/* ACTIONS */}
+      <div className="mt-8 space-y-3">
 
-        </div>
+        <DownloadButton
+          url={mod.source_url}
+          id={mod.id}
+        />
 
-        {/* ACTIONS */}
-        <div className="mt-6 space-y-3">
+        <div className="grid grid-cols-2 gap-3">
 
-          <DownloadButton
-            url={mod.source_url}
+          <LikeButton
             id={mod.id}
+            initialLikes={mod.likes ?? 0}
           />
 
-          <div
-            className="
-              grid
-              grid-cols-2
-              gap-3
-            "
-          >
-
-            <LikeButton
-              id={mod.id}
-              initialLikes={mod.likes ?? 0}
-            />
-
-            <FavoriteModButton
-              modId={mod.id}
-              initialCount={
-                favoritesCount
-              }
-            />
-
-          </div>
-
-          <a
-            href={mod.source_url}
-            target="_blank"
-            className="
-              flex
-              w-full
-              items-center
-              justify-center
-              rounded-2xl
-              border
-              border-zinc-800
-              bg-zinc-900/80
-              py-3
-              text-sm
-              text-zinc-300
-              transition-all
-              duration-300
-              hover:border-zinc-700
-              hover:bg-zinc-800
-              hover:text-white
-            "
-          >
-            Visit Source
-          </a>
+          <FavoriteModButton
+            modId={mod.id}
+            initialCount={
+              favoritesCount
+            }
+          />
 
         </div>
+
+        <a
+          href={mod.source_url}
+          target="_blank"
+          className="
+            w-full
+            flex
+            justify-center
+            items-center
+            rounded-2xl
+            border
+            border-zinc-800
+            bg-zinc-900
+            hover:bg-zinc-800
+            transition
+            py-3
+            text-sm
+            text-zinc-300
+          "
+        >
+          Visit Source
+        </a>
 
       </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ModTabs({
   mod,
@@ -44,6 +44,35 @@ export default function ModTabs({
   const [activeTab, setActiveTab] =
     useState(0);
 
+  const [isSticky, setIsSticky] =
+    useState(false);
+
+  /* ---------------------------------
+     STICKY DETECTION
+  --------------------------------- */
+  useEffect(() => {
+
+    const handleScroll = () => {
+
+      setIsSticky(
+        window.scrollY > 620
+      );
+
+    };
+
+    window.addEventListener(
+      "scroll",
+      handleScroll
+    );
+
+    return () =>
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+
+  }, []);
+
   return (
     <div
       className="
@@ -60,21 +89,34 @@ export default function ModTabs({
 
       {/* TOP NAV */}
       <div
-        className="
-          sticky
-          top-0
-          z-10
+        className={`
+          z-20
           flex
           items-center
           gap-2
           overflow-x-auto
           border-b
           border-zinc-900
-          bg-black/30
           px-4
           py-4
-          backdrop-blur-xl
-        "
+          transition-all
+          duration-300
+
+          ${
+            isSticky
+              ? `
+                sticky
+                top-0
+                bg-black/90
+                backdrop-blur-2xl
+                shadow-[0_10px_40px_rgba(0,0,0,0.6)]
+              `
+              : `
+                bg-black/30
+                backdrop-blur-xl
+              `
+          }
+        `}
       >
 
         {tabs.map((tab, i) => {

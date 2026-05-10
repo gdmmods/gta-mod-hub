@@ -1,101 +1,57 @@
+import MetaItem from "./MetaItem";
+
 export default function ModMetaGrid({
   mod,
-  creators,
-  images,
+  creators = [],
+  images = [],
 }: any) {
 
-  const items = [
-    {
-      label: "Category",
-      value:
-        mod.category ||
-        "Vehicle",
-    },
-
-    {
-      label: "Status",
-      value:
-        mod.verified
-          ? "Verified"
-          : "Community",
-    },
-
-    {
-      label: "Media",
-      value: `${
-        images.length + 1
-      } Images`,
-    },
-
-    {
-      label: "Creators",
-      value: `${creators.length}`,
-    },
-
-  ];
+  const mediaCount =
+    Array.isArray(images)
+      ? images.length + 1
+      : 1;
 
   return (
     <div
       className="
-        mt-5
-        rounded-2xl
+        rounded-[28px]
         border
         border-zinc-900
-        bg-black/20
+        bg-zinc-950/70
+        backdrop-blur-xl
         overflow-hidden
       "
     >
 
-      {items.map(
-        (item, index) => (
+      <div className="divide-y divide-zinc-900">
 
-          <div
-            key={item.label}
-            className={`
-              flex
-              items-center
-              justify-between
-              gap-4
-              px-4
-              py-3
+        <MetaItem
+          label="Category"
+          value={
+            mod.category || "Vehicle"
+          }
+        />
 
-              ${
-                index !==
-                items.length - 1
-                  ? "border-b border-zinc-900"
-                  : ""
-              }
-            `}
-          >
+        <MetaItem
+          label="Status"
+          value={
+            mod.verified
+              ? "Verified"
+              : "Community"
+          }
+        />
 
-            {/* LABEL */}
-            <div
-              className="
-                text-[11px]
-                uppercase
-                tracking-[0.18em]
-                text-zinc-500
-              "
-            >
-              {item.label}
-            </div>
+        <MetaItem
+          label="Media"
+          value={`${mediaCount} Images`}
+        />
 
-            {/* VALUE */}
-            <div
-              className="
-                text-sm
-                font-medium
-                text-white
-                text-right
-              "
-            >
-              {item.value}
-            </div>
+        <MetaItem
+          label="Creators"
+          value={`${creators.length}`}
+        />
 
-          </div>
-
-        )
-      )}
+      </div>
 
     </div>
   );
