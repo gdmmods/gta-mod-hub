@@ -56,10 +56,10 @@ export default function ModCard({
 
   const imageHeight =
     variant === "featured"
-      ? "h-[190px]"
+      ? "h-[260px]"
       : variant === "compact"
-      ? "h-28"
-      : "h-36";
+      ? "h-32"
+      : "h-[220px]";
 
   return (
     <div
@@ -67,23 +67,52 @@ export default function ModCard({
         group
         relative
         h-full
-        min-h-[390px]
+        min-h-[460px]
         flex
         flex-col
         overflow-hidden
-        rounded-[26px]
+        rounded-[32px]
         border
-        border-zinc-800
+        border-zinc-900
         bg-gradient-to-b
-        from-zinc-900
-        to-zinc-950
+        from-[#0d0d0f]
+        via-black
+        to-black
         transition-all
-        duration-300
-        hover:-translate-y-1.5
-        hover:border-purple-500/40
-        hover:shadow-[0_0_35px_rgba(168,85,247,0.18)]
+        duration-500
+        hover:-translate-y-2
+        hover:border-purple-500/30
+        hover:shadow-[0_0_60px_rgba(168,85,247,0.18)]
       "
     >
+
+      {/* BACK GLOW */}
+      <div
+        className="
+          absolute
+          inset-0
+          opacity-0
+          group-hover:opacity-100
+          transition-opacity
+          duration-500
+          pointer-events-none
+        "
+      >
+
+        <div
+          className="
+            absolute
+            -top-24
+            left-1/2
+            -translate-x-1/2
+            w-[300px]
+            h-[200px]
+            bg-purple-500/10
+            blur-[80px]
+          "
+        />
+
+      </div>
 
       {/* IMAGE */}
       <Link
@@ -115,45 +144,83 @@ export default function ModCard({
               object-cover
               transition-transform
               duration-700
-              group-hover:scale-[1.04]
+              group-hover:scale-[1.06]
             `}
           />
 
-          {/* IMAGE OVERLAY */}
+          {/* OVERLAY */}
           <div
             className="
               absolute
               inset-0
               bg-gradient-to-t
-              from-black/50
-              via-transparent
-              to-black/10
+              from-black
+              via-black/10
+              to-transparent
             "
           />
 
-          {/* VERIFIED */}
-          {mod.verified && (
-            <div
-              className="
-                absolute
-                top-3
-                right-3
-                rounded-xl
-                bg-blue-600
-                px-3
-                py-1
-                text-[11px]
-                font-medium
-                text-white
-                shadow-lg
-                backdrop-blur-xl
-              "
-            >
-              ✔ Verified
-            </div>
-          )}
+          {/* TOP BAR */}
+          <div
+            className="
+              absolute
+              top-4
+              left-4
+              right-4
+              flex
+              items-center
+              justify-between
+            "
+          >
 
-          {/* HOVER ACTIONS */}
+            {/* CATEGORY */}
+            {mod.category ? (
+              <div
+                className="
+                  rounded-full
+                  border
+                  border-white/10
+                  bg-black/50
+                  backdrop-blur-xl
+                  px-3
+                  py-1
+                  text-[10px]
+                  uppercase
+                  tracking-[0.18em]
+                  text-zinc-300
+                "
+              >
+                {mod.category}
+              </div>
+            ) : (
+              <div />
+            )}
+
+            {/* VERIFIED */}
+            {mod.verified && (
+              <div
+                className="
+                  rounded-full
+                  border
+                  border-cyan-400/20
+                  bg-cyan-500/10
+                  backdrop-blur-xl
+                  px-3
+                  py-1
+                  text-[10px]
+                  font-medium
+                  uppercase
+                  tracking-[0.16em]
+                  text-cyan-300
+                "
+              >
+                Verified
+              </div>
+            )}
+
+          </div>
+
+          {/* CENTER ACTIONS */}
           <div
             className="
               absolute
@@ -165,14 +232,14 @@ export default function ModCard({
               group-hover:opacity-100
               transition-all
               duration-300
-              bg-black/45
+              bg-black/40
               backdrop-blur-[2px]
             "
           >
 
             <div
               className="
-                translate-y-3
+                translate-y-5
                 group-hover:translate-y-0
                 transition-transform
                 duration-300
@@ -200,6 +267,20 @@ export default function ModCard({
 
           </div>
 
+          {/* BOTTOM FADE */}
+          <div
+            className="
+              absolute
+              bottom-0
+              left-0
+              right-0
+              h-32
+              bg-gradient-to-t
+              from-black
+              to-transparent
+            "
+          />
+
         </div>
 
       </Link>
@@ -207,10 +288,13 @@ export default function ModCard({
       {/* CONTENT */}
       <div
         className="
+          relative
           flex
           flex-1
           flex-col
-          p-5
+          px-5
+          pb-5
+          pt-4
         "
       >
 
@@ -225,12 +309,13 @@ export default function ModCard({
 
           <h2
             className="
-              text-[20px]
+              text-[24px]
               font-bold
-              leading-snug
+              leading-tight
               line-clamp-2
               text-white
               transition-colors
+              duration-300
               group-hover:text-purple-300
             "
           >
@@ -239,119 +324,163 @@ export default function ModCard({
 
         </Link>
 
+        {/* SUBTEXT */}
+        <p
+          className="
+            mt-3
+            text-sm
+            leading-relaxed
+            text-zinc-500
+            line-clamp-2
+          "
+        >
+          Premium GTA V modification built
+          for immersive gameplay, enhanced
+          visuals and optimized performance.
+        </p>
+
         {/* STATS */}
         <div
           className="
+            mt-5
             flex
             items-center
-            gap-4
-            mt-4
-            text-sm
+            gap-3
+            flex-wrap
           "
         >
 
-          <span className="text-pink-500">
+          <div
+            className="
+              rounded-2xl
+              border
+              border-zinc-800
+              bg-zinc-950
+              px-3
+              py-2
+              text-sm
+              text-pink-400
+            "
+          >
             ❤️ {likes}
-          </span>
+          </div>
 
-          <span className="text-blue-400">
+          <div
+            className="
+              rounded-2xl
+              border
+              border-zinc-800
+              bg-zinc-950
+              px-3
+              py-2
+              text-sm
+              text-blue-400
+            "
+          >
             ⬇ {downloads}
-          </span>
+          </div>
 
         </div>
 
-        {/* CATEGORY */}
-        {mod.category && (
-          <div className="mt-4">
-
-            <span
-              className="
-                inline-flex
-                items-center
-                rounded-full
-                border
-                border-zinc-700
-                bg-black/30
-                px-3
-                py-1
-                text-[11px]
-                text-zinc-400
-              "
-            >
-              {mod.category}
-            </span>
-
-          </div>
-        )}
-
-        {/* PUSH CREATOR DOWN */}
+        {/* PUSH DOWN */}
         <div className="flex-1" />
 
-        {/* CREATORS */}
+        {/* CREATOR */}
         {showCreator && (
           <div
             className="
+              mt-6
               pt-5
-              text-sm
-              text-zinc-500
+              border-t
+              border-zinc-900
             "
           >
 
-            by{" "}
+            <div
+              className="
+                text-[11px]
+                uppercase
+                tracking-[0.18em]
+                text-zinc-600
+                mb-2
+              "
+            >
+              Creator
+            </div>
 
-            {creators.length > 0 ? (
+            <div
+              className="
+                flex
+                flex-wrap
+                items-center
+                gap-2
+                text-sm
+              "
+            >
 
-              creators.map((c, i) => {
+              {creators.length > 0 ? (
 
-                const isLegacy =
-                  c.id.startsWith(
-                    "legacy-"
-                  );
+                creators.map((c, i) => {
 
-                return (
-                  <span
-                    key={
-                      c.id ||
-                      `${c.name}-${i}`
-                    }
-                  >
+                  const isLegacy =
+                    c.id.startsWith(
+                      "legacy-"
+                    );
 
-                    <Link
-                      href={
-                        isLegacy
-                          ? "#"
-                          : `/creator/${c.id}`
+                  return (
+                    <span
+                      key={
+                        c.id ||
+                        `${c.name}-${i}`
                       }
-                      className="
-                        text-purple-400
-                        transition
-                        hover:text-purple-300
-                      "
-                      onClick={(e) => {
-
-                        if (isLegacy) {
-                          e.preventDefault();
-                        }
-
-                        e.stopPropagation();
-
-                      }}
                     >
-                      {c.name ||
-                        "Unknown"}
-                    </Link>
 
-                    {i <
-                      creators.length - 1 &&
-                      " • "}
+                      <Link
+                        href={
+                          isLegacy
+                            ? "#"
+                            : `/creator/${c.id}`
+                        }
+                        className="
+                          text-purple-400
+                          transition
+                          hover:text-purple-300
+                        "
+                        onClick={(e) => {
 
-                  </span>
-                );
-              })
+                          if (isLegacy) {
+                            e.preventDefault();
+                          }
 
-            ) : (
-              "Unknown"
-            )}
+                          e.stopPropagation();
+
+                        }}
+                      >
+                        {c.name ||
+                          "Unknown"}
+                      </Link>
+
+                      {i <
+                        creators.length - 1 &&
+                        (
+                          <span className="text-zinc-700 mx-2">
+                            •
+                          </span>
+                        )}
+
+                    </span>
+                  );
+                })
+
+              ) : (
+
+                <span className="text-zinc-500">
+                  Unknown
+                </span>
+
+              )}
+
+            </div>
 
           </div>
         )}

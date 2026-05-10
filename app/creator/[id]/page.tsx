@@ -9,47 +9,95 @@ export default async function CreatorPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id: creatorId } = await params;
 
-  if (!creatorId || creatorId.startsWith("legacy-")) {
-    return <div className="text-white p-10">Invalid creator</div>;
+  const { id: creatorId } =
+    await params;
+
+  if (
+    !creatorId ||
+    creatorId.startsWith(
+      "legacy-"
+    )
+  ) {
+
+    return (
+      <div className="text-white p-10">
+        Invalid creator
+      </div>
+    );
+
   }
 
   /* -----------------------------
      FETCH CREATOR
   ----------------------------- */
-  const { data: creator, error: creatorError } = await supabase
+  const {
+    data: creator,
+    error: creatorError,
+  } = await supabase
     .from("creators")
-    .select("id, name, avatar, bio, banner")
+    .select(`
+      id,
+      name,
+      avatar,
+      bio,
+      banner,
+      tagline,
+      location,
+      specialization,
+      socials,
+      verified,
+      status
+    `)
     .eq("id", creatorId)
     .maybeSingle();
 
-  if (creatorError || !creator) {
-    console.error("CREATOR ERROR:", creatorError);
+  if (
+    creatorError ||
+    !creator
+  ) {
+
+    console.error(
+      "CREATOR ERROR:",
+      creatorError
+    );
 
     return (
       <div className="text-white p-10">
         Creator not found
       </div>
     );
+
   }
 
   /* -----------------------------
      FETCH RELATIONS
   ----------------------------- */
-  const { data: relations, error: relationError } =
-    await supabase
-      .from("mod_creators")
-      .select("mod_id")
-      .eq("creator_id", creatorId);
+  const {
+    data: relations,
+    error: relationError,
+  } = await supabase
+    .from("mod_creators")
+    .select("mod_id")
+    .eq(
+      "creator_id",
+      creatorId
+    );
 
   if (relationError) {
-    console.error("RELATION ERROR:", relationError);
+
+    console.error(
+      "RELATION ERROR:",
+      relationError
+    );
+
   }
 
   const modIds =
     relations
-      ?.map((r) => r.mod_id)
+      ?.map(
+        (r) => r.mod_id
+      )
       .filter(Boolean) || [];
 
   /* -----------------------------
@@ -58,7 +106,11 @@ export default async function CreatorPage({
   let modsData: any[] = [];
 
   if (modIds.length > 0) {
-    const { data, error } = await supabase
+
+    const {
+      data,
+      error,
+    } = await supabase
       .from("mods")
       .select(`
         id,
@@ -69,6 +121,7 @@ export default async function CreatorPage({
         likes,
         downloads,
         source_url,
+        tags,
         mod_creators (
           creators (
             id,
@@ -79,40 +132,69 @@ export default async function CreatorPage({
       .in("id", modIds);
 
     if (error) {
-      console.error("MOD FETCH ERROR:", error);
+
+      console.error(
+        "MOD FETCH ERROR:",
+        error
+      );
+
     }
 
-    modsData = data || [];
+    modsData =
+      data || [];
+
   }
 
   /* -----------------------------
      NORMALIZE MODS
   ----------------------------- */
   const mods =
-    modsData.map((m: any) => ({
-      id: m.id,
-      title: m.title ?? "Untitled",
-      image: m.image ?? "/placeholder.jpg",
-      category: m.category ?? null,
-      description: m.description ?? "",
-      likes: m.likes ?? 0,
-      downloads: m.downloads ?? 0,
-      source_url: m.source_url ?? "#",
-      mod_creators: m.mod_creators ?? [],
-    })) || [];
+    modsData.map(
+      (m: any) => ({
+        id: m.id,
+        title:
+          m.title ??
+          "Untitled",
+        image:
+          m.image ??
+          "/placeholder.jpg",
+        category:
+          m.category ??
+          null,
+        description:
+          m.description ??
+          "",
+        likes:
+          m.likes ?? 0,
+        downloads:
+          m.downloads ?? 0,
+        source_url:
+          m.source_url ??
+          "#",
+        tags:
+          m.tags ?? [],
+        mod_creators:
+          m.mod_creators ?? [],
+      })
+    ) || [];
 
   /* -----------------------------
      STATS
   ----------------------------- */
-  const totalLikes = mods.reduce(
-    (s, m) => s + (m.likes || 0),
-    0
-  );
+  const totalLikes =
+    mods.reduce(
+      (s, m) =>
+        s + (m.likes || 0),
+      0
+    );
 
-  const totalDownloads = mods.reduce(
-    (s, m) => s + (m.downloads || 0),
-    0
-  );
+  const totalDownloads =
+    mods.reduce(
+      (s, m) =>
+        s +
+        (m.downloads || 0),
+      0
+    );
 
   /* -----------------------------
      FEATURED MOD
@@ -120,7 +202,9 @@ export default async function CreatorPage({
   const featured =
     mods.length > 0
       ? [...mods].sort(
-          (a, b) => b.downloads - a.downloads
+          (a, b) =>
+            b.downloads -
+            a.downloads
         )[0]
       : null;
 
@@ -130,150 +214,638 @@ export default async function CreatorPage({
     "/placeholder.jpg";
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main
+      className="
+        min-h-screen
+        bg-black
+        text-white
+        overflow-hidden
+      "
+    >
 
-      {/* NAVBAR */}
-      <div className="px-10 py-6 border-b border-zinc-800 flex justify-between items-center">
+      {/* BACKGROUND */}
+      <div
+        className="
+          absolute
+          inset-0
+          pointer-events-none
+          overflow-hidden
+        "
+      >
 
-        <Link
-          href="/"
-          className="text-xl font-bold"
-        >
-          ModVault
-        </Link>
-
-        {/* EDIT BUTTON */}
-        <Link
-          href={`/creator/edit/${creator.id}`}
-          className="text-sm text-gray-400 hover:text-white transition"
-        >
-          Edit profile
-        </Link>
-      </div>
-
-      {/* BANNER */}
-      <div className="relative h-64 w-full overflow-hidden">
-
-        <img
-          src={bannerImage}
-          className="w-full h-full object-cover"
-          alt={creator.name}
+        <div
+          className="
+            absolute
+            top-0
+            left-1/2
+            -translate-x-1/2
+            w-[1000px]
+            h-[500px]
+            bg-purple-600/10
+            blur-[180px]
+          "
         />
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
       </div>
 
-      {/* PROFILE HEADER */}
-      <div className="max-w-6xl mx-auto px-6 -mt-20 relative z-10">
+      {/* NAV */}
+      <div
+        className="
+          relative
+          z-20
+          border-b
+          border-zinc-900
+          backdrop-blur-xl
+          bg-black/50
+        "
+      >
 
-        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 shadow-2xl">
+        <div
+          className="
+            max-w-[1500px]
+            mx-auto
+            px-6
+            py-5
+            flex
+            justify-between
+            items-center
+          "
+        >
 
-          <div className="flex flex-col md:flex-row md:items-end gap-6">
+          <Link
+            href="/"
+            className="
+              text-2xl
+              font-black
+              tracking-tight
+            "
+          >
+            <span className="text-purple-500">
+              M
+            </span>{" "}
+            ModVault
+          </Link>
 
-            {/* AVATAR */}
-            <img
-              src={
-                creator.avatar ||
-                "https://placehold.co/100x100?text=👤"
-              }
-              className="w-28 h-28 rounded-2xl object-cover border border-white/10 shadow-xl"
-              alt={creator.name}
-            />
+          <Link
+            href={`/creator/edit/${creator.id}`}
+            className="
+              rounded-2xl
+              border
+              border-zinc-800
+              bg-zinc-950
+              hover:bg-zinc-900
+              transition
+              px-5
+              py-2.5
+              text-sm
+              text-zinc-300
+            "
+          >
+            Edit Profile
+          </Link>
 
-            <div className="flex-1">
-
-              {/* NAME + BADGE */}
-              <div className="flex items-center gap-3 flex-wrap">
-
-                <h1 className="text-4xl font-bold">
-                  {creator.name}
-                </h1>
-
-                <span className="bg-purple-500/20 text-purple-300 text-xs px-3 py-1 rounded-full border border-purple-500/30">
-                  Creator
-                </span>
-
-              </div>
-
-              {/* BIO */}
-              <p className="mt-3 text-gray-300 max-w-2xl leading-relaxed">
-                {creator.bio || "No bio yet."}
-              </p>
-
-              {/* STATS */}
-              <div className="mt-5 flex gap-6 text-sm flex-wrap">
-
-                <span className="text-white/90">
-                  {mods.length} mods
-                </span>
-
-                <span className="text-pink-400">
-                  ❤️ {totalLikes}
-                </span>
-
-                <span className="text-blue-400">
-                  ⬇ {totalDownloads}
-                </span>
-
-              </div>
-            </div>
-          </div>
         </div>
+
       </div>
+
+      {/* HERO */}
+      <section className="relative">
+
+        {/* BANNER */}
+        <div
+          className="
+            relative
+            h-[420px]
+            overflow-hidden
+          "
+        >
+
+          <img
+            src={bannerImage}
+            alt={creator.name}
+            className="
+              w-full
+              h-full
+              object-cover
+              opacity-70
+            "
+          />
+
+          <div
+            className="
+              absolute
+              inset-0
+              bg-gradient-to-b
+              from-black/30
+              via-black/50
+              to-black
+            "
+          />
+
+        </div>
+
+        {/* PROFILE */}
+        <div
+          className="
+            relative
+            z-10
+            max-w-[1450px]
+            mx-auto
+            px-6
+            -mt-32
+          "
+        >
+
+          <div
+            className="
+              rounded-[36px]
+              border
+              border-zinc-800
+              bg-zinc-950/70
+              backdrop-blur-2xl
+              overflow-hidden
+              shadow-[0_0_60px_rgba(168,85,247,0.08)]
+            "
+          >
+
+            <div className="p-8">
+
+              <div
+                className="
+                  flex
+                  flex-col
+                  xl:flex-row
+                  gap-8
+                "
+              >
+
+                {/* LEFT */}
+                <div
+                  className="
+                    flex
+                    flex-col
+                    items-start
+                  "
+                >
+
+                  <img
+                    src={
+                      creator.avatar ||
+                      "https://placehold.co/200x200?text=👤"
+                    }
+                    alt={creator.name}
+                    className="
+                      w-36
+                      h-36
+                      rounded-[32px]
+                      object-cover
+                      border
+                      border-zinc-800
+                      shadow-2xl
+                    "
+                  />
+
+                  <button
+                    className="
+                      mt-5
+                      w-full
+                      rounded-2xl
+                      bg-gradient-to-r
+                      from-purple-600
+                      to-purple-500
+                      py-3
+                      font-medium
+                      shadow-lg
+                      hover:opacity-90
+                      transition
+                    "
+                  >
+                    Follow Creator
+                  </button>
+
+                </div>
+
+                {/* RIGHT */}
+                <div className="flex-1">
+
+                  {/* TOP */}
+                  <div
+                    className="
+                      flex
+                      flex-wrap
+                      items-center
+                      gap-3
+                    "
+                  >
+
+                    <h1
+                      className="
+                        text-5xl
+                        md:text-6xl
+                        font-black
+                        tracking-tight
+                        leading-none
+                      "
+                    >
+                      {creator.name}
+                    </h1>
+
+                    {creator.verified && (
+
+                      <div
+                        className="
+                          px-3
+                          py-1.5
+                          rounded-xl
+                          bg-blue-500/20
+                          border
+                          border-blue-500/30
+                          text-sm
+                          text-blue-300
+                        "
+                      >
+                        ✔ Verified
+                      </div>
+
+                    )}
+
+                    {creator.status && (
+
+                      <div
+                        className="
+                          px-3
+                          py-1.5
+                          rounded-xl
+                          bg-emerald-500/10
+                          border
+                          border-emerald-500/20
+                          text-sm
+                          text-emerald-300
+                        "
+                      >
+                        {creator.status}
+                      </div>
+
+                    )}
+
+                  </div>
+
+                  {/* TAGLINE */}
+                  {creator.tagline && (
+
+                    <p
+                      className="
+                        mt-5
+                        text-xl
+                        text-purple-300
+                      "
+                    >
+                      {creator.tagline}
+                    </p>
+
+                  )}
+
+                  {/* BIO */}
+                  <p
+                    className="
+                      mt-6
+                      max-w-4xl
+                      text-zinc-400
+                      leading-relaxed
+                      text-lg
+                    "
+                  >
+                    {creator.bio ||
+                      "No creator biography added yet."}
+                  </p>
+
+                  {/* SPECIALIZATION */}
+                  {creator.specialization?.length > 0 && (
+
+                    <div
+                      className="
+                        mt-6
+                        flex
+                        flex-wrap
+                        gap-3
+                      "
+                    >
+
+                      {creator.specialization.map(
+                        (
+                          item: string
+                        ) => (
+
+                          <div
+                            key={item}
+                            className="
+                              rounded-2xl
+                              border
+                              border-purple-500/20
+                              bg-purple-500/10
+                              px-4
+                              py-2
+                              text-sm
+                              text-purple-300
+                            "
+                          >
+                            {item}
+                          </div>
+
+                        )
+                      )}
+
+                    </div>
+
+                  )}
+
+                  {/* STATS */}
+                  <div
+                    className="
+                      grid
+                      grid-cols-2
+                      md:grid-cols-4
+                      gap-4
+                      mt-8
+                    "
+                  >
+
+                    {[
+                      [
+                        "Mods",
+                        mods.length,
+                      ],
+                      [
+                        "Likes",
+                        totalLikes,
+                      ],
+                      [
+                        "Downloads",
+                        totalDownloads,
+                      ],
+                      [
+                        "Location",
+                        creator.location ||
+                          "Unknown",
+                      ],
+                    ].map(
+                      ([label, value]) => (
+
+                        <div
+                          key={label}
+                          className="
+                            rounded-3xl
+                            border
+                            border-zinc-900
+                            bg-black/30
+                            p-5
+                          "
+                        >
+
+                          <p
+                            className="
+                              text-sm
+                              text-zinc-500
+                            "
+                          >
+                            {label}
+                          </p>
+
+                          <p
+                            className="
+                              text-2xl
+                              font-bold
+                              mt-2
+                            "
+                          >
+                            {value}
+                          </p>
+
+                        </div>
+
+                      )
+                    )}
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
 
       {/* FEATURED MOD */}
       {featured && (
-        <div className="max-w-6xl mx-auto px-6 mt-12">
 
-          <h2 className="text-lg font-semibold mb-3 text-white/90">
-            ⭐ Featured Mod
-          </h2>
+        <section
+          className="
+            max-w-[1450px]
+            mx-auto
+            px-6
+            mt-14
+          "
+        >
 
-          <Link href={`/mods/${featured.id}`}>
+          <div
+            className="
+              flex
+              items-center
+              justify-between
+              mb-6
+            "
+          >
 
-            <div className="relative rounded-2xl overflow-hidden group cursor-pointer border border-zinc-800 hover:border-zinc-700 transition">
+            <div>
+
+              <p
+                className="
+                  text-sm
+                  uppercase
+                  tracking-[0.2em]
+                  text-purple-400
+                "
+              >
+                Highlight
+              </p>
+
+              <h2
+                className="
+                  text-3xl
+                  font-bold
+                  mt-2
+                "
+              >
+                Featured Creation
+              </h2>
+
+            </div>
+
+          </div>
+
+          <Link
+            href={`/mods/${featured.id}`}
+          >
+
+            <div
+              className="
+                relative
+                rounded-[36px]
+                overflow-hidden
+                border
+                border-zinc-800
+                group
+              "
+            >
 
               <img
                 src={featured.image}
-                className="w-full h-64 object-cover group-hover:scale-[1.04] transition duration-500"
                 alt={featured.title}
+                className="
+                  w-full
+                  h-[420px]
+                  object-cover
+                  group-hover:scale-[1.03]
+                  transition
+                  duration-700
+                "
               />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+              <div
+                className="
+                  absolute
+                  inset-0
+                  bg-gradient-to-t
+                  from-black
+                  via-black/40
+                  to-transparent
+                "
+              />
 
-              <div className="absolute bottom-0 p-5">
+              <div
+                className="
+                  absolute
+                  bottom-0
+                  left-0
+                  p-8
+                "
+              >
 
-                <div className="text-2xl font-bold">
+                <h3
+                  className="
+                    text-4xl
+                    font-black
+                  "
+                >
                   {featured.title}
-                </div>
+                </h3>
 
-                <div className="text-sm text-gray-300 flex gap-4 mt-1">
+                <div
+                  className="
+                    flex
+                    gap-5
+                    mt-3
+                    text-zinc-300
+                  "
+                >
 
                   <span>
-                    ⬇ {featured.downloads}
+                    ⬇{" "}
+                    {featured.downloads}
                   </span>
 
                   <span>
-                    ❤️ {featured.likes}
+                    ❤️{" "}
+                    {featured.likes}
                   </span>
 
                 </div>
+
               </div>
+
             </div>
+
           </Link>
-        </div>
+
+        </section>
+
       )}
 
-      {/* GRID */}
-      {mods.length > 0 ? (
-        <div className="mt-6">
+      {/* MOD GRID */}
+      <section
+        className="
+          max-w-[1450px]
+          mx-auto
+          px-6
+          mt-14
+          pb-20
+        "
+      >
+
+        <div
+          className="
+            flex
+            items-center
+            justify-between
+            mb-8
+          "
+        >
+
+          <div>
+
+            <p
+              className="
+                text-sm
+                uppercase
+                tracking-[0.2em]
+                text-zinc-500
+              "
+            >
+              Collection
+            </p>
+
+            <h2
+              className="
+                text-4xl
+                font-black
+                mt-2
+              "
+            >
+              Creator Mods
+            </h2>
+
+          </div>
+
+        </div>
+
+        {mods.length > 0 ? (
+
           <ModsGridClient mods={mods} />
-        </div>
-      ) : (
-        <div className="text-center text-gray-500 mt-20">
-          No mods yet.
-        </div>
-      )}
+
+        ) : (
+
+          <div
+            className="
+              rounded-[30px]
+              border
+              border-zinc-900
+              bg-zinc-950/50
+              py-24
+              text-center
+              text-zinc-500
+            "
+          >
+            No mods published yet.
+          </div>
+
+        )}
+
+      </section>
 
     </main>
   );
