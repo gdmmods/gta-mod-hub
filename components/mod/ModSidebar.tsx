@@ -255,9 +255,9 @@ export default function ModSidebar({
       <div className="mt-8 space-y-3">
 
         <DownloadButton
-          url={mod.source_url}
-          id={mod.id}
-        />
+           url={mod.download_url || mod.source_url}
+            id={mod.id}
+          />
 
         <div className="grid grid-cols-2 gap-3">
 
