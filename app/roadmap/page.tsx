@@ -475,23 +475,46 @@ export default function RoadmapPage() {
                   >
 
                     <div
-                      className="
-                        w-5
-                        h-5
-                        rounded-full
-                        border
-                        border-zinc-600
-                        flex
-                        items-center
-                        justify-center
-                        text-[10px]
-                        mt-[1px]
-                      "
-                    >
-                      ✓
-                    </div>
+  className="
+    relative
+    w-5
+    h-5
+    rounded-full
+    border
+    border-purple-500/40
+    bg-purple-500/10
+    flex
+    items-center
+    justify-center
+    mt-[1px]
+    shadow-[0_0_14px_rgba(168,85,247,0.35)]
+  "
+>
 
-                    <span>{item}</span>
+  <div
+    className="
+      absolute
+      inset-0
+      rounded-full
+      bg-purple-500/10
+      blur-[6px]
+    "
+  />
+
+  <span
+    className="
+      relative
+      z-10
+      text-[10px]
+      text-purple-300
+    "
+  >
+    ✓
+  </span>
+
+</div>
+
+                    <span>{item.text}</span>
 
                   </div>
 
@@ -503,29 +526,36 @@ export default function RoadmapPage() {
               <div className="mt-8">
 
                 <div
-                  className="
-                    w-full
-                    h-2
-                    rounded-full
-                    bg-black/40
-                    overflow-hidden
-                  "
-                >
+  className="
+    relative
+    w-full
+    h-2.5
+    rounded-full
+    bg-black/50
+    overflow-hidden
+    border
+    border-white/5
+  "
+>
 
-                  <div
-                    className="
-                      h-full
-                      rounded-full
-                      bg-gradient-to-r
-                      from-purple-500
-                      to-cyan-400
-                    "
-                    style={{
-                      width: `${phase.progress}%`,
-                    }}
-                  />
+  <div
+    className="
+      absolute
+      inset-y-0
+      left-0
+      rounded-full
+      bg-gradient-to-r
+      from-purple-500
+      via-fuchsia-500
+      to-cyan-400
+      shadow-[0_0_18px_rgba(168,85,247,0.45)]
+    "
+    style={{
+      width: `${phase.progress}%`,
+    }}
+  />
 
-                </div>
+</div>
 
                 <div
                   className="
@@ -793,7 +823,62 @@ export default function RoadmapPage() {
               >
 
                 <span className="text-cyan-400">
-                  ✓
+                  <div
+  className={`
+    relative
+    w-5
+    h-5
+    rounded-full
+    border
+    flex
+    items-center
+    justify-center
+    mt-[1px]
+
+    ${
+      item.done
+        ? `
+          border-purple-500/40
+          bg-purple-500/10
+          shadow-[0_0_14px_rgba(168,85,247,0.35)]
+        `
+        : `
+          border-zinc-700
+          bg-zinc-900/40
+        `
+    }
+  `}
+>
+
+  {item.done && (
+    <div
+      className="
+        absolute
+        inset-0
+        rounded-full
+        bg-purple-500/10
+        blur-[6px]
+      "
+    />
+  )}
+
+  <span
+    className={`
+      relative
+      z-10
+      text-[10px]
+
+      ${
+        item.done
+          ? "text-purple-300"
+          : "text-zinc-600"
+      }
+    `}
+  >
+    {item.done ? "✓" : "○"}
+  </span>
+
+</div>
                 </span>
 
                 <span className="text-zinc-300">
@@ -984,38 +1069,55 @@ export default function RoadmapPage() {
 
                 {phase.items.map((item, idx) => (
 
-                  <div
-                    key={idx}
-                    className="
-                      flex
-                      items-start
-                      gap-3
-                      text-sm
-                      text-zinc-400
-                    "
-                  >
+  <div
+    key={idx}
+    className={`
+      flex
+      items-start
+      gap-3
+      text-sm
 
-                    <div
-                      className="
-                        w-5
-                        h-5
-                        rounded-full
-                        border
-                        border-zinc-700
-                        flex
-                        items-center
-                        justify-center
-                        text-[10px]
-                      "
-                    >
-                      ○
-                    </div>
+      ${
+        item.done
+          ? "text-zinc-300"
+          : "text-zinc-500"
+      }
+    `}
+  >
 
-                    <span>{item}</span>
+    <div
+      className={`
+        w-5
+        h-5
+        rounded-full
+        border
+        flex
+        items-center
+        justify-center
+        text-[10px]
 
-                  </div>
+        ${
+          item.done
+            ? `
+              border-purple-500/40
+              bg-purple-500/10
+              text-purple-300
+            `
+            : `
+              border-zinc-700
+              text-zinc-600
+            `
+        }
+      `}
+    >
+      {item.done ? "✓" : "○"}
+    </div>
 
-                ))}
+    <span>{item.text}</span>
+
+  </div>
+
+))}
 
               </div>
 

@@ -1,122 +1,222 @@
-"use client";
+export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import CreatorEditForm from "@/components/creator/CreatorEditForm";
 
-export default function EditCreatorPage() {
-  const params = useParams();
-  const router = useRouter();
-  const id = params.id as string;
+export default async function EditCreatorPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
 
-  const [name, setName] = useState("");
-  const [bio, setBio] = useState("");
-  const [avatar, setAvatar] = useState("");
-  const [banner, setBanner] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { id } =
+    await params;
 
-  /* -----------------------------
-     FETCH CREATOR
-  ----------------------------- */
-  useEffect(() => {
-    const load = async () => {
-      const { data, error } = await supabase
-        .from("creators")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
+  const {
+    data: creator,
+    error,
+  } = await supabase
+    .from("creators")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
 
-      if (error) {
-        console.error("LOAD ERROR:", error);
-      }
+  if (error || !creator) {
 
-      if (data) {
-        setName(data.name || "");
-        setBio(data.bio || "");
-        setAvatar(data.avatar || "");
-        setBanner(data.banner || "");
-      }
+    console.error(
+      "LOAD ERROR:",
+      error
+    );
 
-      setLoading(false);
-    };
+    return (
+      <main
+        className="
+          min-h-screen
+          bg-black
+          text-white
+          flex
+          items-center
+          justify-center
+        "
+      >
+        Creator not found.
+      </main>
+    );
 
-    if (id) load();
-  }, [id]);
-
-  /* -----------------------------
-     SAVE
-  ----------------------------- */
-  const handleSave = async () => {
-    setSaving(true);
-
-    const { error } = await supabase
-      .from("creators")
-      .update({
-        name,
-        bio,
-        avatar,
-        banner,
-      })
-      .eq("id", id);
-
-    if (error) {
-      console.error("SAVE ERROR:", error);
-      alert("Error saving");
-      setSaving(false);
-      return;
-    }
-
-    // 🔥 force fresh data reload
-    router.push(`/creator/${id}`);
-    router.refresh();
-  };
-
-  if (loading) {
-    return <div className="text-white p-10">Loading...</div>;
   }
 
   return (
-    <main className="min-h-screen bg-black text-white p-10 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Edit Creator</h1>
 
-      <div className="space-y-4">
-        <input
-          className="w-full p-3 bg-neutral-900 rounded"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+    <main
+      className="
+        min-h-screen
+        bg-black
+        text-white
+        overflow-hidden
+      "
+    >
+
+      {/* BACKGROUND */}
+      <div
+        className="
+          fixed
+          inset-0
+          pointer-events-none
+          overflow-hidden
+        "
+      >
+
+        <div
+          className="
+            absolute
+            top-0
+            left-1/2
+            -translate-x-1/2
+            w-[1000px]
+            h-[500px]
+            bg-purple-600/10
+            blur-[180px]
+          "
         />
 
-        <textarea
-          className="w-full p-3 bg-neutral-900 rounded"
-          placeholder="Bio"
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-        />
-
-        <input
-          className="w-full p-3 bg-neutral-900 rounded"
-          placeholder="Avatar URL"
-          value={avatar}
-          onChange={(e) => setAvatar(e.target.value)}
-        />
-
-        <input
-          className="w-full p-3 bg-neutral-900 rounded"
-          placeholder="Banner URL"
-          value={banner}
-          onChange={(e) => setBanner(e.target.value)}
-        />
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="bg-white text-black px-5 py-2 rounded-lg disabled:opacity-50"
-        >
-          {saving ? "Saving..." : "Save"}
-        </button>
       </div>
+
+      {/* NAV */}
+      <div
+        className="
+          relative
+          z-20
+          border-b
+          border-zinc-900
+          backdrop-blur-xl
+          bg-black/50
+        "
+      >
+
+        <div
+          className="
+            max-w-[1400px]
+            mx-auto
+            px-6
+            py-5
+            flex
+            items-center
+            justify-between
+          "
+        >
+
+          <Link
+            href="/"
+            className="
+              text-2xl
+              font-black
+              tracking-tight
+            "
+          >
+            <span className="text-purple-500">
+              M
+            </span>{" "}
+            ModVault
+          </Link>
+
+          <Link
+            href={`/creator/${creator.id}`}
+            className="
+              rounded-2xl
+              border
+              border-zinc-800
+              bg-zinc-950
+              px-5
+              py-2.5
+              text-sm
+              text-zinc-300
+              transition
+              hover:bg-zinc-900
+            "
+          >
+            View Profile
+          </Link>
+
+        </div>
+
+      </div>
+
+      {/* CONTENT */}
+      <section
+        className="
+          relative
+          z-10
+          max-w-[1100px]
+          mx-auto
+          px-6
+          py-14
+        "
+      >
+
+        {/* HEADER */}
+        <div className="mb-10">
+
+          <p
+            className="
+              text-sm
+              uppercase
+              tracking-[0.25em]
+              text-purple-400
+            "
+          >
+            Creator Studio
+          </p>
+
+          <h1
+            className="
+              mt-3
+              text-5xl
+              font-black
+              tracking-tight
+            "
+          >
+            Edit Creator Profile
+          </h1>
+
+          <p
+            className="
+              mt-4
+              max-w-2xl
+              text-zinc-500
+              text-lg
+            "
+          >
+            Manage creator branding,
+            socials, profile details,
+            specialization tags,
+            and public presence.
+          </p>
+
+        </div>
+
+        {/* PANEL */}
+        <div
+          className="
+            rounded-[36px]
+            border
+            border-zinc-800
+            bg-zinc-950/70
+            backdrop-blur-2xl
+            p-8
+            shadow-[0_0_60px_rgba(168,85,247,0.08)]
+          "
+        >
+
+          <CreatorEditForm
+            creator={creator}
+          />
+
+        </div>
+
+      </section>
+
     </main>
+
   );
 }

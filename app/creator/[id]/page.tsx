@@ -213,6 +213,11 @@ export default async function CreatorPage({
     featured?.image ||
     "/placeholder.jpg";
 
+  const socials =
+  typeof creator.socials === "string"
+    ? JSON.parse(creator.socials)
+    : creator.socials || {};
+
   return (
     <main
       className="
@@ -520,55 +525,170 @@ export default async function CreatorPage({
                   </p>
 
                   {/* SPECIALIZATION */}
-                  {creator.specialization?.length > 0 && (
+{creator.specialization?.length > 0 && (
 
-                    <div
-                      className="
-                        mt-6
-                        flex
-                        flex-wrap
-                        gap-3
-                      "
-                    >
+  <div
+    className="
+      mt-6
+      flex
+      flex-wrap
+      gap-3
+    "
+  >
 
-                      {creator.specialization.map(
-                        (
-                          item: string
-                        ) => (
+    {creator.specialization.map(
+      (
+        item: string
+      ) => (
 
-                          <div
-                            key={item}
-                            className="
-                              rounded-2xl
-                              border
-                              border-purple-500/20
-                              bg-purple-500/10
-                              px-4
-                              py-2
-                              text-sm
-                              text-purple-300
-                            "
-                          >
-                            {item}
-                          </div>
+        <div
+          key={item}
+          className="
+            rounded-2xl
+            border
+            border-purple-500/20
+            bg-purple-500/10
+            px-4
+            py-2
+            text-sm
+            text-purple-300
+          "
+        >
+          {item}
+        </div>
 
-                        )
-                      )}
+      )
+    )}
 
-                    </div>
+  </div>
 
-                  )}
+)}
 
-                  {/* STATS */}
-                  <div
-                    className="
-                      grid
-                      grid-cols-2
-                      md:grid-cols-4
-                      gap-4
-                      mt-8
-                    "
-                  >
+{/* SOCIALS */}
+{Object.keys(socials).length > 0 && (
+
+  <div
+    className="
+      mt-6
+      flex
+      flex-wrap
+      gap-3
+    "
+  >
+
+    {socials.website && (
+
+      <a
+        href={socials.website}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="
+          rounded-2xl
+          border
+          border-zinc-800
+          bg-black/30
+          px-4
+          py-2
+          text-sm
+          text-zinc-300
+          hover:border-purple-500/30
+          hover:text-white
+          transition
+        "
+      >
+        🌐 Website
+      </a>
+
+    )}
+
+    {socials.discord && (
+
+      <a
+        href={socials.discord}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="
+          rounded-2xl
+          border
+          border-zinc-800
+          bg-black/30
+          px-4
+          py-2
+          text-sm
+          text-zinc-300
+          hover:border-purple-500/30
+          hover:text-white
+          transition
+        "
+      >
+        💬 Discord
+      </a>
+
+    )}
+
+    {socials.youtube && (
+
+      <a
+        href={socials.youtube}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="
+          rounded-2xl
+          border
+          border-zinc-800
+          bg-black/30
+          px-4
+          py-2
+          text-sm
+          text-zinc-300
+          hover:border-purple-500/30
+          hover:text-white
+          transition
+        "
+      >
+        ▶ YouTube
+      </a>
+
+    )}
+
+    {socials.instagram && (
+
+      <a
+        href={socials.instagram}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="
+          rounded-2xl
+          border
+          border-zinc-800
+          bg-black/30
+          px-4
+          py-2
+          text-sm
+          text-zinc-300
+          hover:border-purple-500/30
+          hover:text-white
+          transition
+        "
+      >
+        ✕ Instagram
+      </a>
+
+    )}
+
+  </div>
+
+)}
+
+<div
+  className="
+    grid
+    grid-cols-2
+    md:grid-cols-4
+    gap-4
+    mt-8
+  "
+>
 
                     {[
                       [
@@ -639,6 +759,335 @@ export default async function CreatorPage({
         </div>
 
       </section>
+
+{/* CREATOR ACTIVITY */}
+<section
+  className="
+    max-w-[1450px]
+    mx-auto
+    px-6
+    mt-14
+  "
+>
+
+  <div
+    className="
+      grid
+      grid-cols-1
+      xl:grid-cols-[1.2fr_0.8fr]
+      gap-6
+    "
+  >
+
+    {/* DEVLOG */}
+    <div
+      className="
+        rounded-[34px]
+        border
+        border-zinc-800
+        bg-zinc-950/60
+        backdrop-blur-xl
+        p-7
+      "
+    >
+
+      <div
+        className="
+          flex
+          items-center
+          justify-between
+          mb-8
+        "
+      >
+
+        <div>
+
+          <p
+            className="
+              text-sm
+              uppercase
+              tracking-[0.2em]
+              text-purple-400
+            "
+          >
+            Development
+          </p>
+
+          <h2
+            className="
+              text-3xl
+              font-black
+              mt-2
+            "
+          >
+            Creator Activity
+          </h2>
+
+        </div>
+
+        <div
+          className="
+            rounded-2xl
+            border
+            border-emerald-500/20
+            bg-emerald-500/10
+            px-4
+            py-2
+            text-sm
+            text-emerald-300
+          "
+        >
+          Active
+        </div>
+
+      </div>
+
+      <div className="space-y-5">
+
+        {[
+          {
+            title:
+              "New cinematic screenshots uploaded",
+            date:
+              "2 days ago",
+          },
+          {
+            title:
+              "Physics overhaul in progress",
+            date:
+              "5 days ago",
+          },
+          {
+            title:
+              "Optimization pass for next update",
+            date:
+              "1 week ago",
+          },
+        ].map((item) => (
+
+          <div
+            key={item.title}
+            className="
+              rounded-3xl
+              border
+              border-zinc-900
+              bg-black/30
+              p-5
+            "
+          >
+
+            <div
+              className="
+                flex
+                items-start
+                gap-4
+              "
+            >
+
+              <div
+                className="
+                  mt-1
+                  w-3
+                  h-3
+                  rounded-full
+                  bg-purple-500
+                  shadow-[0_0_15px_rgba(168,85,247,0.8)]
+                "
+              />
+
+              <div className="flex-1">
+
+                <h3
+                  className="
+                    text-lg
+                    font-semibold
+                  "
+                >
+                  {item.title}
+                </h3>
+
+                <p
+                  className="
+                    text-sm
+                    text-zinc-500
+                    mt-2
+                  "
+                >
+                  {item.date}
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    </div>
+
+    {/* PROGRESS */}
+    <div
+      className="
+  rounded-[34px]
+  border
+  border-purple-500/10
+  bg-gradient-to-b
+  from-purple-500/5
+  to-zinc-950/70
+  backdrop-blur-xl
+  p-6
+  h-fit
+"
+    >
+
+      <p
+        className="
+          text-sm
+          uppercase
+          tracking-[0.2em]
+          text-purple-400
+        "
+      >
+        Progress
+      </p>
+
+      <h2
+        className="
+          text-3xl
+          font-black
+          mt-2
+        "
+      >
+        Current Focus
+      </h2>
+
+      <div className="mt-6 space-y-5">
+
+        {[
+          [
+            "Vehicle Optimization",
+            "82%",
+          ],
+          [
+            "Interior Rework",
+            "65%",
+          ],
+          [
+            "LOD Improvements",
+            "91%",
+          ],
+          [
+            "Sound Design",
+            "40%",
+          ],
+        ].map(
+          ([label, value]) => (
+
+            <div key={label}>
+
+              <div
+                className="
+                  flex
+                  justify-between
+                  mb-3
+                  text-sm
+                "
+              >
+
+                <span className="text-zinc-300">
+                  {label}
+                </span>
+
+                <span className="text-zinc-500">
+                  {value}
+                </span>
+
+              </div>
+
+              <div
+                className="
+                  h-2
+                  rounded-full
+                  bg-black/40
+                  overflow-hidden
+                "
+              >
+
+                <div
+                  className="
+                    h-full
+                    rounded-full
+                    bg-gradient-to-r
+                    from-purple-500
+                    to-pink-500
+                  "
+                  style={{
+                    width: value,
+                  }}
+                />
+
+              </div>
+
+            </div>
+
+          )
+        )}
+
+      </div>
+
+      <div
+        className="
+          mt-7
+          rounded-3xl
+          border
+          border-zinc-900
+          bg-black/30
+          p-5
+        "
+      >
+
+        <p
+          className="
+            text-sm
+            text-zinc-500
+          "
+        >
+          Next Planned Release
+        </p>
+
+        <h3
+          className="
+            text-xl
+            font-bold
+            mt-2
+          "
+        >
+          Ultra Realistic Vehicle Pack V2
+        </h3>
+
+        <p
+          className="
+            text-sm
+            text-zinc-400
+            mt-3
+            leading-relaxed
+          "
+        >
+          Massive visual overhaul with
+          improved interiors, optimized
+          handling and cinematic tuning.
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
 
       {/* FEATURED MOD */}
       {featured && (
