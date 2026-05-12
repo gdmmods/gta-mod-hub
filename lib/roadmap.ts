@@ -6,6 +6,8 @@ export const roadmap = [
 
     status: "complete",
 
+    progress: 100,
+
     items: [
       {
         text: "Mod pages & gallery",
@@ -40,6 +42,8 @@ export const roadmap = [
     title: "Core Engagement",
 
     status: "in-progress",
+
+    progress: 20,
 
     items: [
       {
@@ -76,6 +80,8 @@ export const roadmap = [
 
     status: "planned",
 
+    progress: 0,
+
     items: [
       {
         text: "Curated badge",
@@ -105,6 +111,8 @@ export const roadmap = [
     title: "Identity Layer",
 
     status: "in-progress",
+
+    progress: 40,
 
     items: [
       {
@@ -141,6 +149,8 @@ export const roadmap = [
 
     status: "planned",
 
+    progress: 0,
+
     items: [
       {
         text: "Upload mod (creator-linked)",
@@ -170,6 +180,8 @@ export const roadmap = [
     title: "Social Layer",
 
     status: "planned",
+
+    progress: 0,
 
     items: [
       {
@@ -201,6 +213,8 @@ export const roadmap = [
 
     status: "planned",
 
+    progress: 25,
+
     items: [
       {
         text: "Curated badge",
@@ -231,6 +245,8 @@ export const roadmap = [
 
     status: "planned",
 
+    progress: 0,
+
     items: [
       {
         text: "Photographer role",
@@ -260,6 +276,8 @@ export const roadmap = [
     title: "Automation / AI",
 
     status: "planned",
+
+    progress: 0,
 
     items: [
       {

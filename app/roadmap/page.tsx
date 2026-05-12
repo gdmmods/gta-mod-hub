@@ -465,51 +465,73 @@ export default function RoadmapPage() {
 
                   <div
                     key={idx}
-                    className="
-                      flex
-                      items-start
-                      gap-3
-                      text-sm
-                      text-zinc-300
-                    "
+                    className={`
+  flex
+  items-start
+  gap-3
+  text-sm
+
+  ${
+    item.done
+      ? "text-zinc-300"
+      : "text-zinc-500"
+  }
+`}
                   >
 
                     <div
-  className="
+  className={`
     relative
     w-5
     h-5
     rounded-full
     border
-    border-purple-500/40
-    bg-purple-500/10
     flex
     items-center
     justify-center
     mt-[1px]
-    shadow-[0_0_14px_rgba(168,85,247,0.35)]
-  "
+
+    ${
+      item.done
+        ? `
+          border-purple-500/40
+          bg-purple-500/10
+          shadow-[0_0_14px_rgba(168,85,247,0.35)]
+        `
+        : `
+          border-zinc-700
+          bg-zinc-900/40
+        `
+    }
+  `}
 >
 
-  <div
-    className="
-      absolute
-      inset-0
-      rounded-full
-      bg-purple-500/10
-      blur-[6px]
-    "
-  />
+  {item.done && (
+    <div
+      className="
+        absolute
+        inset-0
+        rounded-full
+        bg-purple-500/10
+        blur-[6px]
+      "
+    />
+  )}
 
   <span
-    className="
+    className={`
       relative
       z-10
       text-[10px]
-      text-purple-300
-    "
+
+      ${
+        item.done
+          ? "text-purple-300"
+          : "text-zinc-600"
+      }
+    `}
   >
-    ✓
+    {item.done ? "✓" : "○"}
   </span>
 
 </div>
@@ -818,74 +840,19 @@ export default function RoadmapPage() {
             ].map((item) => (
 
               <div
-                key={item}
-                className="flex gap-3"
-              >
-
-                <span className="text-cyan-400">
-                  <div
-  className={`
-    relative
-    w-5
-    h-5
-    rounded-full
-    border
-    flex
-    items-center
-    justify-center
-    mt-[1px]
-
-    ${
-      item.done
-        ? `
-          border-purple-500/40
-          bg-purple-500/10
-          shadow-[0_0_14px_rgba(168,85,247,0.35)]
-        `
-        : `
-          border-zinc-700
-          bg-zinc-900/40
-        `
-    }
-  `}
+  key={item}
+  className="flex gap-3"
 >
 
-  {item.done && (
-    <div
-      className="
-        absolute
-        inset-0
-        rounded-full
-        bg-purple-500/10
-        blur-[6px]
-      "
-    />
-  )}
+  <span className="text-cyan-400">
+    ✓
+  </span>
 
-  <span
-    className={`
-      relative
-      z-10
-      text-[10px]
-
-      ${
-        item.done
-          ? "text-purple-300"
-          : "text-zinc-600"
-      }
-    `}
-  >
-    {item.done ? "✓" : "○"}
+  <span className="text-zinc-300">
+    {item}
   </span>
 
 </div>
-                </span>
-
-                <span className="text-zinc-300">
-                  {item}
-                </span>
-
-              </div>
 
             ))}
 
