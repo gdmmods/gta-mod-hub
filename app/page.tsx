@@ -1,11 +1,18 @@
 export const dynamic = "force-dynamic";
 
-import UserMenu from "@/components/UserMenu";
-import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+
+import Navbar from "@/components/layout/Navbar";
+
+import Hero from "@/components/home/Hero";
+import FeaturedMods from "@/components/home/FeaturedMods";
+import SortBar from "@/components/home/SortBar";
+import PlatformStats from "@/components/home/PlatformStats";
+import CTASection from "@/components/home/CTASection";
+import RoadmapPreview from "@/components/home/RoadmapPreview";
+
 import ModsGridClient from "@/components/ModsGridClient";
 import CategoryHub from "@/components/CategoryHub";
-
 
 export default async function Home(props: {
   searchParams?: Promise<{ sort?: string }>;
@@ -38,20 +45,29 @@ export default async function Home(props: {
      SORTING
   ----------------------------- */
   if (sort === "likes") {
-    query = query.order("likes", { ascending: false });
+    query = query.order("likes", {
+      ascending: false,
+    });
   } else if (sort === "downloads") {
-    query = query.order("downloads", { ascending: false });
+    query = query.order("downloads", {
+      ascending: false,
+    });
   } else {
-    query = query.order("created_at", { ascending: false });
+    query = query.order("created_at", {
+      ascending: false,
+    });
   }
 
   const { data, error } = await query;
 
   if (error) {
-    console.error("SUPABASE ERROR:", JSON.stringify(error, null, 2));
+    console.error(
+      "SUPABASE ERROR:",
+      JSON.stringify(error, null, 2)
+    );
 
     return (
-      <div className="text-white p-10">
+      <div className="p-10 text-white">
         Error loading mods
       </div>
     );
@@ -63,13 +79,27 @@ export default async function Home(props: {
   const mods =
     data?.map((m: any) => ({
       id: m.id,
-      title: m.title ?? "Untitled",
-      image: m.image ?? "/placeholder.jpg",
-      category: m.category ?? null,
-      description: m.description ?? "",
-      likes: m.likes ?? 0,
-      downloads: m.downloads ?? 0,
-      source_url: m.source_url ?? "#",
+
+      title:
+        m.title ?? "Untitled",
+
+      image:
+        m.image ?? "/placeholder.jpg",
+
+      category:
+        m.category ?? null,
+
+      description:
+        m.description ?? "",
+
+      likes:
+        m.likes ?? 0,
+
+      downloads:
+        m.downloads ?? 0,
+
+      source_url:
+        m.source_url ?? "#",
 
       favorites:
         m.favorites?.[0]?.count || 0,
@@ -78,155 +108,61 @@ export default async function Home(props: {
         m.mod_creators ?? [],
     })) || [];
 
+  /* -----------------------------
+     FEATURED
+  ----------------------------- */
   const featured = mods[0];
 
-  /* -----------------------------
-     FEATURED CREATOR STRING
-  ----------------------------- */
   const featuredCreators =
     featured?.mod_creators?.length
       ? featured.mod_creators
-          .map((mc: any) => mc.creators?.name)
+          .map(
+            (mc: any) =>
+              mc.creators?.name
+          )
           .filter(Boolean)
           .join(" • ")
       : "Unknown";
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main
+      className="
+        min-h-screen
+        overflow-hidden
+        bg-[#040404]
+        text-white
+      "
+    >
 
       {/* NAVBAR */}
-      <div className="flex justify-between items-center px-10 py-6 border-b border-zinc-800">
-
-        <h1 className="text-xl font-bold">
-          ModVault
-        </h1>
-
-        <div className="flex gap-6 text-sm text-gray-400 items-center">
-
-          <Link
-            href="/"
-            className="hover:text-white"
-          >
-            Mods
-          </Link>
-
-          <Link
-            href="/creators"
-            className="hover:text-white"
-          >
-            Creators
-          </Link>
-
-          <Link
-            href="/?sort=likes"
-            className="hover:text-white"
-          >
-            Trending
-          </Link>
-
-          <Link
-            href="/roadmap"
-            className="hover:text-white"
-          >
-            Roadmap
-          </Link>
-
-          <Link href="/about">About</Link>
-
-          <UserMenu />
-
-        </div>
-      </div>
+      <Navbar />
 
       {/* HERO */}
-      <div className="max-w-6xl mx-auto px-6 mt-12">
+      <Hero />
 
-        <h2 className="text-4xl font-bold leading-tight">
-          Discover. Support.
-          <br />
-          Empower Creators.
-        </h2>
-
-        <p className="mt-3 text-gray-400">
-          Find the best GTA V car mods worldwide —
-          curated and easy to explore.
-        </p>
-      </div>
-
+      {/* CATEGORY HUB */}
       <CategoryHub />
 
       {/* FEATURED */}
-      {featured && (
-        <div className="max-w-6xl mx-auto px-6 mt-10">
-
-          <Link
-            href={`/mods/${featured.id}`}
-            className="block group"
-          >
-            <div className="relative rounded-2xl overflow-hidden">
-
-              <img
-                src={featured.image}
-                className="w-full h-[300px] object-cover group-hover:scale-[1.03] transition duration-500"
-                alt={featured.title}
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-              <div className="absolute bottom-0 p-6">
-
-                <h2 className="text-2xl font-bold">
-                  {featured.title}
-                </h2>
-
-                <p className="text-gray-300 text-sm">
-                  by {featuredCreators}
-                </p>
-              </div>
-            </div>
-          </Link>
-        </div>
-      )}
+      <FeaturedMods
+        featured={featured}
+        featuredCreators={featuredCreators}
+      />
 
       {/* SORT */}
-      <div className="max-w-6xl mx-auto px-6 mt-8 flex gap-4 text-sm">
-
-        <Link
-          href="/"
-          className={
-            !sort
-              ? "text-white font-semibold"
-              : "text-gray-400"
-          }
-        >
-          Newest
-        </Link>
-
-        <Link
-          href="/?sort=likes"
-          className={
-            sort === "likes"
-              ? "text-white font-semibold"
-              : "text-gray-400"
-          }
-        >
-          Most Liked
-        </Link>
-
-        <Link
-          href="/?sort=downloads"
-          className={
-            sort === "downloads"
-              ? "text-white font-semibold"
-              : "text-gray-400"
-          }
-        >
-          Most Downloaded
-        </Link>
-      </div>
+      <SortBar sort={sort} />
 
       {/* GRID */}
       <ModsGridClient mods={mods} />
+
+      {/* ROADMAP */}
+      <RoadmapPreview />
+
+      {/* STATS */}
+      <PlatformStats />
+
+      {/* CTA */}
+      <CTASection />
 
     </main>
   );
