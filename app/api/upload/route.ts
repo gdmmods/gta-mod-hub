@@ -1,125 +1,200 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@supabase/supabase-js";
 
-export async function POST(req: Request) {
+export async function POST(
+  req: Request
+) {
+
   try {
-    const body = await req.json();
+
+    const token =
+      req.headers
+        .get("Authorization")
+        ?.replace(
+          "Bearer ",
+          ""
+        );
+
+    if (!token) {
+
+      return NextResponse.json(
+        {
+          error:
+            "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+
+    }
+
+    const body =
+      await req.json();
+
+    const supabase =
+      createClient(
+        process.env
+          .NEXT_PUBLIC_SUPABASE_URL!,
+        process.env
+          .SUPABASE_SERVICE_ROLE_KEY!
+      );
 
     /* -----------------------------
-       CLEAN INPUTS
+       AUTH USER
     ----------------------------- */
 
-    const creatorName =
-      body.creator?.trim() || "Unknown";
+    const {
+      data: { user },
+      error: authError,
+    } =
+      await supabase.auth
+        .getUser(token);
 
-    let parsedImages = null;
+    if (
+      authError ||
+      !user
+    ) {
 
-    try {
-      parsedImages = body.images
-        ? JSON.parse(body.images)
-        : null;
-    } catch {
-      parsedImages = null;
+      return NextResponse.json(
+        {
+          error:
+            "Unauthorized",
+        },
+        {
+          status: 401,
+        }
+      );
+
     }
 
     /* -----------------------------
-       FIND OR CREATE CREATOR
+       PARSE IMAGES
     ----------------------------- */
 
-    let creatorId: string | null = null;
-
-    const { data: existingCreator } = await supabase
-      .from("creators")
-      .select("id")
-      .ilike("name", creatorName)
-      .maybeSingle();
-
-    if (existingCreator) {
-      creatorId = existingCreator.id;
-    } else {
-      const { data: newCreator, error: creatorError } =
-        await supabase
-          .from("creators")
-          .insert([
-            {
-              name: creatorName,
-            },
-          ])
-          .select()
-          .single();
-
-      if (creatorError) {
-        console.error(
-          "CREATOR INSERT ERROR:",
-          creatorError
-        );
-
-        return NextResponse.json(
-          { error: "Creator creation failed" },
-          { status: 500 }
-        );
-      }
-
-      creatorId = newCreator.id;
-    }
+    let parsedImages =
+      body.images || [];
 
     /* -----------------------------
        CREATE MOD
     ----------------------------- */
 
-    const { data: mod, error: modError } =
-      await supabase
-        .from("mods")
-        .insert([
-          {
-            title: body.title,
-            description: body.description,
-            image: body.image,
-            images: parsedImages,
-            creator: creatorName,
-            source_url: body.source_url,
-            download_url: body.download_url || null,
-            features: body.features || null,
-            requirements: body.requirements || null,
-            notes: body.notes || null,
-            credits: body.credits || null,
-            downloads: 0,
-            likes: 0,
-            verified: false,
-          },
-        ])
-        .select()
-        .single();
+    const {
+      data: mod,
+      error: modError,
+    } = await supabase
+      .from("mods")
+      .insert([
+        {
+          title:
+            body.title,
 
-    if (modError || !mod) {
-      console.error("MOD INSERT ERROR:", modError);
+          description:
+            body.description,
+
+          image:
+            body.image,
+
+          images:
+            parsedImages,
+
+          source_url:
+            body.source_url,
+
+          download_url:
+            body.download_url,
+
+          features:
+            body.features,
+
+          requirements:
+            body.requirements,
+
+          notes:
+            body.notes,
+
+          credits:
+            body.credits,
+
+          created_by:
+            user.id,
+
+          downloads: 0,
+          likes: 0,
+          verified: false,
+        },
+      ])
+      .select()
+      .single();
+
+    if (
+      modError ||
+      !mod
+    ) {
+
+      console.error(
+        modError
+      );
 
       return NextResponse.json(
-        { error: "Mod upload failed" },
-        { status: 500 }
+        {
+          error:
+            "Upload failed",
+        },
+        {
+          status: 500,
+        }
       );
+
     }
 
     /* -----------------------------
-       LINK MOD <-> CREATOR
+       PRIMARY CREATOR
     ----------------------------- */
 
-    if (creatorId) {
-      const { error: relationError } = await supabase
-        .from("mod_creators")
-        .insert([
-          {
-            mod_id: mod.id,
-            creator_id: creatorId,
-          },
-        ]);
+    await supabase
+      .from("mod_creators")
+      .insert([
+        {
+          mod_id:
+            mod.id,
 
-      if (relationError) {
-        console.error(
-          "RELATION INSERT ERROR:",
-          relationError
+          creator_id:
+            body.creator_id,
+
+          role:
+            "owner",
+        },
+      ]);
+
+    /* -----------------------------
+       COLLABORATORS
+    ----------------------------- */
+
+    if (
+      body.collaborators?.length
+    ) {
+
+      const rows =
+        body.collaborators.map(
+          (
+            creatorId: string
+          ) => ({
+            mod_id:
+              mod.id,
+
+            creator_id:
+              creatorId,
+
+            role:
+              "collaborator",
+          })
         );
-      }
+
+      await supabase
+        .from("mod_creators")
+        .insert(rows);
+
     }
 
     return NextResponse.json({
@@ -128,11 +203,19 @@ export async function POST(req: Request) {
     });
 
   } catch (err) {
-    console.error("API ERROR:", err);
+
+    console.error(err);
 
     return NextResponse.json(
-      { error: "Server error" },
-      { status: 500 }
+      {
+        error:
+          "Server error",
+      },
+      {
+        status: 500,
+      }
     );
+
   }
+
 }
