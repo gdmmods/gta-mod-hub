@@ -7,16 +7,16 @@ import CreatorEditForm from "../../../../components/creator/edit/CreatorEditForm
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 interface EditCreatorPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EditCreatorPage({
   params,
 }: EditCreatorPageProps) {
 
-  const { id } = params;
+  const { id } = await params;
 
   const {
     data: creator,

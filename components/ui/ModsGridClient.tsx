@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
-import ModCard from "./mod/ModCard";
+import ModCard from "@/components/mod/ModCard";
 import { getCreators } from "@/lib/getCreators";
 
 type Creator = {

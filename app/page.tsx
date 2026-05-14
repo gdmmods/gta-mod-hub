@@ -11,7 +11,7 @@ import PlatformStats from "@/components/home/PlatformStats";
 import CTASection from "@/components/home/CTASection";
 import RoadmapPreview from "@/components/home/RoadmapPreview";
 
-import ModsGridClient from "@/components/ModsGridClient";
+import ModsGridClient from "@/components/ui/ModsGridClient";
 import CategoryHub from "@/components/CategoryHub";
 
 export default async function Home(props: {

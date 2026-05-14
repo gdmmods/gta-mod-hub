@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import ModsGridClient from "@/components/ModsGridClient";
+import ModsGridClient from "@/components/ui/ModsGridClient";
 
 type SortType =
   | "likes"
