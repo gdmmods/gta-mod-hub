@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 
 import ModHero from "@/components/mod/ModHero";
 import ModSidebar from "@/components/mod/ModSidebar";
