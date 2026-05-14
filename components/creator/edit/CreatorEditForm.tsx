@@ -8,6 +8,7 @@ import CreatorEditBrandingSection from "./CreatorEditBrandingSection";
 import CreatorEditSocialsSection from "./CreatorEditSocialsSection";
 import CreatorEditTagsSection from "./CreatorEditTagsSection";
 import CreatorEditStatsSection from "./CreatorEditStatsSection";
+import { useRouter } from "next/navigation";
 
 interface Props {
   creator: any;
@@ -16,6 +17,8 @@ interface Props {
 export default function CreatorEditForm({
   creator,
 }: Props) {
+
+  const router = useRouter();
 
   const [loading, setLoading] =
     useState(false);
@@ -78,6 +81,10 @@ export default function CreatorEditForm({
     } else {
 
       setSaved(true);
+
+        router.push(
+          `/creator/${creator.id}`
+);
 
     }
 

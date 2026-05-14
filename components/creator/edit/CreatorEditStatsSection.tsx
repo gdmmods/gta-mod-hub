@@ -1,12 +1,6 @@
 "use client";
 
-interface Props {
-  creator: any;
-}
-
-export default function CreatorEditStatsSection({
-  creator,
-}: Props) {
+export default function CreatorEditStatsSection() {
 
   return (
 
@@ -32,7 +26,7 @@ export default function CreatorEditStatsSection({
             mb-2
           "
         >
-          Analytics
+          Statistics
         </p>
 
         <h2
@@ -41,7 +35,7 @@ export default function CreatorEditStatsSection({
             font-black
           "
         >
-          Creator Statistics
+          Platform Metrics
         </h2>
 
       </div>
@@ -50,44 +44,37 @@ export default function CreatorEditStatsSection({
         className="
           grid
           grid-cols-1
-          md:grid-cols-3
+          md:grid-cols-4
           gap-6
         "
       >
 
         {[
-          {
-            label: "Followers",
-            value: "12.4K",
-          },
-          {
-            label: "Downloads",
-            value: "184K",
-          },
-          {
-            label: "Total Likes",
-            value: "9.2K",
-          },
-        ].map((item) => (
+          "Followers",
+          "Downloads",
+          "Likes",
+          "Views",
+        ].map((stat) => (
 
           <div
-            key={item.label}
+            key={stat}
             className="
-              rounded-3xl
+              rounded-2xl
               border
               border-zinc-900
-              bg-black/30
-              p-7
+              bg-black/50
+              p-6
             "
           >
 
             <p
               className="
+                text-sm
                 text-zinc-500
                 mb-3
               "
             >
-              {item.label}
+              {stat}
             </p>
 
             <h3
@@ -96,7 +83,7 @@ export default function CreatorEditStatsSection({
                 font-black
               "
             >
-              {item.value}
+              --
             </h3>
 
           </div>
