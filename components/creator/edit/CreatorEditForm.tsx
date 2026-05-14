@@ -2,187 +2,174 @@
 
 import { useState } from "react";
 
-interface CreatorEditFormProps {
+import { supabase } from "@/lib/supabase/client";
+
+import CreatorEditBrandingSection from "./CreatorEditBrandingSection";
+import CreatorEditSocialsSection from "./CreatorEditSocialsSection";
+import CreatorEditTagsSection from "./CreatorEditTagsSection";
+import CreatorEditStatsSection from "./CreatorEditStatsSection";
+
+interface Props {
   creator: any;
 }
 
 export default function CreatorEditForm({
   creator,
-}: CreatorEditFormProps) {
+}: Props) {
 
-  const [name, setName] = useState(
-    creator.name || ""
-  );
+  const [loading, setLoading] =
+    useState(false);
 
-  const [bio, setBio] = useState(
-    creator.bio || ""
-  );
+  const [saved, setSaved] =
+    useState(false);
 
-  const [website, setWebsite] = useState(
-    creator.website || ""
-  );
+  const [creatorData, setCreatorData] =
+    useState({
+      name:
+        creator.name || "",
 
-  async function handleSubmit(
-    e: React.FormEvent
-  ) {
+      tagline:
+        creator.tagline || "",
 
-    e.preventDefault();
+      bio:
+        creator.bio || "",
 
-    console.log({
-      name,
-      bio,
-      website,
+      location:
+        creator.location || "",
+
+      avatar:
+        creator.avatar || "",
+
+      banner:
+        creator.banner || "",
+
+      specialization:
+        creator.specialization || [],
+
+      socials:
+        creator.socials || {},
     });
 
-    // save logic later
+  async function saveCreator() {
+
+    setLoading(true);
+
+    setSaved(false);
+
+    const { error } =
+      await supabase
+        .from("creators")
+        .update({
+          ...creatorData,
+        })
+        .eq(
+          "id",
+          creator.id
+        );
+
+    if (error) {
+
+      console.error(error);
+
+      alert(
+        "Failed to save creator."
+      );
+
+    } else {
+
+      setSaved(true);
+
+    }
+
+    setLoading(false);
 
   }
 
   return (
 
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-8"
+    <div
+      className="
+        max-w-[1450px]
+        mx-auto
+        space-y-8
+      "
     >
 
-      {/* NAME */}
-      <div className="space-y-2">
+      <CreatorEditBrandingSection
+        creatorData={creatorData}
+        setCreatorData={
+          setCreatorData
+        }
+      />
 
-        <label
-          className="
-            text-sm
-            font-medium
-            text-zinc-300
-          "
-        >
-          Creator Name
-        </label>
+      <CreatorEditSocialsSection
+        creatorData={creatorData}
+        setCreatorData={
+          setCreatorData
+        }
+      />
 
-        <input
-          value={name}
-          onChange={(e) =>
-            setName(e.target.value)
-          }
-          className="
-            w-full
-            rounded-2xl
-            border
-            border-zinc-800
-            bg-zinc-900
-            px-4
-            py-3
-            text-white
-            outline-none
-            transition
-            focus:border-purple-500
-          "
-          placeholder="Creator name"
-        />
+      <CreatorEditTagsSection
+        creatorData={creatorData}
+        setCreatorData={
+          setCreatorData
+        }
+      />
 
-      </div>
+      <CreatorEditStatsSection />
 
-      {/* BIO */}
-      <div className="space-y-2">
-
-        <label
-          className="
-            text-sm
-            font-medium
-            text-zinc-300
-          "
-        >
-          Bio
-        </label>
-
-        <textarea
-          value={bio}
-          onChange={(e) =>
-            setBio(e.target.value)
-          }
-          rows={6}
-          className="
-            w-full
-            rounded-2xl
-            border
-            border-zinc-800
-            bg-zinc-900
-            px-4
-            py-3
-            text-white
-            outline-none
-            transition
-            focus:border-purple-500
-          "
-          placeholder="Tell people about this creator..."
-        />
-
-      </div>
-
-      {/* WEBSITE */}
-      <div className="space-y-2">
-
-        <label
-          className="
-            text-sm
-            font-medium
-            text-zinc-300
-          "
-        >
-          Website
-        </label>
-
-        <input
-          value={website}
-          onChange={(e) =>
-            setWebsite(e.target.value)
-          }
-          className="
-            w-full
-            rounded-2xl
-            border
-            border-zinc-800
-            bg-zinc-900
-            px-4
-            py-3
-            text-white
-            outline-none
-            transition
-            focus:border-purple-500
-          "
-          placeholder="https://"
-        />
-
-      </div>
-
-      {/* ACTIONS */}
+      {/* SAVE */}
       <div
         className="
           flex
           items-center
           justify-end
-          pt-4
+          gap-5
+          pt-2
+          pb-12
         "
       >
 
+        {saved && (
+
+          <p
+            className="
+              text-emerald-400
+            "
+          >
+            Creator profile saved.
+          </p>
+
+        )}
+
         <button
-          type="submit"
+          onClick={saveCreator}
+          disabled={loading}
           className="
+            h-14
+            px-10
             rounded-2xl
-            bg-purple-600
-            px-6
-            py-3
-            font-medium
+            bg-gradient-to-r
+            from-violet-600
+            to-fuchsia-500
             text-white
+            font-bold
+            text-lg
             transition
-            hover:bg-purple-500
+            hover:scale-[1.02]
+            disabled:opacity-50
           "
         >
-          Save Changes
+
+          {loading
+            ? "Saving..."
+            : "Save Changes"}
+
         </button>
 
       </div>
 
-    </form>
+    </div>
 
   );
 

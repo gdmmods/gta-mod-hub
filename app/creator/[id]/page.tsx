@@ -54,7 +54,8 @@ export default async function CreatorPage({
       specialization,
       socials,
       verified,
-      status
+      status,
+      owner_id
     `)
     .eq("id", creatorId)
     .maybeSingle();
@@ -316,9 +317,30 @@ export default async function CreatorPage({
       grow your presence on ModVault.
     </p>
 
-    <ClaimCreatorButton
-      creatorId={creator.id}
-    />
+    {!creator.owner_id ? (
+
+  <ClaimCreatorButton
+    creatorId={creator.id}
+  />
+
+) : (
+
+  <div
+    className="
+      rounded-2xl
+      border
+      border-emerald-500/20
+      bg-emerald-500/10
+      px-5
+      py-4
+      text-sm
+      text-emerald-300
+    "
+  >
+    This creator profile is already managed.
+  </div>
+
+)}
 
   </div>
 

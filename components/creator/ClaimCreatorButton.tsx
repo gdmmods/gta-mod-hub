@@ -38,14 +38,45 @@ export default function ClaimCreatorButton({
 
     }
 
-    const { error } =
-      await supabase
-        .from("creator_claims")
-        .insert({
-          creator_id: creatorId,
-          user_id: user.id,
-          status: "pending",
-        });
+    const {
+  data: existingClaim,
+} = await supabase
+  .from("creator_claims")
+  .select("id")
+  .eq(
+    "creator_id",
+    creatorId
+  )
+  .eq(
+    "user_id",
+    user.id
+  )
+  .eq(
+    "status",
+    "pending"
+  )
+  .maybeSingle();
+
+if (existingClaim) {
+
+  setMessage(
+    "Claim already pending review."
+  );
+
+  setLoading(false);
+
+  return;
+
+}
+
+const { error } =
+  await supabase
+    .from("creator_claims")
+    .insert({
+      creator_id: creatorId,
+      user_id: user.id,
+      status: "pending",
+    });
 
     if (error) {
 
