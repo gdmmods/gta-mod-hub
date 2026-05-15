@@ -43,12 +43,12 @@ export const roadmap = [
 
     status: "in-progress",
 
-    progress: 20,
+    progress: 40,
 
     items: [
       {
         text: "Favorites / saved mods",
-        done: false,
+        done: true,
       },
 
       {
@@ -76,6 +76,75 @@ export const roadmap = [
   {
     phase: "Phase 2.5",
 
+    title: "Identity Layer",
+
+    status: "in-progress",
+
+    progress: 80,
+
+    items: [
+      {
+        text: "Edit profile (v1 complete)",
+        done: true,
+      },
+
+      {
+        text: "User accounts (auth)",
+        done: true,
+      },
+
+      {
+        text: "Claim creator profile",
+        done: true,
+      },
+
+      {
+        text: "Follow creators",
+        done: false,
+      },
+
+      {
+        text: "Creator dashboard",
+        done: true,
+      },
+    ],
+  },
+
+  {
+    phase: "Phase 3",
+
+    title: "Creator Tools",
+
+    status: "planned",
+
+    progress: 25,
+
+    items: [
+      {
+        text: "Upload mod (creator-linked)",
+        done: true,
+      },
+
+      {
+        text: "Edit / delete mods",
+        done: false,
+      },
+
+      {
+        text: "Creator analytics",
+        done: false,
+      },
+
+      {
+        text: "Media management",
+        done: false,
+      },
+    ],
+  },
+
+  {
+    phase: "Phase 3.5",
+
     title: "Quality Curation",
 
     status: "planned",
@@ -100,75 +169,6 @@ export const roadmap = [
 
       {
         text: "Quality filters",
-        done: false,
-      },
-    ],
-  },
-
-  {
-    phase: "Phase 3",
-
-    title: "Identity Layer",
-
-    status: "in-progress",
-
-    progress: 40,
-
-    items: [
-      {
-        text: "Edit profile (v1 complete)",
-        done: true,
-      },
-
-      {
-        text: "User accounts (auth)",
-        done: false,
-      },
-
-      {
-        text: "Claim creator profile",
-        done: false,
-      },
-
-      {
-        text: "Follow creators",
-        done: false,
-      },
-
-      {
-        text: "Creator dashboard",
-        done: true,
-      },
-    ],
-  },
-
-  {
-    phase: "Phase 3.5",
-
-    title: "Creator Tools",
-
-    status: "planned",
-
-    progress: 0,
-
-    items: [
-      {
-        text: "Upload mod (creator-linked)",
-        done: false,
-      },
-
-      {
-        text: "Edit / delete mods",
-        done: false,
-      },
-
-      {
-        text: "Creator analytics",
-        done: false,
-      },
-
-      {
-        text: "Media management",
         done: false,
       },
     ],
