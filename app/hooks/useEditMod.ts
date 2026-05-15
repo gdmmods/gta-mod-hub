@@ -20,6 +20,8 @@ export default function useEditMod(
   const [form, setForm] =
     useState({
 
+       status: "published",
+
       title: "",
       description: "",
 
@@ -135,6 +137,9 @@ export default function useEditMod(
       }
 
       setForm({
+
+        status:
+  data.status || "published",
 
         title:
           data.title || "",

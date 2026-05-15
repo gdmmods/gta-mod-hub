@@ -59,6 +59,7 @@ export default function UploadPage() {
 
   const [form, setForm] =
     useState({
+      status: "draft",
       title: "",
       description: "",
       image: "",
@@ -109,7 +110,6 @@ export default function UploadPage() {
     <main
       className="
         min-h-screen
-        overflow-hidden
         bg-[#040404]
         text-white
       "

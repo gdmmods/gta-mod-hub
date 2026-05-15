@@ -23,6 +23,7 @@ export default async function Home(props: {
   let query = supabase
     .from("mods")
     .select(`
+      .eq("status", "published")
       id,
       title,
       image,
@@ -128,7 +129,6 @@ export default async function Home(props: {
     <main
       className="
         min-h-screen
-        overflow-hidden
         bg-[#040404]
         text-white
       "

@@ -77,6 +77,7 @@ export default function useDashboardData() {
           mod_id,
 
           mods (
+            status
             id,
             title,
             image,

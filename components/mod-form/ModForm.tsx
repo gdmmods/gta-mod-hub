@@ -3,6 +3,7 @@ import UploadMediaSection from "@/components/upload/UploadMediaSection";
 import UploadLinksSection from "@/components/upload/UploadLinksSection";
 import UploadDetailsSection from "@/components/upload/UploadDetailsSection";
 import UploadSubmitSection from "@/components/upload/UploadSubmitSection";
+import StatusSelector from "@/components/mod-form/StatusSelector";
 
 import DangerZone from "@/components/mod-form/DangerZone";
 
@@ -61,6 +62,11 @@ export default function ModForm({
 
       {/* CREATOR SELECTOR */}
       {creatorSelector}
+
+      <StatusSelector
+        form={form}
+        handleChange={handleChange}
+    />
 
       <UploadBasicSection
         form={form}

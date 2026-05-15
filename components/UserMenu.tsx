@@ -40,16 +40,32 @@ export default function UserMenu() {
 
       {/* BUTTON */}
       <button
-        onClick={() => setOpen(!open)}
-        className="
-          text-white
-          hover:text-pink-400
-          transition
-          text-sm
-        "
-      >
-        Account
-      </button>
+  onClick={() => setOpen(!open)}
+  className="
+    flex
+    items-center
+    justify-center
+
+    h-11
+    px-5
+
+    rounded-xl
+
+    border
+    border-zinc-800
+
+    bg-zinc-950
+
+    text-sm
+    text-white
+
+    hover:border-zinc-700
+
+    transition
+  "
+>
+  Account
+</button>
 
       {/* DROPDOWN */}
       {open && (
@@ -57,7 +73,8 @@ export default function UserMenu() {
           className="
             absolute
             right-0
-            mt-3
+            top-full
+            mt-6
             w-56
             bg-zinc-900/95
             backdrop-blur-xl
@@ -85,7 +102,7 @@ export default function UserMenu() {
           </Link>
 
           <Link
-            href="/upload"
+            href="/dashboard"
             className="
               flex items-center gap-3
               px-4 py-3
@@ -95,38 +112,10 @@ export default function UserMenu() {
             "
             onClick={() => setOpen(false)}
           >
-            ⬆ Upload Mod
+            📊 Dashboard
           </Link>
 
           <div className="h-px bg-zinc-800" />
-
-          <Link
-            href="/roadmap"
-            className="
-              flex items-center gap-3
-              px-4 py-3
-              hover:bg-zinc-800
-              transition
-              text-sm
-            "
-            onClick={() => setOpen(false)}
-          >
-            🗺 Roadmap
-          </Link>
-
-          <Link
-            href="/about"
-            className="
-              flex items-center gap-3
-              px-4 py-3
-              hover:bg-zinc-800
-              transition
-              text-sm
-            "
-            onClick={() => setOpen(false)}
-          >
-            ℹ About
-          </Link>
 
         </div>
       )}

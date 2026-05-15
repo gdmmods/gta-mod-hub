@@ -20,6 +20,21 @@ export default function DashboardModCard({
       "
     >
 
+      <div
+        className="
+            inline-flex
+            px-3
+            py-1
+            rounded-full
+            text-xs
+            border
+            border-zinc-700
+            mb-4
+        "
+        >
+        {mod.status}
+        </div>
+
       <img
         src={mod.image}
         alt={mod.title}

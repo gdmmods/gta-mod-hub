@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+import Navbar from "@/components/layout/Navbar";
 
 export default async function CreatorsPage() {
   /* -----------------------------
@@ -111,11 +112,7 @@ export default async function CreatorsPage() {
   return (
     <main className="min-h-screen bg-black text-white">
       {/* NAVBAR */}
-      <div className="px-10 py-6 border-b border-zinc-800">
-        <Link href="/" className="text-xl font-bold">
-          ModVault
-        </Link>
-      </div>
+      <Navbar />
 
       {/* CONTENT */}
       <div className="max-w-6xl mx-auto px-6 mt-10">

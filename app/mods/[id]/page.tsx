@@ -5,6 +5,8 @@ import ModSidebar from "@/components/mod/ModSidebar";
 import ModTabs from "@/components/mod/ModTabs";
 import RelatedMods from "@/components/mod/RelatedMods";
 import ModMetaGrid from "@/components/mod/ModMetaGrid";
+import { notFound } from "next/navigation";
+import Navbar from "@/components/layout/Navbar";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +30,15 @@ export default async function ModPage({
       `)
       .eq("id", id)
       .single();
+
+if (
+  !mod ||
+  mod.status !== "published"
+) {
+
+  notFound();
+
+}
 
   if (!mod || error) {
 
@@ -215,13 +226,14 @@ export default async function ModPage({
 
   return (
     <main
-      className="
-        relative
-        min-h-screen
-        bg-black
-        text-white
-      "
-    >
+  className="
+    min-h-screen
+    bg-[#040404]
+    text-white
+  "
+>
+
+      <Navbar />
 
       {/* BACKGROUND */}
       <div
