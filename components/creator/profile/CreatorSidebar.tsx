@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 interface CreatorSidebarProps {
   creator: any;
 }
@@ -22,6 +24,33 @@ export default function CreatorSidebar({
         h-fit
       "
     >
+
+      {/* SETTINGS */}
+      <Link
+        href={`/dashboard/creator/${creator.id}/settings`}
+        className="
+          w-full
+          flex
+          items-center
+          justify-center
+
+          rounded-2xl
+
+          bg-purple-600
+          hover:bg-purple-500
+
+          transition
+
+          px-5
+          py-3
+
+          font-semibold
+
+          mb-8
+        "
+      >
+        Edit Creator Profile
+      </Link>
 
       <p
         className="

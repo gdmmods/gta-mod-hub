@@ -17,6 +17,31 @@ export default function useEditMod(
   const [loaded, setLoaded] =
     useState(false);
 
+    const [
+    creators,
+    setCreators,
+  ] = useState<any[]>([]);
+
+  const [
+    allCreators,
+    setAllCreators,
+  ] = useState<any[]>([]);
+
+  const [
+    selectedCreator,
+    setSelectedCreator,
+  ] = useState("");
+
+  const [
+    collaborators,
+    setCollaborators,
+  ] = useState<string[]>([]);
+
+  const [
+    filteredCreators,
+    setFilteredCreators,
+  ] = useState<any[] | null>(null);
+
   const [form, setForm] =
     useState({
 
@@ -85,6 +110,50 @@ export default function useEditMod(
             m.creator_id
         ) || [];
 
+      /* -----------------------------
+         LOAD USER CREATORS
+      ----------------------------- */
+
+      const {
+        data: ownedCreators,
+      } = await supabase
+        .from("creators")
+        .select(`
+          id,
+          name
+        `)
+        .in(
+          "id",
+          creatorIds
+        );
+
+      setCreators(
+        ownedCreators || []
+      );
+
+      /* -----------------------------
+         LOAD ALL CREATORS
+      ----------------------------- */
+
+      const {
+        data: creatorData,
+      } = await supabase
+        .from("creators")
+        .select(`
+          id,
+          name
+        `)
+        .order(
+          "name",
+          {
+            ascending: true,
+          }
+        );
+
+      setAllCreators(
+        creatorData || []
+      );
+
       const {
         data: relation,
       } = await supabase
@@ -135,6 +204,53 @@ export default function useEditMod(
         return;
 
       }
+
+            /* -----------------------------
+         LOAD MOD CREATOR RELATIONS
+      ----------------------------- */
+
+      const {
+        data: modCreators,
+      } = await supabase
+        .from("mod_creators")
+        .select(`
+          creator_id,
+          role
+        `)
+        .eq(
+          "mod_id",
+          modId
+        );
+
+      const owner =
+        modCreators?.find(
+          (m: any) =>
+            m.role === "owner"
+        );
+
+      const collabs =
+        modCreators
+          ?.filter(
+            (m: any) =>
+              m.role ===
+              "collaborator"
+          )
+          .map(
+            (m: any) =>
+              m.creator_id
+          ) || [];
+
+      if (owner) {
+
+        setSelectedCreator(
+          owner.creator_id
+        );
+
+      }
+
+      setCollaborators(
+        collabs
+      );
 
       setForm({
 
@@ -271,6 +387,60 @@ export default function useEditMod(
 
     }
 
+        /* -----------------------------
+       RESET CREATOR RELATIONS
+    ----------------------------- */
+
+    await supabase
+      .from("mod_creators")
+      .delete()
+      .eq(
+        "mod_id",
+        modId
+      );
+
+    /* -----------------------------
+       OWNER
+    ----------------------------- */
+
+    if (selectedCreator) {
+
+      await supabase
+        .from("mod_creators")
+        .insert({
+          mod_id: modId,
+          creator_id:
+            selectedCreator,
+          role: "owner",
+        });
+
+    }
+
+    /* -----------------------------
+       COLLABORATORS
+    ----------------------------- */
+
+    if (
+      collaborators.length > 0
+    ) {
+
+      const rows =
+        collaborators.map(
+          (creatorId) => ({
+            mod_id: modId,
+            creator_id:
+              creatorId,
+            role:
+              "collaborator",
+          })
+        );
+
+      await supabase
+        .from("mod_creators")
+        .insert(rows);
+
+    }
+
     setLoading(false);
 
   }
@@ -343,6 +513,18 @@ export default function useEditMod(
     handleChange,
     handleSubmit,
     handleDelete,
+
+        creators,
+    allCreators,
+
+    selectedCreator,
+    setSelectedCreator,
+
+    collaborators,
+    setCollaborators,
+
+    filteredCreators,
+    setFilteredCreators,
 
   };
 

@@ -54,29 +54,53 @@ export default async function CreatorPage({
       specialization,
       socials,
       verified,
-      status,
-      owner_id
+      status
     `)
     .eq("id", creatorId)
     .maybeSingle();
 
   if (
-    creatorError ||
-    !creator
-  ) {
+  creatorError ||
+  !creator
+) {
 
-    console.error(
-      "CREATOR ERROR:",
-      creatorError
-    );
+  console.error(
+    "CREATOR ERROR:",
+    creatorError
+  );
 
-    return (
-      <div className="text-white p-10">
-        Creator not found
-      </div>
-    );
+  return (
+    <div className="text-white p-10">
+      Creator not found
+    </div>
+  );
 
-  }
+}
+
+/* -----------------------------
+   CREATOR OWNERSHIP
+----------------------------- */
+
+const {
+  data: members,
+} = await supabase
+  .from("creator_members")
+  .select(`
+    id,
+    role,
+    status
+  `)
+  .eq(
+    "creator_id",
+    creatorId
+  )
+  .eq(
+    "status",
+    "approved"
+  );
+
+const isManaged =
+  (members?.length || 0) > 0;
 
   /* -----------------------------
      FETCH RELATIONS
@@ -317,7 +341,7 @@ export default async function CreatorPage({
       grow your presence on ModVault.
     </p>
 
-    {!creator.owner_id ? (
+    {!isManaged ? (
 
   <ClaimCreatorButton
     creatorId={creator.id}

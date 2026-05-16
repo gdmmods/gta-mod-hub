@@ -21,26 +21,29 @@ export default async function Home(props: {
   const sort = searchParams?.sort;
 
   let query = supabase
-    .from("mods")
-    .select(`
-      .eq("status", "published")
-      id,
-      title,
-      image,
-      category,
-      description,
-      likes,
-      downloads,
-      source_url,
-      created_at,
-      favorites(count),
-      mod_creators (
-        creators (
-          id,
-          name
-        )
+  .from("mods")
+  .select(`
+    id,
+    title,
+    image,
+    category,
+    description,
+    likes,
+    downloads,
+    source_url,
+    created_at,
+    favorites(count),
+    mod_creators (
+      creators (
+        id,
+        name
       )
-    `);
+    )
+  `)
+  .eq(
+    "status",
+    "published"
+  );
 
   /* -----------------------------
      SORTING

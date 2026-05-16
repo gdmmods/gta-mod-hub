@@ -54,34 +54,37 @@ export default function CreatorOwnershipGuard({
 
       }
 
+      /* -----------------------------
+         CREATOR MEMBERSHIP CHECK
+      ----------------------------- */
+
       const {
-        data: creator,
+        data: membership,
         error,
       } = await supabase
-        .from("creators")
-        .select("owner_id")
+        .from("creator_members")
+        .select(`
+          id,
+          role,
+          status
+        `)
         .eq(
-          "id",
+          "creator_id",
           creatorId
+        )
+        .eq(
+          "profile_id",
+          user.id
+        )
+        .eq(
+          "status",
+          "approved"
         )
         .maybeSingle();
 
       if (
         error ||
-        !creator
-      ) {
-
-        router.replace(
-          "/creators"
-        );
-
-        return;
-
-      }
-
-      if (
-        creator.owner_id !==
-        user.id
+        !membership
       ) {
 
         router.replace(
@@ -93,6 +96,7 @@ export default function CreatorOwnershipGuard({
       }
 
       setAuthorized(true);
+
       setLoading(false);
 
     }

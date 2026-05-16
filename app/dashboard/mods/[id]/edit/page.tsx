@@ -13,6 +13,10 @@ import FormLoader from "@/components/mod-form/FormLoader";
 
 import useEditMod from "@/app/hooks/useEditMod";
 
+import UploadCreatorSelector from "@/components/upload/UploadCreatorSelector";
+
+import UploadCollaboratorsSection from "@/components/upload/UploadCollaboratorsSection";
+
 export default function EditModPage() {
 
   const params =
@@ -32,6 +36,18 @@ export default function EditModPage() {
     handleChange,
     handleSubmit,
     handleDelete,
+
+        creators,
+    allCreators,
+
+    selectedCreator,
+    setSelectedCreator,
+
+    collaborators,
+    setCollaborators,
+
+    filteredCreators,
+    setFilteredCreators,
 
   } = useEditMod(
     modId
@@ -80,6 +96,49 @@ export default function EditModPage() {
             handleDelete
           }
 
+                    creatorSelector={
+
+            <UploadCreatorSelector
+              creators={creators}
+              selectedCreator={
+                selectedCreator
+              }
+              setSelectedCreator={
+                setSelectedCreator
+              }
+            />
+
+          }
+
+          collaboratorsSection={
+
+            <UploadCollaboratorsSection
+              allCreators={
+                allCreators
+              }
+
+              filteredCreators={
+                filteredCreators
+              }
+
+              setFilteredCreators={
+                setFilteredCreators
+              }
+
+              selectedCreator={
+                selectedCreator
+              }
+
+              collaborators={
+                collaborators
+              }
+
+              setCollaborators={
+                setCollaborators
+              }
+            />
+
+          }
         />
 
       </ModFormContainer>
