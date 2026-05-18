@@ -46,9 +46,8 @@ export async function POST(
     const buffer =
       Buffer.from(bytes);
 
-    const filePath = `
-mods/${modId}/${Date.now()}-${file.name}
-`;
+    const filePath =
+    `mods/${modId}/${Date.now()}-${file.name}`;
 
     const {
       error: uploadError,

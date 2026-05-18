@@ -6,25 +6,31 @@ import Navbar from "@/components/layout/Navbar";
 
 import UploadHero from "@/components/upload/UploadHero";
 
-import UploadBasicSection from "@/components/upload/UploadBasicSection";
-import UploadMediaSection from "@/components/upload/UploadMediaSection";
-import UploadLinksSection from "@/components/upload/UploadLinksSection";
-import UploadMonetizationSection from "@/components/upload/UploadMonetizationSection";
-import UploadDetailsSection from "@/components/upload/UploadDetailsSection";
-import UploadSidebar from "@/components/upload/UploadSidebar";
-import UploadProtectedFileSection from "@/components/upload/UploadProtectedFileSection";
+import ModFormContainer
+from "@/components/mod-form/ModFormContainer";
 
-import UploadCreatorSelector from "@/components/upload/UploadCreatorSelector";
-import UploadCollaboratorsSection from "@/components/upload/UploadCollaboratorsSection";
-import UploadSubmitSection from "@/components/upload/UploadSubmitSection";
+import ModForm
+from "@/components/mod-form/ModForm";
 
-import useUploadCreators from "@/app/hooks/useUploadCreators";
-import useUploadSubmit from "@/app/hooks/useUploadSubmit";
+import UploadCreatorSelector
+from "@/components/upload/UploadCreatorSelector";
+
+import UploadCollaboratorsSection
+from "@/components/upload/UploadCollaboratorsSection";
+
+import useUploadCreators
+from "@/app/hooks/useUploadCreators";
+
+import useUploadSubmit
+from "@/app/hooks/useUploadSubmit";
+
+import { defaultModForm }
+from "@/lib/forms/defaultModForm";
 
 export default function UploadPage() {
 
   /* --------------------------------
-     CREATOR HOOK
+     CREATORS
   -------------------------------- */
 
   const {
@@ -38,13 +44,13 @@ export default function UploadPage() {
   } = useUploadCreators();
 
   /* --------------------------------
-     SEARCH RESULTS
+     FORM
   -------------------------------- */
 
   const [
-    filteredCreators,
-    setFilteredCreators,
-  ] = useState<any>("")
+    form,
+    setForm,
+  ] = useState(defaultModForm);
 
   /* --------------------------------
      COLLABORATORS
@@ -53,79 +59,47 @@ export default function UploadPage() {
   const [
     collaborators,
     setCollaborators,
-  ] = useState<string[]>([]);
+  ] = useState<any[]>([]);
 
   /* --------------------------------
-     FORM
+     FILTERED SEARCH
   -------------------------------- */
 
-  const [form, setForm] = useState({
-  status: "published",
-
-  title: "",
-  description: "",
-
-  image: "",
-  images: [],
-
-  source_url: "",
-  download_url: "",
-
-  features: "",
-  requirements: "",
-  notes: "",
-  credits: "",
-
-  // Monetization
-
-  visibility: "public",
-
-  delivery_mode: "external",
-
-  support_url: "",
-
-  external_purchase_url: "",
-
-  ownership_required: false,
-
-  release_state: "public",
-
-  is_paid: false,
-
-  price: 0,
-
-  // Protected delivery
-
-  protectedFile: null,
-});
+  const [
+    filteredCreators,
+    setFilteredCreators,
+  ] = useState<any[]>([]);
 
   /* --------------------------------
      INPUT CHANGE
   -------------------------------- */
 
   function handleChange(
-  e: any
-) {
+    e: any
+  ) {
 
-  const {
-    name,
-    value,
-    type,
-    checked,
-  } = e.target;
+    const {
+      name,
+      value,
+      type,
+      checked,
+    } = e.target;
 
-  setForm({
-    ...form,
-    [name]:
-      type === "checkbox"
-        ? checked
-        : value,
-  });
+    setForm((prev: any) => ({
 
-}
+      ...prev,
+
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
+
+    }));
+
+  }
 
   /* --------------------------------
-     SUBMIT HOOK
+     SUBMIT
   -------------------------------- */
 
   const {
@@ -146,136 +120,86 @@ export default function UploadPage() {
     <main
       className="
         min-h-screen
-        bg-[#040404]
+        bg-black
         text-white
       "
     >
 
-      {/* NAVBAR */}
       <Navbar />
 
-      {/* HERO */}
       <UploadHero />
 
-      {/* CONTENT */}
-      <div
-        className="
-          max-w-6xl
-          mx-auto
-          px-6
-          py-14
-          grid
-          lg:grid-cols-[1fr_320px]
-          gap-8
-        "
-      >
+      <ModFormContainer>
 
-        {/* FORM */}
-        <div
-          className="
-            bg-zinc-900/60
-            border
-            border-zinc-800
-            rounded-3xl
-            p-8
-            backdrop-blur-xl
-          "
-        >
+        <ModForm
 
-          {/* CREATOR */}
-          <UploadCreatorSelector
-            creators={creators}
-            selectedCreator={
-              selectedCreator
-            }
-            setSelectedCreator={
-              setSelectedCreator
-            }
-          />
+          form={form}
 
-          {/* FORM */}
-          <form
-            onSubmit={
-              handleSubmit
-            }
-            className="
-              space-y-10
-            "
-          >
+          setForm={setForm}
 
-            <UploadBasicSection
-              form={form}
-              handleChange={
-                handleChange
+          handleChange={
+            handleChange
+          }
+
+          handleSubmit={
+            handleSubmit
+          }
+
+          loading={loading}
+
+          creatorSelector={
+
+            <UploadCreatorSelector
+
+              creators={creators}
+
+              selectedCreator={
+                selectedCreator || ""
               }
+
+              setSelectedCreator={
+                setSelectedCreator
+              }
+
             />
 
+          }
+
+          collaboratorsSection={
+
             <UploadCollaboratorsSection
+
               allCreators={
                 allCreators
               }
+
               filteredCreators={
                 filteredCreators
               }
+
               setFilteredCreators={
                 setFilteredCreators
               }
+
               selectedCreator={
                 selectedCreator
               }
+
               collaborators={
                 collaborators
               }
+
               setCollaborators={
                 setCollaborators
               }
+
             />
 
-            <UploadMediaSection
-              form={form}
-              setForm={setForm}
-            />
+          }
 
-            <UploadProtectedFileSection
-              form={form}
-              setForm={setForm}
-            />
-
-            <UploadLinksSection
-              form={form}
-              handleChange={
-                handleChange
-              }
-            />
-
-            <UploadMonetizationSection
-              form={form}
-              handleChange={
-                handleChange
-              }
-            />
-
-            <UploadDetailsSection
-              form={form}
-              handleChange={
-                handleChange
-              }
-            />
-
-            <UploadSubmitSection
-              loading={loading}
-            />
-
-          </form>
-
-        </div>
-
-        {/* SIDEBAR */}
-        <UploadSidebar
-          form={form}
         />
 
-      </div>
+      </ModFormContainer>
 
     </main>
 

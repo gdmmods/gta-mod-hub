@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
+import { defaultModForm }from "@/lib/forms/defaultModForm";
+
 export default function useEditMod(modId: string | string[]) {
   const [loading, setLoading] =
     useState(false);
@@ -26,41 +28,8 @@ export default function useEditMod(modId: string | string[]) {
   const [filteredCreators, setFilteredCreators] =
     useState<any[]>([]);
 
-  const [form, setForm] = useState({
-    status: "published",
-
-    title: "",
-    description: "",
-
-    image: "",
-    images: [],
-
-    source_url: "",
-    download_url: "",
-
-    features: "",
-    requirements: "",
-    notes: "",
-    credits: "",
-
-    // Monetization
-
-    visibility: "public",
-
-    delivery_mode: "external",
-
-    support_url: "",
-
-    external_purchase_url: "",
-
-    ownership_required: false,
-
-    release_state: "public",
-
-    is_paid: false,
-
-    price: 0,
-  });
+  const [form, setForm] =
+  useState(defaultModForm);
 
   useEffect(() => {
     if (!modId) return;
@@ -83,65 +52,9 @@ export default function useEditMod(modId: string | string[]) {
     }
 
     setForm({
-      status:
-        data.status || "published",
-
-      title:
-        data.title || "",
-
-      description:
-        data.description || "",
-
-      image:
-        data.image || "",
-
-      images:
-        data.images || [],
-
-      source_url:
-        data.source_url || "",
-
-      download_url:
-        data.download_url || "",
-
-      features:
-        data.features || "",
-
-      requirements:
-        data.requirements || "",
-
-      notes:
-        data.notes || "",
-
-      credits:
-        data.credits || "",
-
-      // Monetization
-
-      visibility:
-        data.visibility || "public",
-
-      delivery_mode:
-        data.delivery_mode || "external",
-
-      support_url:
-        data.support_url || "",
-
-      external_purchase_url:
-        data.external_purchase_url || "",
-
-      ownership_required:
-        data.ownership_required || false,
-
-      release_state:
-        data.release_state || "public",
-
-      is_paid:
-        data.is_paid || false,
-
-      price:
-        data.price || 0,
-    });
+  ...defaultModForm,
+  ...data,
+});
 
     setLoaded(true);
   }

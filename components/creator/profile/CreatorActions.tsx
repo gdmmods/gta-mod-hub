@@ -66,7 +66,7 @@ export default function CreatorActions({
           rounded-2xl
           border
           border-zinc-800
-          bg-black/20
+          bg-purple-600/20
           py-2.5
           text-center
           text-sm

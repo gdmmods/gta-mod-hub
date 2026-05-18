@@ -195,31 +195,60 @@ export default async function CreatorPage({
   ----------------------------- */
 
   const mods =
-    modsData.map(
-      (m: any) => ({
-        id: m.id,
-        title:
-          m.title ??
-          "Untitled",
-        image:
-          m.image ??
-          "/placeholder.jpg",
-        category:
-          m.category ?? null,
-        description:
-          m.description ?? "",
-        likes:
-          m.likes ?? 0,
-        downloads:
-          m.downloads ?? 0,
-        source_url:
-          m.source_url ?? "#",
-        tags:
-          m.tags ?? [],
-        mod_creators:
-          m.mod_creators ?? [],
-      })
-    ) || [];
+  modsData.map(
+    (m: any) => ({
+      id: m.id,
+
+      title:
+        m.title ??
+        "Untitled",
+
+      image:
+        m.image ??
+        "/placeholder.jpg",
+
+      category:
+        m.category ?? null,
+
+      description:
+        m.description ?? "",
+
+      likes:
+        m.likes ?? 0,
+
+      downloads:
+        m.downloads ?? 0,
+
+      source_url:
+        m.source_url ?? "#",
+
+      tags:
+        m.tags ?? [],
+
+      mod_creators:
+        m.mod_creators ?? [],
+
+      // monetization
+
+      visibility:
+        m.visibility ?? "public",
+
+      release_state:
+        m.release_state ?? "public",
+
+      support_url:
+        m.support_url ?? null,
+
+      external_purchase_url:
+        m.external_purchase_url ?? null,
+
+      is_paid:
+        m.is_paid ?? false,
+
+      price:
+        m.price ?? 0,
+    })
+  ) || [];
 
     const premiumMods =
   mods.filter(

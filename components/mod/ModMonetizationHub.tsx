@@ -1,24 +1,26 @@
+"use client";
+
 import Link from "next/link";
 
 interface Props {
   creator: any;
-  premiumMods?: any[];
+  premiumMods: any[];
 }
 
 export default function ModMonetizationHub({
   creator,
-  premiumMods = [],
+  premiumMods,
 }: Props) {
 
-  const featured =
-    premiumMods[0];
-
-  const sideMods =
-    premiumMods.slice(1, 5);
-
-  if (!featured) {
+  if (!premiumMods?.length) {
     return null;
   }
+
+  const spotlight =
+    premiumMods[0];
+
+  const secondary =
+    premiumMods.slice(1, 5);
 
   return (
 
@@ -27,42 +29,80 @@ export default function ModMonetizationHub({
         max-w-[1450px]
         mx-auto
         px-6
-        mt-14
+        mt-10
       "
     >
 
-      <div
-        className="
-          grid
-          grid-cols-1
-          xl:grid-cols-[1.2fr_0.8fr]
-          gap-6
-        "
+      {/* HEADER */}
+
+      <div className="mb-6">
+
+        <p
+          className="
+            text-sm
+            uppercase
+            tracking-[0.2em]
+            text-purple-400
+          "
+        >
+          Premium
+        </p>
+
+        <h2
+          className="
+            text-3xl
+            font-bold
+            mt-2
+          "
+        >
+          Supporter Access
+        </h2>
+
+        <p
+          className="
+            mt-3
+            text-zinc-400
+            max-w-2xl
+          "
+        >
+          Exclusive releases, supporter drops,
+          early access builds, and premium
+          creations from {creator.name}.
+        </p>
+
+      </div>
+
+      {/* SPOTLIGHT */}
+
+      <Link
+        href={`/mods/${spotlight.id}`}
       >
 
-        {/* FEATURED PREMIUM */}
         <div
           className="
             relative
+            h-[420px]
+            rounded-[36px]
             overflow-hidden
-            rounded-[34px]
             border
-            border-zinc-800
-            bg-black
-            min-h-[420px]
+            border-purple-500/20
+            group
+            mb-6
           "
         >
 
           <img
-            src={featured.image}
-            alt={featured.title}
+            src={spotlight.image}
+            alt={spotlight.title}
             className="
               absolute
               inset-0
               w-full
               h-full
               object-cover
-              opacity-70
+              group-hover:scale-[1.03]
+              transition
+              duration-700
             "
           />
 
@@ -72,175 +112,154 @@ export default function ModMonetizationHub({
               inset-0
               bg-gradient-to-t
               from-black
-              via-black/50
-              to-black/10
+              via-black/70
+              to-black/20
             "
           />
 
           <div
             className="
-              relative
-              z-10
-              h-full
+              absolute
+              inset-0
+              p-10
               flex
               flex-col
               justify-end
-              p-10
             "
           >
 
             <div
               className="
-                flex
-                flex-wrap
-                gap-2
+                inline-flex
+                items-center
+                w-fit
+                rounded-full
+                bg-purple-500/20
+                border
+                border-purple-500/30
+                px-4
+                py-1.5
+                text-sm
+                font-medium
+                text-purple-200
+                backdrop-blur-xl
                 mb-5
               "
             >
-
-              <div
-                className="
-                  rounded-full
-                  bg-purple-500/20
-                  border
-                  border-purple-500/20
-                  px-4
-                  py-1.5
-                  text-sm
-                  text-purple-300
-                "
-              >
-                Premium
-              </div>
-
-              {featured.early_access && (
-
-                <div
-                  className="
-                    rounded-full
-                    bg-amber-500/20
-                    border
-                    border-amber-500/20
-                    px-4
-                    py-1.5
-                    text-sm
-                    text-amber-300
-                  "
-                >
-                  Early Access
-                </div>
-
-              )}
-
+              Premium Access
             </div>
 
-            <p
-              className="
-                text-sm
-                uppercase
-                tracking-[0.2em]
-                text-zinc-400
-              "
-            >
-              Support {creator.name}
-            </p>
-
-            <h2
+            <h3
               className="
                 text-5xl
                 font-black
                 leading-tight
-                mt-4
-                max-w-3xl
+                max-w-4xl
+                line-clamp-3
               "
             >
-              {featured.title}
-            </h2>
+              {spotlight.title}
+            </h3>
 
             <p
               className="
                 mt-5
+                max-w-3xl
                 text-zinc-300
-                max-w-2xl
-                line-clamp-3
+                text-lg
+                line-clamp-4
               "
             >
-              {featured.description}
+              {spotlight.description}
             </p>
 
             <div
               className="
                 flex
-                flex-wrap
-                gap-4
-                mt-8
+                items-center
+                gap-5
+                mt-6
+                text-sm
+                text-zinc-300
               "
             >
 
-              {featured.support_url && (
+              <span>
+                ⬇ {spotlight.downloads}
+              </span>
 
-                <a
-                  href={
-                    featured.support_url
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-                    rounded-2xl
-                    bg-purple-600
-                    hover:bg-purple-500
-                    transition
-                    px-6
-                    py-3
-                    font-semibold
-                  "
-                >
-                  Support Creator
-                </a>
+              <span>
+                ❤️ {spotlight.likes}
+              </span>
 
-              )}
-
-              {featured.external_purchase_url && (
-
-                <a
-                  href={
-                    featured.external_purchase_url
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-                    rounded-2xl
-                    border
-                    border-zinc-700
-                    bg-black/30
-                    hover:border-purple-500/30
-                    transition
-                    px-6
-                    py-3
-                    font-semibold
-                  "
-                >
-                  Get Premium Access
-                </a>
-
-              )}
+              <span
+                className="
+                  text-purple-300
+                "
+              >
+                {spotlight.release_state}
+              </span>
 
             </div>
+
+            {spotlight.support_url && (
+
+              <div className="mt-7">
+
+                <button
+  onClick={(e) => {
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    window.open(
+      spotlight.support_url,
+      "_blank"
+    );
+
+  }}
+  className="
+    inline-flex
+    items-center
+    rounded-2xl
+    bg-purple-600
+    hover:bg-purple-500
+    px-6
+    py-3
+    text-sm
+    font-semibold
+    text-white
+    transition
+  "
+>
+  Support Creator
+</button>
+
+              </div>
+
+            )}
 
           </div>
 
         </div>
 
-        {/* SIDE GRID */}
+      </Link>
+
+      {/* SECONDARY PREMIUM MODS */}
+
+      {secondary.length > 0 && (
+
         <div
           className="
             grid
-            grid-cols-2
-            gap-4
+            grid-cols-1
+            md:grid-cols-2
+            xl:grid-cols-4
+            gap-5
           "
         >
 
-          {sideMods.map((mod) => (
+          {secondary.map((mod) => (
 
             <Link
               key={mod.id}
@@ -250,12 +269,11 @@ export default function ModMonetizationHub({
               <div
                 className="
                   relative
+                  h-[280px]
+                  rounded-[28px]
                   overflow-hidden
-                  rounded-[26px]
                   border
                   border-zinc-800
-                  bg-zinc-950
-                  aspect-[1/1.05]
                   group
                 "
               >
@@ -269,8 +287,7 @@ export default function ModMonetizationHub({
                     w-full
                     h-full
                     object-cover
-                    opacity-70
-                    group-hover:scale-[1.04]
+                    group-hover:scale-[1.03]
                     transition
                     duration-700
                   "
@@ -291,7 +308,7 @@ export default function ModMonetizationHub({
                   className="
                     absolute
                     inset-0
-                    p-5
+                    p-6
                     flex
                     flex-col
                     justify-end
@@ -300,48 +317,48 @@ export default function ModMonetizationHub({
 
                   <div
                     className="
+                      inline-flex
+                      w-fit
                       rounded-full
                       bg-purple-500/20
                       border
-                      border-purple-500/20
+                      border-purple-500/30
                       px-3
                       py-1
                       text-xs
-                      text-purple-300
-                      w-fit
-                      mb-3
+                      font-medium
+                      text-purple-200
+                      mb-4
                     "
                   >
                     Premium
                   </div>
 
-                  <h3
+                  <h4
                     className="
-                      text-lg
+                      text-xl
                       font-bold
-                      leading-tight
+                      leading-snug
                       line-clamp-2
                     "
                   >
                     {mod.title}
-                  </h3>
+                  </h4>
 
                   <div
                     className="
                       flex
                       items-center
-                      gap-3
-                      mt-3
+                      gap-4
+                      mt-4
                       text-xs
-                      text-zinc-400
+                      text-zinc-300
                     "
                   >
 
-                    {mod.price > 0 && (
-                      <span>
-                        ${mod.price}
-                      </span>
-                    )}
+                    <span>
+                      ⬇ {mod.downloads}
+                    </span>
 
                     <span>
                       ❤️ {mod.likes}
@@ -359,7 +376,7 @@ export default function ModMonetizationHub({
 
         </div>
 
-      </div>
+      )}
 
     </section>
 

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+
+import { createClient }
+from "@supabase/supabase-js";
 
 export async function POST(
   req: Request
@@ -72,8 +74,24 @@ export async function POST(
        PARSE IMAGES
     ----------------------------- */
 
-    let parsedImages =
+    const parsedImages =
       body.images || [];
+
+    /* -----------------------------
+       FETCH CREATOR
+    ----------------------------- */
+
+    const {
+      data: creatorData,
+    } =
+      await supabase
+        .from("creators")
+        .select("name")
+        .eq(
+          "id",
+          body.creator_id
+        )
+        .single();
 
     /* -----------------------------
        CREATE MOD
@@ -86,11 +104,20 @@ export async function POST(
       .from("mods")
       .insert([
         {
+
+          /* BASIC */
+
           title:
             body.title,
 
+          category:
+            body.category,
+
           description:
             body.description,
+
+          creator:
+            creatorData?.name || null,
 
           image:
             body.image,
@@ -116,12 +143,45 @@ export async function POST(
           credits:
             body.credits,
 
+          /* MONETIZATION */
+
+          visibility:
+            body.visibility,
+
+          delivery_mode:
+            body.delivery_mode,
+
+          support_url:
+            body.support_url,
+
+          external_purchase_url:
+            body.external_purchase_url,
+
+          ownership_required:
+            body.ownership_required,
+
+          release_state:
+            body.release_state,
+
+          /* FUTURE MARKETPLACE */
+
+          is_paid:
+            body.is_paid,
+
+          price:
+            body.price,
+
+          /* SYSTEM */
+
           created_by:
             user.id,
 
           downloads: 0,
+
           likes: 0,
+
           verified: false,
+
         },
       ])
       .select()
@@ -133,7 +193,12 @@ export async function POST(
     ) {
 
       console.error(
-        modError
+        "MOD INSERT ERROR:",
+        JSON.stringify(
+          modError,
+          null,
+          2
+        )
       );
 
       return NextResponse.json(
@@ -156,6 +221,7 @@ export async function POST(
       .from("mod_creators")
       .insert([
         {
+
           mod_id:
             mod.id,
 
@@ -164,6 +230,7 @@ export async function POST(
 
           role:
             "owner",
+
         },
       ]);
 
@@ -180,6 +247,7 @@ export async function POST(
           (
             creatorId: string
           ) => ({
+
             mod_id:
               mod.id,
 
@@ -188,6 +256,7 @@ export async function POST(
 
             role:
               "collaborator",
+
           })
         );
 
@@ -198,8 +267,12 @@ export async function POST(
     }
 
     return NextResponse.json({
+
       success: true,
-      modId: mod.id,
+
+      modId:
+        mod.id,
+
     });
 
   } catch (err) {
