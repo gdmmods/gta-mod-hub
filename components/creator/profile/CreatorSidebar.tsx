@@ -12,68 +12,55 @@ export default function CreatorSidebar({
 
     <div
       className="
-        rounded-[34px]
+        rounded-[28px]
         border
         border-purple-500/10
         bg-gradient-to-b
-        from-purple-500/10
-        shadow-[0_0_60px_rgba(168,85,247,0.08)]
+        from-purple-500/[0.05]
         to-zinc-950/70
+        shadow-[0_0_40px_rgba(168,85,247,0.06)]
         backdrop-blur-xl
-        p-6
+        p-5
         h-fit
       "
     >
 
-      {/* SETTINGS */}
-      <Link
-        href={`/dashboard/creator/${creator.id}/settings`}
-        className="
-          w-full
-          flex
-          items-center
-          justify-center
+      {/* HEADER */}
+      <div
+  className="
+    mb-5
+  "
+>
 
-          rounded-2xl
+        <div>
 
-          bg-purple-600
-          hover:bg-purple-500
+          <p
+            className="
+              text-[10px]
+              uppercase
+              tracking-[0.22em]
+              text-purple-400
+            "
+          >
+            Progress
+          </p>
 
-          transition
+          <h2
+            className="
+              text-xl
+              font-bold
+              mt-1.5
+            "
+          >
+            Current Focus
+          </h2>
 
-          px-5
-          py-3
+        </div>
 
-          font-semibold
+      </div>
 
-          mb-8
-        "
-      >
-        Edit Creator Profile
-      </Link>
-
-      <p
-        className="
-          text-sm
-          uppercase
-          tracking-[0.2em]
-          text-purple-400
-        "
-      >
-        Progress
-      </p>
-
-      <h2
-        className="
-          text-3xl
-          font-black
-          mt-2
-        "
-      >
-        Current Focus
-      </h2>
-
-      <div className="mt-6 space-y-5">
+      {/* PROGRESS */}
+      <div className="space-y-4">
 
         {[
           [
@@ -100,17 +87,28 @@ export default function CreatorSidebar({
               <div
                 className="
                   flex
+                  items-center
                   justify-between
-                  mb-3
-                  text-sm
+                  gap-3
+                  mb-2
                 "
               >
 
-                <span className="text-zinc-300">
+                <span
+                  className="
+                    text-sm
+                    text-zinc-300
+                  "
+                >
                   {label}
                 </span>
 
-                <span className="text-zinc-500">
+                <span
+                  className="
+                    text-xs
+                    text-zinc-500
+                  "
+                >
                   {value}
                 </span>
 
@@ -118,7 +116,7 @@ export default function CreatorSidebar({
 
               <div
                 className="
-                  h-2
+                  h-1.5
                   rounded-full
                   bg-black/40
                   overflow-hidden

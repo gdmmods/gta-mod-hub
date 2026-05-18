@@ -12,22 +12,45 @@ export default function CreatorStats({
   location,
 }: CreatorStatsProps) {
 
+  const getFlagEmoji = (country?: string | null) => {
+
+    if (!country) return "🌍";
+
+    const flags: Record<string, string> = {
+      Luxembourg: "🇱🇺",
+      Germany: "🇩🇪",
+      France: "🇫🇷",
+      Belgium: "🇧🇪",
+      Netherlands: "🇳🇱",
+      UnitedStates: "🇺🇸",
+      USA: "🇺🇸",
+      Canada: "🇨🇦",
+      UK: "🇬🇧",
+      UnitedKingdom: "🇬🇧",
+      Japan: "🇯🇵",
+    };
+
+    return flags[country.replace(/\s/g, "")] || "🌍";
+
+  };
+
   const stats = [
     ["Mods", modsCount],
     ["Likes", totalLikes],
     ["Downloads", totalDownloads],
-    ["Location", location || "Unknown"],
+    [
+      "Location",
+      `${getFlagEmoji(location)} ${location || "Unknown"}`
+    ],
   ];
 
   return (
 
     <div
       className="
-        grid
-        grid-cols-2
-        md:grid-cols-4
-        gap-4
-        mt-8
+        flex
+        flex-wrap
+        gap-3
       "
     >
 
@@ -36,32 +59,65 @@ export default function CreatorStats({
         <div
           key={String(label)}
           className="
-            rounded-3xl
+            relative
+            overflow-hidden
+            rounded-2xl
             border
-            border-zinc-900
-            bg-black/30
-            p-6
+            border-zinc-800
+            bg-zinc-950/70
+            px-4
+            py-3
+            backdrop-blur-xl
+            min-w-[180px]
           "
         >
 
-          <p
+          {/* subtle atmosphere */}
+          <div
             className="
-              text-sm
-              text-zinc-500
+              absolute
+              inset-0
+              bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.06),transparent_60%)]
+              pointer-events-none
             "
-          >
-            {label}
-          </p>
+          />
 
-          <p
+          <div
             className="
-              text-3xl
-              font-bold
-              mt-2
+              relative
+              flex
+              items-center
+              justify-between
+              gap-4
             "
           >
-            {value}
-          </p>
+
+            <p
+              className="
+                text-[11px]
+                uppercase
+                tracking-[0.16em]
+                text-zinc-500
+                whitespace-nowrap
+              "
+            >
+              {label}
+            </p>
+
+            <p
+              className="
+                text-base
+                xl:text-lg
+                font-bold
+                tracking-tight
+                text-white
+                whitespace-nowrap
+              "
+            >
+              {value}
+            </p>
+
+          </div>
 
         </div>
 

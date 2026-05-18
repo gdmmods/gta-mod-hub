@@ -13,116 +13,104 @@ export default function CreatorSocialLinks({
     return null;
   }
 
+  const links = [
+    {
+      key: "website",
+      label: "Website",
+      icon: "🌐",
+      href: socials.website,
+    },
+    {
+      key: "discord",
+      label: "Discord",
+      icon: "💬",
+      href: socials.discord,
+    },
+    {
+      key: "youtube",
+      label: "YouTube",
+      icon: "▶",
+      href: socials.youtube,
+    },
+    {
+      key: "instagram",
+      label: "Instagram",
+      icon: "✕",
+      href: socials.instagram,
+    },
+  ].filter((item) => item.href);
+
   return (
 
     <div
       className="
-        mt-6
         flex
         flex-wrap
+        items-center
         gap-3
       "
     >
 
-      {socials.website && (
+      {links.map((link) => (
 
         <a
-          href={socials.website}
+          key={link.key}
+          href={link.href}
           target="_blank"
           rel="noopener noreferrer"
           className="
+            group
+            relative
+            overflow-hidden
             rounded-2xl
             border
             border-zinc-800
-            bg-black/30
+            bg-zinc-950/70
             px-4
-            py-2
+            py-2.5
             text-sm
             text-zinc-300
+            transition
             hover:border-purple-500/30
             hover:text-white
-            transition
+            backdrop-blur-xl
           "
         >
-          🌐 Website
+
+          {/* subtle atmosphere */}
+          <div
+            className="
+              absolute
+              inset-0
+              opacity-0
+              group-hover:opacity-100
+              transition
+              bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.10),transparent_65%)]
+            "
+          />
+
+          <div
+            className="
+              relative
+              flex
+              items-center
+              gap-2
+            "
+          >
+
+            <span className="text-base">
+              {link.icon}
+            </span>
+
+            <span className="font-medium">
+              {link.label}
+            </span>
+
+          </div>
+
         </a>
 
-      )}
-
-      {socials.discord && (
-
-        <a
-          href={socials.discord}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="
-            rounded-2xl
-            border
-            border-zinc-800
-            bg-black/30
-            px-4
-            py-2
-            text-sm
-            text-zinc-300
-            hover:border-purple-500/30
-            hover:text-white
-            transition
-          "
-        >
-          💬 Discord
-        </a>
-
-      )}
-
-      {socials.youtube && (
-
-        <a
-          href={socials.youtube}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="
-            rounded-2xl
-            border
-            border-zinc-800
-            bg-black/30
-            px-4
-            py-2
-            text-sm
-            text-zinc-300
-            hover:border-purple-500/30
-            hover:text-white
-            transition
-          "
-        >
-          ▶ YouTube
-        </a>
-
-      )}
-
-      {socials.instagram && (
-
-        <a
-          href={socials.instagram}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="
-            rounded-2xl
-            border
-            border-zinc-800
-            bg-black/30
-            px-4
-            py-2
-            text-sm
-            text-zinc-300
-            hover:border-purple-500/30
-            hover:text-white
-            transition
-          "
-        >
-          ✕ Instagram
-        </a>
-
-      )}
+      ))}
 
     </div>
 

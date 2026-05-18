@@ -255,12 +255,12 @@ export default function UserMenu() {
             📊 Dashboard
           </Link>
 
-          {/* CREATOR SETTINGS */}
+          {/* MY CREATOR PROFILE */}
 
           {creatorId && (
 
             <Link
-              href={`/dashboard/creator/${creatorId}/settings`}
+              href={`/creator/${creatorId}`}
               className="
                 flex
                 items-center
@@ -278,7 +278,7 @@ export default function UserMenu() {
                 setOpen(false)
               }
             >
-              🎨 Creator Profiles
+              👤 My Creator Profile
             </Link>
 
           )}

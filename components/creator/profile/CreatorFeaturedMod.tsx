@@ -1,16 +1,14 @@
 import Link from "next/link";
 
 interface CreatorFeaturedModProps {
-  featured: any;
+  mostDownloaded: any;
+  mostLiked: any;
 }
 
 export default function CreatorFeaturedMod({
-  featured,
+  mostDownloaded,
+  mostLiked,
 }: CreatorFeaturedModProps) {
-
-  if (!featured) {
-    return null;
-  }
 
   return (
 
@@ -19,129 +17,252 @@ export default function CreatorFeaturedMod({
         max-w-[1450px]
         mx-auto
         px-6
-        mt-14
+        mt-8
       "
     >
 
-      <div
-        className="
-          flex
-          items-center
-          justify-between
-          mb-6
-        "
-      >
+      <div className="mb-6">
 
-        <div>
+        <p
+          className="
+            text-sm
+            uppercase
+            tracking-[0.2em]
+            text-purple-400
+          "
+        >
+          Highlight
+        </p>
 
-          <p
-            className="
-              text-sm
-              uppercase
-              tracking-[0.2em]
-              text-purple-400
-            "
-          >
-            Highlight
-          </p>
-
-          <h2
-            className="
-              text-3xl
-              font-bold
-              mt-2
-            "
-          >
-            Featured Creation
-          </h2>
-
-        </div>
+        <h2
+          className="
+            text-3xl
+            font-bold
+            mt-2
+          "
+        >
+          Featured Creations
+        </h2>
 
       </div>
 
-      <Link
-        href={`/mods/${featured.id}`}
+      <div
+        className="
+          grid
+          grid-cols-2
+          gap-6
+        "
       >
 
-        <div
-          className="
-            relative
-            rounded-[36px]
-            overflow-hidden
-            border
-            border-zinc-800
-            group
-          "
+        {/* MOST DOWNLOADED */}
+        <Link
+          href={`/mods/${mostDownloaded?.id}`}
         >
 
-          <img
-            src={featured.image}
-            alt={featured.title}
-            className="
-              w-full
-              h-[420px]
-              object-cover
-              group-hover:scale-[1.03]
-              transition
-              duration-700
-            "
-          />
-
           <div
             className="
-              absolute
-              inset-0
-              bg-gradient-to-t
-              from-black
-              via-black/40
-              to-transparent
-            "
-          />
-
-          <div
-            className="
-              absolute
-              bottom-0
-              left-0
-              p-8
+              relative
+              h-[340px]
+              rounded-[34px]
+              overflow-hidden
+              border
+              border-zinc-800
+              group
             "
           >
 
-            <h3
+            <img
+              src={mostDownloaded?.image}
+              alt={mostDownloaded?.title}
               className="
-                text-4xl
-                font-black
+                absolute
+                inset-0
+                w-full
+                h-full
+                object-cover
+                group-hover:scale-[1.03]
+                transition
+                duration-700
               "
-            >
-              {featured.title}
-            </h3>
+            />
 
             <div
               className="
+                absolute
+                inset-0
+                bg-gradient-to-t
+                from-black
+                via-black/55
+                to-black/10
+              "
+            />
+
+            <div
+              className="
+                absolute
+                inset-0
+                p-8
                 flex
-                gap-5
-                mt-3
-                text-zinc-300
+                flex-col
+                justify-end
               "
             >
 
-              <span>
-                ⬇{" "}
-                {featured.downloads}
-              </span>
+              <p
+                className="
+                  text-sm
+                  uppercase
+                  tracking-[0.2em]
+                  text-purple-300
+                  mb-4
+                "
+              >
+                Most Downloaded
+              </p>
 
-              <span>
-                ❤️{" "}
-                {featured.likes}
-              </span>
+              <h3
+                className="
+                  text-3xl
+                  font-black
+                  leading-tight
+                  line-clamp-2
+                "
+              >
+                {mostDownloaded?.title}
+              </h3>
+
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-5
+                  mt-5
+                  text-sm
+                  text-zinc-300
+                "
+              >
+
+                <span>
+                  ⬇ {mostDownloaded?.downloads}
+                </span>
+
+                <span>
+                  ❤️ {mostDownloaded?.likes}
+                </span>
+
+              </div>
 
             </div>
 
           </div>
 
-        </div>
+        </Link>
 
-      </Link>
+        {/* MOST LIKED */}
+        <Link
+          href={`/mods/${mostLiked?.id}`}
+        >
+
+          <div
+            className="
+              relative
+              h-[340px]
+              rounded-[34px]
+              overflow-hidden
+              border
+              border-zinc-800
+              group
+            "
+          >
+
+            <img
+              src={mostLiked?.image}
+              alt={mostLiked?.title}
+              className="
+                absolute
+                inset-0
+                w-full
+                h-full
+                object-cover
+                group-hover:scale-[1.03]
+                transition
+                duration-700
+              "
+            />
+
+            <div
+              className="
+                absolute
+                inset-0
+                bg-gradient-to-t
+                from-black
+                via-black/55
+                to-black/10
+              "
+            />
+
+            <div
+              className="
+                absolute
+                inset-0
+                p-8
+                flex
+                flex-col
+                justify-end
+              "
+            >
+
+              <p
+                className="
+                  text-sm
+                  uppercase
+                  tracking-[0.2em]
+                  text-pink-300
+                  mb-4
+                "
+              >
+                Community Favorite
+              </p>
+
+              <h3
+                className="
+                  text-3xl
+                  font-black
+                  leading-tight
+                  line-clamp-2
+                "
+              >
+                {mostLiked?.title}
+              </h3>
+
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-5
+                  mt-5
+                  text-sm
+                  text-zinc-300
+                "
+              >
+
+                <span>
+                  ❤️ {mostLiked?.likes}
+                </span>
+
+                <span>
+                  ⬇ {mostLiked?.downloads}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </Link>
+
+      </div>
 
     </section>
 

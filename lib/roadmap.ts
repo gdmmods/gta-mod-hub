@@ -43,7 +43,7 @@ export const roadmap = [
 
     status: "in-progress",
 
-    progress: 40,
+    progress: 60,
 
     items: [
       {
@@ -63,7 +63,7 @@ export const roadmap = [
 
       {
         text: "Search (mods + creators)",
-        done: false,
+        done: true  ,
       },
 
       {
@@ -117,7 +117,7 @@ export const roadmap = [
 
     status: "planned",
 
-    progress: 25,
+    progress: 50,
 
     items: [
       {
@@ -127,7 +127,7 @@ export const roadmap = [
 
       {
         text: "Edit / delete mods",
-        done: false,
+        done: true,
       },
 
       {

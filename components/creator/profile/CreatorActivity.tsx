@@ -4,21 +4,22 @@ export default function CreatorActivity() {
 
     <div
       className="
-        rounded-[34px]
+        rounded-[28px]
         border
-        border-zinc-800
-        bg-zinc-950/60
+        border-zinc-900
+        bg-zinc-950/50
         backdrop-blur-xl
-        p-7
+        p-5
       "
     >
 
+      {/* HEADER */}
       <div
         className="
           flex
           items-center
           justify-between
-          mb-8
+          mb-5
         "
       >
 
@@ -26,9 +27,9 @@ export default function CreatorActivity() {
 
           <p
             className="
-              text-sm
+              text-[10px]
               uppercase
-              tracking-[0.2em]
+              tracking-[0.22em]
               text-purple-400
             "
           >
@@ -37,9 +38,9 @@ export default function CreatorActivity() {
 
           <h2
             className="
-              text-3xl
-              font-black
-              mt-2
+              text-xl
+              font-bold
+              mt-1.5
             "
           >
             Creator Activity
@@ -47,16 +48,15 @@ export default function CreatorActivity() {
 
         </div>
 
-        {/* ACTIVE BADGE */}
         <div
           className="
-            rounded-2xl
+            rounded-xl
             border
             border-emerald-500/20
             bg-emerald-500/10
-            px-4
-            py-2
-            text-sm
+            px-3
+            py-1
+            text-xs
             text-emerald-300
           "
         >
@@ -65,7 +65,8 @@ export default function CreatorActivity() {
 
       </div>
 
-      <div className="space-y-5">
+      {/* ITEMS */}
+      <div className="space-y-3">
 
         {[
           {
@@ -91,39 +92,48 @@ export default function CreatorActivity() {
           <div
             key={item.title}
             className="
-              rounded-3xl
+              rounded-2xl
               border
               border-zinc-900
-              bg-black/30
-              p-5
+              bg-black/20
+              px-4
+              py-3
             "
           >
 
             <div
               className="
                 flex
-                items-start
-                gap-4
+                items-center
+                gap-3
               "
             >
 
               <div
                 className="
-                  mt-1
-                  w-3
-                  h-3
+                  w-2
+                  h-2
                   rounded-full
                   bg-purple-500
-                  shadow-[0_0_15px_rgba(168,85,247,0.8)]
+                  shadow-[0_0_12px_rgba(168,85,247,0.7)]
                 "
               />
 
-              <div className="flex-1">
+              <div
+                className="
+                  flex-1
+                  flex
+                  items-center
+                  justify-between
+                  gap-4
+                "
+              >
 
                 <h3
                   className="
-                    text-lg
-                    font-semibold
+                    text-sm
+                    font-medium
+                    text-zinc-200
                   "
                 >
                   {item.title}
@@ -131,9 +141,9 @@ export default function CreatorActivity() {
 
                 <p
                   className="
-                    text-sm
+                    text-xs
                     text-zinc-500
-                    mt-2
+                    whitespace-nowrap
                   "
                 >
                   {item.date}

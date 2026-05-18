@@ -56,6 +56,10 @@ export default function useUploadSubmit({
 
       }
 
+      /* --------------------------------
+         CREATE MOD
+      -------------------------------- */
+
       const res =
         await fetch(
           "/api/upload",
@@ -94,16 +98,72 @@ export default function useUploadSubmit({
           "Upload failed"
         );
 
-      } else {
+        setLoading(false);
 
-        alert(
-          "Mod uploaded!"
-        );
-
-        window.location.href =
-          "/";
+        return;
 
       }
+
+      const data =
+        await res.json();
+
+      const modId =
+        data.modId;
+
+      /* --------------------------------
+         PROTECTED FILE UPLOAD
+      -------------------------------- */
+
+      if (
+        form.protectedFile
+      ) {
+
+        const fileForm =
+          new FormData();
+
+        fileForm.append(
+          "file",
+          form.protectedFile
+        );
+
+        fileForm.append(
+          "modId",
+          modId
+        );
+
+        const fileRes =
+          await fetch(
+            "/api/upload-file",
+            {
+              method: "POST",
+              body: fileForm,
+            }
+          );
+
+        if (!fileRes.ok) {
+
+          console.error(
+            "Protected upload failed"
+          );
+
+          alert(
+            "Mod uploaded, but protected file failed."
+          );
+
+        }
+
+      }
+
+      /* --------------------------------
+         SUCCESS
+      -------------------------------- */
+
+      alert(
+        "Mod uploaded!"
+      );
+
+      window.location.href =
+        "/";
 
     } catch (err) {
 

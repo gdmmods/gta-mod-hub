@@ -3,6 +3,8 @@ import Link from "next/link";
 import DownloadButton from "@/components/DownloadButton";
 import LikeButton from "@/components/LikeButton";
 import FavoriteModButton from "@/components/FavoriteModButton";
+import ProtectedDownloadButton from "@/components/mod/ProtectedDownloadButton";
+import PremiumBadge from "@/components/mod/PremiumBadge";
 
 export default function ModSidebar({
   mod,
@@ -95,6 +97,16 @@ export default function ModSidebar({
             </div>
 
           )}
+
+        </div>
+
+        {/* PREMIUM STATUS */}
+        <div className="mt-5">
+
+          <PremiumBadge
+            visibility={mod.visibility}
+            isPaid={mod.is_paid}
+          />
 
         </div>
 
@@ -254,10 +266,96 @@ export default function ModSidebar({
       {/* ACTIONS */}
       <div className="mt-8 space-y-3">
 
-        <DownloadButton
-           url={mod.download_url || mod.source_url}
-            id={mod.id}
-          />
+        {/* --------------------------------
+   DOWNLOAD / ACCESS
+-------------------------------- */}
+
+{mod.protected_file ? (
+
+  <ProtectedDownloadButton
+    modId={mod.id}
+  />
+
+) : mod.external_purchase_url ? (
+
+  <a
+    href={
+      mod.external_purchase_url
+    }
+    target="_blank"
+    className="
+      w-full
+      flex
+      justify-center
+      items-center
+
+      rounded-2xl
+
+      bg-gradient-to-r
+      from-purple-600
+      to-purple-500
+
+      py-4
+
+      font-semibold
+      text-white
+
+      shadow-[0_0_40px_rgba(168,85,247,0.25)]
+
+      hover:opacity-90
+      transition
+    "
+  >
+    Get Premium Access
+  </a>
+
+) : (
+
+  <DownloadButton
+    url={
+      mod.download_url ||
+      mod.source_url
+    }
+    id={mod.id}
+  />
+
+)}
+
+{/* SUPPORT CREATOR */}
+{mod.support_url && (
+
+  <a
+    href={mod.support_url}
+    target="_blank"
+    className="
+      w-full
+      flex
+      justify-center
+      items-center
+
+      rounded-2xl
+
+      border
+      border-purple-500/20
+
+      bg-purple-500/10
+
+      hover:bg-purple-500/20
+
+      transition
+
+      py-3
+
+      text-sm
+      font-medium
+
+      text-purple-300
+    "
+  >
+    Support Creator
+  </a>
+
+)}
 
         <div className="grid grid-cols-2 gap-3">
 

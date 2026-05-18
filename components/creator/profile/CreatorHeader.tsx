@@ -17,46 +17,102 @@ export default function CreatorHeader({
     <div
       className="
         flex
-        flex-wrap
-        items-center
-        gap-3
+        flex-col
+        gap-5
       "
     >
 
-      <h1
+      {/* TOP ROW */}
+      <div
         className="
-          text-5xl
-          md:text-6xl
-          font-black
-          tracking-tight
-          leading-none
+          flex
+          flex-wrap
+          items-center
+          gap-3
         "
       >
-        {name}
-      </h1>
 
-      <CreatorVerificationBadge
-        verified={verified}
-      />
+        <h1
+          className="
+            text-5xl
+            md:text-6xl
+            xl:text-7xl
+            font-black
+            tracking-[-0.04em]
+            leading-none
+            text-white
+          "
+        >
+          {name}
+        </h1>
 
-      {status && (
+        <div className="flex items-center gap-2">
+
+          <CreatorVerificationBadge
+            verified={verified}
+          />
+
+          {status && (
+
+            <div
+              className="
+                px-3
+                py-1.5
+                rounded-2xl
+                bg-emerald-500/10
+                border
+                border-emerald-500/20
+                text-sm
+                font-medium
+                text-emerald-300
+                backdrop-blur-xl
+              "
+            >
+              {status}
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+
+      {/* SUBTEXT */}
+      <div
+        className="
+          flex
+          flex-wrap
+          items-center
+          gap-3
+          text-sm
+          text-zinc-500
+        "
+      >
+
+        <span
+          className="
+            uppercase
+            tracking-[0.18em]
+            text-zinc-600
+          "
+        >
+          ModVault Creator
+        </span>
 
         <div
           className="
-            px-3
-            py-1.5
-            rounded-xl
-            bg-emerald-500/10
-            border
-            border-emerald-500/20
-            text-sm
-            text-emerald-300
+            w-1
+            h-1
+            rounded-full
+            bg-zinc-700
           "
-        >
-          {status}
-        </div>
+        />
 
-      )}
+        <span>
+          Creator Ecosystem Profile
+        </span>
+
+      </div>
 
     </div>
 

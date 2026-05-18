@@ -2,14 +2,16 @@ export const dynamic = "force-dynamic";
 
 import { supabase } from "@/lib/supabase/client";
 
+import Navbar from "@/components/layout/Navbar";
+
 import ClaimCreatorButton from "@/components/creator/ClaimCreatorButton";
 import CreatorPageShell from "@/components/creator/profile/CreatorPageShell";
-import CreatorNavbar from "@/components/creator/profile/CreatorNavbar";
 import CreatorHero from "@/components/creator/profile/CreatorHero";
 import CreatorActivity from "@/components/creator/profile/CreatorActivity";
 import CreatorFeaturedMod from "@/components/creator/profile/CreatorFeaturedMod";
 import CreatorModsSection from "@/components/creator/profile/CreatorModsSection";
 import CreatorSidebar from "@/components/creator/profile/CreatorSidebar";
+import ModMonetizationHub from "@/components/mod/ModMonetizationHub";
 
 export default async function CreatorPage({
   params,
@@ -38,6 +40,7 @@ export default async function CreatorPage({
   /* -----------------------------
      FETCH CREATOR
   ----------------------------- */
+
   const {
     data: creator,
     error: creatorError,
@@ -60,51 +63,52 @@ export default async function CreatorPage({
     .maybeSingle();
 
   if (
-  creatorError ||
-  !creator
-) {
+    creatorError ||
+    !creator
+  ) {
 
-  console.error(
-    "CREATOR ERROR:",
-    creatorError
-  );
+    console.error(
+      "CREATOR ERROR:",
+      creatorError
+    );
 
-  return (
-    <div className="text-white p-10">
-      Creator not found
-    </div>
-  );
+    return (
+      <div className="text-white p-10">
+        Creator not found
+      </div>
+    );
 
-}
+  }
 
-/* -----------------------------
-   CREATOR OWNERSHIP
------------------------------ */
+  /* -----------------------------
+     CREATOR OWNERSHIP
+  ----------------------------- */
 
-const {
-  data: members,
-} = await supabase
-  .from("creator_members")
-  .select(`
-    id,
-    role,
-    status
-  `)
-  .eq(
-    "creator_id",
-    creatorId
-  )
-  .eq(
-    "status",
-    "approved"
-  );
+  const {
+    data: members,
+  } = await supabase
+    .from("creator_members")
+    .select(`
+      id,
+      role,
+      status
+    `)
+    .eq(
+      "creator_id",
+      creatorId
+    )
+    .eq(
+      "status",
+      "approved"
+    );
 
-const isManaged =
-  (members?.length || 0) > 0;
+  const isManaged =
+    (members?.length || 0) > 0;
 
   /* -----------------------------
      FETCH RELATIONS
   ----------------------------- */
+
   const {
     data: relations,
     error: relationError,
@@ -135,6 +139,7 @@ const isManaged =
   /* -----------------------------
      FETCH MODS
   ----------------------------- */
+
   let modsData: any[] = [];
 
   if (modIds.length > 0) {
@@ -154,6 +159,14 @@ const isManaged =
         downloads,
         source_url,
         tags,
+
+        is_paid,
+        price,
+        support_url,
+        external_purchase_url,
+        visibility,
+        early_access,
+
         mod_creators (
           creators (
             id,
@@ -180,6 +193,7 @@ const isManaged =
   /* -----------------------------
      NORMALIZE MODS
   ----------------------------- */
+
   const mods =
     modsData.map(
       (m: any) => ({
@@ -207,9 +221,17 @@ const isManaged =
       })
     ) || [];
 
+    const premiumMods =
+  mods.filter(
+    (mod: any) =>
+      mod.is_paid ||
+      mod.visibility !== "public"
+  );
+
   /* -----------------------------
      STATS
   ----------------------------- */
+
   const totalLikes =
     mods.reduce(
       (s, m) =>
@@ -226,20 +248,30 @@ const isManaged =
     );
 
   /* -----------------------------
-     FEATURED MOD
+     FEATURED MODS
   ----------------------------- */
-  const featured =
+
+  const mostDownloaded =
     mods.length > 0
       ? [...mods].sort(
           (a, b) =>
-            b.downloads -
-            a.downloads
+            (b.downloads || 0) -
+            (a.downloads || 0)
+        )[0]
+      : null;
+
+  const mostLiked =
+    mods.length > 0
+      ? [...mods].sort(
+          (a, b) =>
+            (b.likes || 0) -
+            (a.likes || 0)
         )[0]
       : null;
 
   const bannerImage =
     creator.banner ||
-    featured?.image ||
+    mostDownloaded?.image ||
     "/placeholder.jpg";
 
   const socials =
@@ -254,10 +286,10 @@ const isManaged =
 
     <CreatorPageShell>
 
-      <CreatorNavbar
-        creatorId={creator.id}
-      />
+      {/* NAVBAR */}
+      <Navbar />
 
+      {/* HERO */}
       <CreatorHero
         creator={creator}
         bannerImage={bannerImage}
@@ -267,13 +299,35 @@ const isManaged =
         totalDownloads={totalDownloads}
       />
 
-      {/* ACTIVITY + SIDEBAR */}
+      {/* MODS FIRST */}
+      <CreatorModsSection
+        mods={mods}
+      />
+
+      {/* PREMIUM ECOSYSTEM */}
+      {premiumMods.length > 0 && (
+
+        <ModMonetizationHub
+          creator={creator}
+          premiumMods={premiumMods}
+        />
+
+      )}
+
+      {/* FEATURED CREATIONS */}
+      <CreatorFeaturedMod
+        mostDownloaded={mostDownloaded}
+        mostLiked={mostLiked}
+      />
+
+      {/* SECONDARY ECOSYSTEM */}
       <section
         className="
           max-w-[1450px]
           mx-auto
           px-6
-          mt-14
+          mt-6
+          pb-24
         "
       >
 
@@ -282,105 +336,53 @@ const isManaged =
             grid
             grid-cols-1
             xl:grid-cols-[1.2fr_0.8fr]
-            gap-6
+            gap-5
           "
         >
 
+          {/* ACTIVITY */}
           <CreatorActivity />
 
-          <div className="space-y-6">
+          {/* SIDEBAR */}
+          <div className="space-y-5">
 
-  <CreatorSidebar
-    creator={creator}
-  />
+            <CreatorSidebar
+              creator={creator}
+            />
 
-  <div
-    className="
-      rounded-[28px]
-      border
-      border-zinc-800
-      bg-zinc-950/60
-      backdrop-blur-xl
-      p-6
-    "
-  >
+            {!isManaged && (
 
-    <p
-      className="
-        text-sm
-        uppercase
-        tracking-[0.2em]
-        text-purple-400
-        mb-3
-      "
-    >
-      Ownership
-    </p>
+              <ClaimCreatorButton
+                creatorId={creator.id}
+              />
 
-    <h3
-      className="
-        text-2xl
-        font-black
-        mb-3
-      "
-    >
-      Claim Creator Profile
-    </h3>
+            )}
 
-    <p
-      className="
-        text-sm
-        text-zinc-400
-        leading-relaxed
-        mb-5
-      "
-    >
-      Claim this creator profile and
-      unlock editing tools, uploads,
-      customize your profile, and
-      grow your presence on ModVault.
-    </p>
+            {isManaged && (
 
-    {!isManaged ? (
+              <div
+                className="
+                  rounded-[24px]
+                  border
+                  border-emerald-500/20
+                  bg-emerald-500/10
+                  px-5
+                  py-4
+                  text-sm
+                  text-emerald-300
+                  backdrop-blur-xl
+                "
+              >
+                This creator profile is already managed.
+              </div>
 
-  <ClaimCreatorButton
-    creatorId={creator.id}
-  />
+            )}
 
-) : (
-
-  <div
-    className="
-      rounded-2xl
-      border
-      border-emerald-500/20
-      bg-emerald-500/10
-      px-5
-      py-4
-      text-sm
-      text-emerald-300
-    "
-  >
-    This creator profile is already managed.
-  </div>
-
-)}
-
-  </div>
-
-</div>
+          </div>
 
         </div>
 
       </section>
-
-      <CreatorFeaturedMod
-        featured={featured}
-      />
-
-      <CreatorModsSection
-        mods={mods}
-      />
 
     </CreatorPageShell>
 

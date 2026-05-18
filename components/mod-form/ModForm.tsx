@@ -4,6 +4,7 @@ import UploadLinksSection from "@/components/upload/UploadLinksSection";
 import UploadDetailsSection from "@/components/upload/UploadDetailsSection";
 import UploadSubmitSection from "@/components/upload/UploadSubmitSection";
 import StatusSelector from "@/components/mod-form/StatusSelector";
+import UploadMonetizationSection from "@/components/upload/UploadMonetizationSection";
 
 import DangerZone from "@/components/mod-form/DangerZone";
 
@@ -88,6 +89,11 @@ export default function ModForm({
         handleChange={
           handleChange
         }
+      />
+
+      <UploadMonetizationSection
+        form={form}
+        handleChange={handleChange}
       />
 
       <UploadDetailsSection

@@ -9,8 +9,10 @@ import UploadHero from "@/components/upload/UploadHero";
 import UploadBasicSection from "@/components/upload/UploadBasicSection";
 import UploadMediaSection from "@/components/upload/UploadMediaSection";
 import UploadLinksSection from "@/components/upload/UploadLinksSection";
+import UploadMonetizationSection from "@/components/upload/UploadMonetizationSection";
 import UploadDetailsSection from "@/components/upload/UploadDetailsSection";
 import UploadSidebar from "@/components/upload/UploadSidebar";
+import UploadProtectedFileSection from "@/components/upload/UploadProtectedFileSection";
 
 import UploadCreatorSelector from "@/components/upload/UploadCreatorSelector";
 import UploadCollaboratorsSection from "@/components/upload/UploadCollaboratorsSection";
@@ -70,6 +72,12 @@ export default function UploadPage() {
       requirements: "",
       notes: "",
       credits: "",
+      is_paid: false,
+
+        price: "",
+        support_url: "",
+        external_purchase_url: "",
+        visibility: "public",
     });
 
   /* --------------------------------
@@ -77,16 +85,25 @@ export default function UploadPage() {
   -------------------------------- */
 
   function handleChange(
-    e: any
-  ) {
+  e: any
+) {
 
-    setForm({
-      ...form,
-      [e.target.name]:
-        e.target.value,
-    });
+  const {
+    name,
+    value,
+    type,
+    checked,
+  } = e.target;
 
-  }
+  setForm({
+    ...form,
+    [name]:
+      type === "checkbox"
+        ? checked
+        : value,
+  });
+
+}
 
   /* --------------------------------
      SUBMIT HOOK
@@ -200,7 +217,19 @@ export default function UploadPage() {
               setForm={setForm}
             />
 
+            <UploadProtectedFileSection
+              form={form}
+              setForm={setForm}
+            />
+
             <UploadLinksSection
+              form={form}
+              handleChange={
+                handleChange
+              }
+            />
+
+            <UploadMonetizationSection
               form={form}
               handleChange={
                 handleChange
