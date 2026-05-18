@@ -23,7 +23,9 @@ export default function EditModPage() {
     useParams();
 
   const modId =
-    params.id;
+  typeof params.id === "string"
+    ? params.id
+    : "";
 
   const {
 

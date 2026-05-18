@@ -44,7 +44,7 @@ export default function UploadPage() {
   const [
     filteredCreators,
     setFilteredCreators,
-  ] = useState<any[] | null>(null);
+  ] = useState<any>("")
 
   /* --------------------------------
      COLLABORATORS
@@ -59,26 +59,45 @@ export default function UploadPage() {
      FORM
   -------------------------------- */
 
-  const [form, setForm] =
-    useState({
-      status: "draft",
-      title: "",
-      description: "",
-      image: "",
-      images: [],
-      source_url: "",
-      download_url: "",
-      features: "",
-      requirements: "",
-      notes: "",
-      credits: "",
-      is_paid: false,
+  const [form, setForm] = useState({
+  status: "published",
 
-        price: "",
-        support_url: "",
-        external_purchase_url: "",
-        visibility: "public",
-    });
+  title: "",
+  description: "",
+
+  image: "",
+  images: [],
+
+  source_url: "",
+  download_url: "",
+
+  features: "",
+  requirements: "",
+  notes: "",
+  credits: "",
+
+  // Monetization
+
+  visibility: "public",
+
+  delivery_mode: "external",
+
+  support_url: "",
+
+  external_purchase_url: "",
+
+  ownership_required: false,
+
+  release_state: "public",
+
+  is_paid: false,
+
+  price: 0,
+
+  // Protected delivery
+
+  protectedFile: null,
+});
 
   /* --------------------------------
      INPUT CHANGE

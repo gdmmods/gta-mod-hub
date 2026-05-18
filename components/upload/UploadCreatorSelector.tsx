@@ -26,9 +26,7 @@ export default function UploadCreatorSelector({
       </label>
 
       <select
-        value={
-          selectedCreator
-        }
+        value={selectedCreator || ""}
         onChange={(e) =>
           setSelectedCreator(
             e.target.value

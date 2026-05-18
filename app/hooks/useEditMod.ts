@@ -1,509 +1,293 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
-export default function useEditMod(
-  modId: any
-) {
-
+export default function useEditMod(modId: string | string[]) {
   const [loading, setLoading] =
     useState(false);
 
   const [loaded, setLoaded] =
     useState(false);
 
-    const [
-    creators,
-    setCreators,
-  ] = useState<any[]>([]);
+  const [creators, setCreators] =
+    useState<any[]>([]);
 
-  const [
-    allCreators,
-    setAllCreators,
-  ] = useState<any[]>([]);
+  const [allCreators, setAllCreators] =
+    useState<any[]>([]);
 
-  const [
-    selectedCreator,
-    setSelectedCreator,
-  ] = useState("");
+  const [selectedCreator, setSelectedCreator] =
+    useState<any>("");
 
-  const [
-    collaborators,
-    setCollaborators,
-  ] = useState<string[]>([]);
+  const [collaborators, setCollaborators] =
+    useState<any[]>([]);
 
-  const [
-    filteredCreators,
-    setFilteredCreators,
-  ] = useState<any[] | null>(null);
+  const [filteredCreators, setFilteredCreators] =
+    useState<any[]>([]);
 
-  const [form, setForm] =
-    useState({
+  const [form, setForm] = useState({
+    status: "published",
 
-       status: "published",
+    title: "",
+    description: "",
 
-      title: "",
-      description: "",
+    image: "",
+    images: [],
 
-      image: "",
-      images: [],
+    source_url: "",
+    download_url: "",
 
-      source_url: "",
-      download_url: "",
+    features: "",
+    requirements: "",
+    notes: "",
+    credits: "",
 
-      features: "",
-      requirements: "",
-      notes: "",
-      credits: "",
+    // Monetization
 
-    });
+    visibility: "public",
 
-  /* --------------------------------
-     LOAD MOD
-  -------------------------------- */
+    delivery_mode: "external",
+
+    support_url: "",
+
+    external_purchase_url: "",
+
+    ownership_required: false,
+
+    release_state: "public",
+
+    is_paid: false,
+
+    price: 0,
+  });
 
   useEffect(() => {
+    if (!modId) return;
 
-    async function loadMod() {
-
-      const {
-        data: {
-          session,
-        },
-      } =
-        await supabase.auth.getSession();
-
-      if (!session) {
-
-        alert(
-          "You must be logged in."
-        );
-
-        return;
-
-      }
-
-      const {
-        data: memberships,
-      } = await supabase
-        .from("creator_members")
-        .select(`
-          creator_id
-        `)
-        .eq(
-          "profile_id",
-          session.user.id
-        )
-        .eq(
-          "status",
-          "approved"
-        );
-
-      const creatorIds =
-        memberships?.map(
-          (m: any) =>
-            m.creator_id
-        ) || [];
-
-      /* -----------------------------
-         LOAD USER CREATORS
-      ----------------------------- */
-
-      const {
-        data: ownedCreators,
-      } = await supabase
-        .from("creators")
-        .select(`
-          id,
-          name
-        `)
-        .in(
-          "id",
-          creatorIds
-        );
-
-      setCreators(
-        ownedCreators || []
-      );
-
-      /* -----------------------------
-         LOAD ALL CREATORS
-      ----------------------------- */
-
-      const {
-        data: creatorData,
-      } = await supabase
-        .from("creators")
-        .select(`
-          id,
-          name
-        `)
-        .order(
-          "name",
-          {
-            ascending: true,
-          }
-        );
-
-      setAllCreators(
-        creatorData || []
-      );
-
-      const {
-        data: relation,
-      } = await supabase
-        .from("mod_creators")
-        .select(`
-          mod_id,
-          creator_id
-        `)
-        .eq(
-          "mod_id",
-          modId
-        )
-        .in(
-          "creator_id",
-          creatorIds
-        )
-        .maybeSingle();
-
-      if (!relation) {
-
-        alert(
-          "No permission."
-        );
-
-        window.location.href =
-          "/dashboard";
-
-        return;
-
-      }
-
-      const {
-        data,
-        error,
-      } = await supabase
-        .from("mods")
-        .select("*")
-        .eq(
-          "id",
-          modId
-        )
-        .single();
-
-      if (error) {
-
-        console.error(error);
-
-        return;
-
-      }
-
-            /* -----------------------------
-         LOAD MOD CREATOR RELATIONS
-      ----------------------------- */
-
-      const {
-        data: modCreators,
-      } = await supabase
-        .from("mod_creators")
-        .select(`
-          creator_id,
-          role
-        `)
-        .eq(
-          "mod_id",
-          modId
-        );
-
-      const owner =
-        modCreators?.find(
-          (m: any) =>
-            m.role === "owner"
-        );
-
-      const collabs =
-        modCreators
-          ?.filter(
-            (m: any) =>
-              m.role ===
-              "collaborator"
-          )
-          .map(
-            (m: any) =>
-              m.creator_id
-          ) || [];
-
-      if (owner) {
-
-        setSelectedCreator(
-          owner.creator_id
-        );
-
-      }
-
-      setCollaborators(
-        collabs
-      );
-
-      setForm({
-
-        status:
-  data.status || "published",
-
-        title:
-          data.title || "",
-
-        description:
-          data.description || "",
-
-        image:
-          data.image || "",
-
-        images:
-          data.images || [],
-
-        source_url:
-          data.source_url || "",
-
-        download_url:
-          data.download_url || "",
-
-        features:
-          data.features || "",
-
-        requirements:
-          data.requirements || "",
-
-        notes:
-          data.notes || "",
-
-        credits:
-          data.credits || "",
-
-      });
-
-      setLoaded(true);
-
-    }
-
-    if (modId) {
-
-      loadMod();
-
-    }
-
+    fetchMod();
+    fetchCreators();
   }, [modId]);
 
-  /* --------------------------------
-     INPUT
-  -------------------------------- */
+  async function fetchMod() {
+    const { data, error } =
+      await supabase
+        .from("mods")
+        .select("*")
+        .eq("id", modId)
+        .single();
 
-  function handleChange(
-    e: any
-  ) {
+    if (error) {
+      console.error(error);
+      return;
+    }
 
     setForm({
-      ...form,
-      [e.target.name]:
-        e.target.value,
+      status:
+        data.status || "published",
+
+      title:
+        data.title || "",
+
+      description:
+        data.description || "",
+
+      image:
+        data.image || "",
+
+      images:
+        data.images || [],
+
+      source_url:
+        data.source_url || "",
+
+      download_url:
+        data.download_url || "",
+
+      features:
+        data.features || "",
+
+      requirements:
+        data.requirements || "",
+
+      notes:
+        data.notes || "",
+
+      credits:
+        data.credits || "",
+
+      // Monetization
+
+      visibility:
+        data.visibility || "public",
+
+      delivery_mode:
+        data.delivery_mode || "external",
+
+      support_url:
+        data.support_url || "",
+
+      external_purchase_url:
+        data.external_purchase_url || "",
+
+      ownership_required:
+        data.ownership_required || false,
+
+      release_state:
+        data.release_state || "public",
+
+      is_paid:
+        data.is_paid || false,
+
+      price:
+        data.price || 0,
     });
 
+    setLoaded(true);
   }
 
-  /* --------------------------------
-     SAVE
-  -------------------------------- */
+  async function fetchCreators() {
+    const { data, error } =
+      await supabase
+        .from("creators")
+        .select("*");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setCreators(data || []);
+    setAllCreators(data || []);
+    setFilteredCreators(data || []);
+  }
+
+  function handleChange(
+    e: React.ChangeEvent<
+      HTMLInputElement |
+      HTMLTextAreaElement |
+      HTMLSelectElement
+    >
+  ) {
+    const { name, value, type } =
+      e.target;
+
+    setForm((prev) => ({
+      ...prev,
+
+      [name]:
+        type === "checkbox"
+          ? (e.target as HTMLInputElement)
+              .checked
+          : value,
+    }));
+  }
 
   async function handleSubmit(
-    e: any
+    e: React.FormEvent
   ) {
-
     e.preventDefault();
 
     setLoading(true);
 
-    const {
-      error,
-    } = await supabase
-      .from("mods")
-      .update({
-
-        title:
-          form.title,
-
-        description:
-          form.description,
-
-        image:
-          form.image,
-
-        images:
-          form.images,
-
-        source_url:
-          form.source_url,
-
-        download_url:
-          form.download_url,
-
-        features:
-          form.features,
-
-        requirements:
-          form.requirements,
-
-        notes:
-          form.notes,
-
-        credits:
-          form.credits,
-
-      })
-      .eq(
-        "id",
-        modId
-      );
-
-    if (error) {
-
-      console.error(error);
-
-      alert(
-        "Update failed"
-      );
-
-    } else {
-
-      alert(
-        "Mod updated"
-      );
-
-    }
-
-        /* -----------------------------
-       RESET CREATOR RELATIONS
-    ----------------------------- */
-
-    await supabase
-      .from("mod_creators")
-      .delete()
-      .eq(
-        "mod_id",
-        modId
-      );
-
-    /* -----------------------------
-       OWNER
-    ----------------------------- */
-
-    if (selectedCreator) {
-
+    const { error } =
       await supabase
-        .from("mod_creators")
-        .insert({
-          mod_id: modId,
-          creator_id:
-            selectedCreator,
-          role: "owner",
-        });
+        .from("mods")
+        .update({
+          status:
+            form.status,
 
-    }
+          title:
+            form.title,
 
-    /* -----------------------------
-       COLLABORATORS
-    ----------------------------- */
+          description:
+            form.description,
 
-    if (
-      collaborators.length > 0
-    ) {
+          image:
+            form.image,
 
-      const rows =
-        collaborators.map(
-          (creatorId) => ({
-            mod_id: modId,
-            creator_id:
-              creatorId,
-            role:
-              "collaborator",
-          })
-        );
+          images:
+            form.images,
 
-      await supabase
-        .from("mod_creators")
-        .insert(rows);
+          source_url:
+            form.source_url,
 
-    }
+          download_url:
+            form.download_url,
+
+          features:
+            form.features,
+
+          requirements:
+            form.requirements,
+
+          notes:
+            form.notes,
+
+          credits:
+            form.credits,
+
+          // Monetization
+
+          visibility:
+            form.visibility,
+
+          delivery_mode:
+            form.delivery_mode,
+
+          support_url:
+            form.support_url,
+
+          external_purchase_url:
+            form.external_purchase_url,
+
+          ownership_required:
+            form.ownership_required,
+
+          release_state:
+            form.release_state,
+
+          is_paid:
+            form.is_paid,
+
+          price:
+            form.price,
+        })
+        .eq("id", modId);
 
     setLoading(false);
 
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    alert("Mod updated successfully.");
   }
 
-  /* --------------------------------
-     DELETE
-  -------------------------------- */
-
   async function handleDelete() {
-
     const confirmed =
       confirm(
-        "Delete this mod permanently?"
+        "Are you sure you want to delete this mod?"
       );
 
-    if (!confirmed)
-      return;
+    if (!confirmed) return;
 
-    setLoading(true);
-
-    await supabase
-      .from("mod_creators")
-      .delete()
-      .eq(
-        "mod_id",
-        modId
-      );
-
-    const {
-      error,
-    } = await supabase
-      .from("mods")
-      .delete()
-      .eq(
-        "id",
-        modId
-      );
+    const { error } =
+      await supabase
+        .from("mods")
+        .delete()
+        .eq("id", modId);
 
     if (error) {
-
       console.error(error);
-
-      alert(
-        "Delete failed"
-      );
-
-    } else {
-
-      alert(
-        "Mod deleted"
-      );
-
-      window.location.href =
-        "/dashboard";
-
+      return;
     }
 
-    setLoading(false);
-
+    window.location.href = "/";
   }
 
   return {
-
     form,
     setForm,
 
@@ -514,7 +298,7 @@ export default function useEditMod(
     handleSubmit,
     handleDelete,
 
-        creators,
+    creators,
     allCreators,
 
     selectedCreator,
@@ -525,7 +309,5 @@ export default function useEditMod(
 
     filteredCreators,
     setFilteredCreators,
-
   };
-
 }
