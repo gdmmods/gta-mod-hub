@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -16,11 +17,27 @@ export default function ModMonetizationHub({
     return null;
   }
 
-  const spotlight =
-    premiumMods[0];
+  const spotlight = premiumMods[0];
 
-  const secondary =
-    premiumMods.slice(1, 5);
+  const secondary = premiumMods.slice(1, 5);
+
+  const mostDownloaded =
+    premiumMods
+      .slice()
+      .sort(
+        (a, b) =>
+          (b.downloads || 0) -
+          (a.downloads || 0)
+      )[0];
+
+  const mostLiked =
+    premiumMods
+      .slice()
+      .sort(
+        (a, b) =>
+          (b.likes || 0) -
+          (a.likes || 0)
+      )[0];
 
   return (
 
@@ -72,224 +89,228 @@ export default function ModMonetizationHub({
 
       </div>
 
-      {/* SPOTLIGHT */}
+      {/* MAIN GRID */}
 
-      <Link
-        href={`/mods/${spotlight.id}`}
+      <div
+        className="
+          grid
+          grid-cols-1
+          xl:grid-cols-3
+          gap-6
+        "
       >
 
-        <div
-          className="
-            relative
-            h-[420px]
-            rounded-[36px]
-            overflow-hidden
-            border
-            border-purple-500/20
-            group
-            mb-6
-          "
+        {/* SPOTLIGHT */}
+
+        <Link
+          href={`/mods/${spotlight.id}`}
+          className="xl:col-span-2 group"
         >
 
-          <img
-            src={spotlight.image}
-            alt={spotlight.title}
+          <div
             className="
-              absolute
-              inset-0
-              w-full
-              h-full
-              object-cover
-              group-hover:scale-[1.03]
+              relative
+              h-[520px]
+              rounded-[36px]
+              overflow-hidden
+              border
+              border-purple-500/20
               transition
-              duration-700
-            "
-          />
-
-          <div
-            className="
-              absolute
-              inset-0
-              bg-gradient-to-t
-              from-black
-              via-black/70
-              to-black/20
-            "
-          />
-
-          <div
-            className="
-              absolute
-              inset-0
-              p-10
-              flex
-              flex-col
-              justify-end
+              duration-300
+              hover:border-purple-500/40
+              hover:-translate-y-1
             "
           >
 
-            <div
+            <img
+              src={spotlight.image}
+              alt={spotlight.title}
               className="
-                inline-flex
-                items-center
-                w-fit
-                rounded-full
-                bg-purple-500/20
-                border
-                border-purple-500/30
-                px-4
-                py-1.5
-                text-sm
-                font-medium
-                text-purple-200
-                backdrop-blur-xl
-                mb-5
+                absolute
+                inset-0
+                w-full
+                h-full
+                object-cover
+                transition
+                duration-700
+                group-hover:scale-[1.03]
               "
-            >
-              Premium Access
-            </div>
-
-            <h3
-              className="
-                text-5xl
-                font-black
-                leading-tight
-                max-w-4xl
-                line-clamp-3
-              "
-            >
-              {spotlight.title}
-            </h3>
-
-            <p
-              className="
-                mt-5
-                max-w-3xl
-                text-zinc-300
-                text-lg
-                line-clamp-4
-              "
-            >
-              {spotlight.description}
-            </p>
+            />
 
             <div
               className="
+                absolute
+                inset-0
+                bg-gradient-to-t
+                from-black
+                via-black/70
+                to-black/20
+              "
+            />
+
+            <div
+              className="
+                absolute
+                inset-0
+                p-10
                 flex
-                items-center
-                gap-5
-                mt-6
-                text-sm
-                text-zinc-300
+                flex-col
+                justify-end
               "
             >
 
-              <span>
-                ⬇ {spotlight.downloads}
-              </span>
-
-              <span>
-                ❤️ {spotlight.likes}
-              </span>
-
-              <span
+              <div
                 className="
-                  text-purple-300
+                  inline-flex
+                  items-center
+                  w-fit
+                  rounded-full
+                  bg-purple-500/20
+                  border
+                  border-purple-500/30
+                  px-4
+                  py-1.5
+                  text-sm
+                  font-medium
+                  text-purple-200
+                  backdrop-blur-xl
+                  mb-5
                 "
               >
-                {spotlight.release_state}
-              </span>
+                Premium Access
+              </div>
 
-            </div>
+              <h3
+                className="
+                  text-5xl
+                  font-black
+                  leading-tight
+                  max-w-4xl
+                  line-clamp-3
+                "
+              >
+                {spotlight.title}
+              </h3>
 
-            {spotlight.support_url && (
+              <p
+                className="
+                  mt-5
+                  max-w-3xl
+                  text-zinc-300
+                  text-lg
+                  line-clamp-4
+                "
+              >
+                {spotlight.description}
+              </p>
 
-              <div className="mt-7">
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-5
+                  mt-6
+                  text-sm
+                  text-zinc-300
+                "
+              >
 
-                <button
-  onClick={(e) => {
+                <span>
+                  ⬇ {spotlight.downloads}
+                </span>
 
-    e.preventDefault();
-    e.stopPropagation();
+                <span>
+                  ❤️ {spotlight.likes}
+                </span>
 
-    window.open(
-      spotlight.support_url,
-      "_blank"
-    );
-
-  }}
-  className="
-    inline-flex
-    items-center
-    rounded-2xl
-    bg-purple-600
-    hover:bg-purple-500
-    px-6
-    py-3
-    text-sm
-    font-semibold
-    text-white
-    transition
-  "
->
-  Support Creator
-</button>
+                <span className="text-purple-300">
+                  {spotlight.release_state}
+                </span>
 
               </div>
 
-            )}
+              {spotlight.support_url && (
+
+                <div className="mt-7">
+
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open(
+                        spotlight.support_url,
+                        "_blank"
+                      );
+                    }}
+                    className="
+                      rounded-2xl
+                      bg-gradient-to-r
+                      from-purple-600
+                      to-fuchsia-500
+                      px-8
+                      py-4
+                      text-base
+                      font-bold
+                      text-white
+                      shadow-lg
+                      shadow-purple-900/40
+                      transition
+                      hover:scale-[1.03]
+                    "
+                  >
+                    Support Creator
+                  </button>
+
+                </div>
+
+              )}
+
+            </div>
 
           </div>
 
-        </div>
+        </Link>
 
-      </Link>
+        {/* SIDE GRID */}
 
-      {/* SECONDARY PREMIUM MODS */}
+        <div className="grid gap-6">
 
-      {secondary.length > 0 && (
+          {/* MOST DOWNLOADED */}
 
-        <div
-          className="
-            grid
-            grid-cols-1
-            md:grid-cols-2
-            xl:grid-cols-4
-            gap-5
-          "
-        >
-
-          {secondary.map((mod) => (
+          {mostDownloaded && (
 
             <Link
-              key={mod.id}
-              href={`/mods/${mod.id}`}
+              href={`/mods/${mostDownloaded.id}`}
+              className="group"
             >
 
               <div
                 className="
                   relative
-                  h-[280px]
-                  rounded-[28px]
+                  h-[247px]
                   overflow-hidden
+                  rounded-[30px]
                   border
                   border-zinc-800
-                  group
+                  transition
+                  duration-300
+                  hover:border-purple-500/40
+                  hover:-translate-y-1
                 "
               >
 
                 <img
-                  src={mod.image}
-                  alt={mod.title}
+                  src={mostDownloaded.image}
+                  alt={mostDownloaded.title}
                   className="
                     absolute
                     inset-0
                     w-full
                     h-full
                     object-cover
-                    group-hover:scale-[1.03]
                     transition
                     duration-700
+                    group-hover:scale-105
                   "
                 />
 
@@ -299,7 +320,252 @@ export default function ModMonetizationHub({
                     inset-0
                     bg-gradient-to-t
                     from-black
-                    via-black/50
+                    via-black/70
+                    to-black/20
+                  "
+                />
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    p-8
+                    flex
+                    flex-col
+                    justify-end
+                  "
+                >
+
+                  <p
+                    className="
+                      text-sm
+                      uppercase
+                      tracking-[0.2em]
+                      text-purple-300
+                      mb-4
+                    "
+                  >
+                    Most Downloaded
+                  </p>
+
+                  <h3
+                    className="
+                      text-3xl
+                      font-black
+                      leading-tight
+                      line-clamp-2
+                    "
+                  >
+                    {mostDownloaded.title}
+                  </h3>
+
+                  <div
+                    className="
+                      flex
+                      items-center
+                      gap-5
+                      mt-5
+                      text-sm
+                      text-zinc-300
+                    "
+                  >
+
+                    <span>
+                      ⬇ {mostDownloaded.downloads}
+                    </span>
+
+                    <span>
+                      ❤️ {mostDownloaded.likes}
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </Link>
+
+          )}
+
+          {/* MOST LIKED */}
+
+          {mostLiked && (
+
+            <Link
+              href={`/mods/${mostLiked.id}`}
+              className="group"
+            >
+
+              <div
+                className="
+                  relative
+                  h-[247px]
+                  overflow-hidden
+                  rounded-[30px]
+                  border
+                  border-zinc-800
+                  transition
+                  duration-300
+                  hover:border-pink-500/40
+                  hover:-translate-y-1
+                "
+              >
+
+                <img
+                  src={mostLiked.image}
+                  alt={mostLiked.title}
+                  className="
+                    absolute
+                    inset-0
+                    w-full
+                    h-full
+                    object-cover
+                    transition
+                    duration-700
+                    group-hover:scale-105
+                  "
+                />
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    bg-gradient-to-t
+                    from-black
+                    via-black/70
+                    to-black/20
+                  "
+                />
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    p-8
+                    flex
+                    flex-col
+                    justify-end
+                  "
+                >
+
+                  <p
+                    className="
+                      text-sm
+                      uppercase
+                      tracking-[0.2em]
+                      text-pink-300
+                      mb-4
+                    "
+                  >
+                    Community Favorite
+                  </p>
+
+                  <h3
+                    className="
+                      text-3xl
+                      font-black
+                      leading-tight
+                      line-clamp-2
+                    "
+                  >
+                    {mostLiked.title}
+                  </h3>
+
+                  <div
+                    className="
+                      flex
+                      items-center
+                      gap-5
+                      mt-5
+                      text-sm
+                      text-zinc-300
+                    "
+                  >
+
+                    <span>
+                      ❤️ {mostLiked.likes}
+                    </span>
+
+                    <span>
+                      ⬇ {mostLiked.downloads}
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </Link>
+
+          )}
+
+        </div>
+
+      </div>
+
+      {/* EXTRA PREMIUM MODS */}
+
+      {secondary.length > 1 && (
+
+        <div
+          className="
+            grid
+            grid-cols-1
+            md:grid-cols-2
+            xl:grid-cols-4
+            gap-5
+            mt-6
+          "
+        >
+
+          {secondary.map((mod) => (
+
+            <Link
+              key={mod.id}
+              href={`/mods/${mod.id}`}
+              className="group"
+            >
+
+              <div
+                className="
+                  relative
+                  h-[320px]
+                  overflow-hidden
+                  rounded-[28px]
+                  border
+                  border-zinc-800
+                  bg-black
+                  transition
+                  duration-300
+                  hover:border-purple-500/40
+                  hover:-translate-y-1
+                "
+              >
+
+                <img
+                  src={mod.image}
+                  alt={mod.title}
+                  className="
+                    absolute
+                    inset-0
+                    h-full
+                    w-full
+                    object-cover
+                    transition
+                    duration-700
+                    group-hover:scale-105
+                  "
+                />
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    bg-gradient-to-t
+                    from-black
+                    via-black/60
                     to-black/10
                   "
                 />
@@ -317,33 +583,26 @@ export default function ModMonetizationHub({
 
                   <div
                     className="
-                      inline-flex
-                      w-fit
-                      rounded-full
-                      bg-purple-500/20
-                      border
-                      border-purple-500/30
-                      px-3
-                      py-1
-                      text-xs
-                      font-medium
-                      text-purple-200
-                      mb-4
+                      text-[11px]
+                      uppercase
+                      tracking-[0.25em]
+                      text-purple-300
+                      mb-3
                     "
                   >
-                    Premium
+                    Premium Release
                   </div>
 
-                  <h4
+                  <h3
                     className="
-                      text-xl
+                      text-2xl
                       font-bold
-                      leading-snug
+                      leading-tight
                       line-clamp-2
                     "
                   >
                     {mod.title}
-                  </h4>
+                  </h3>
 
                   <div
                     className="
@@ -351,17 +610,17 @@ export default function ModMonetizationHub({
                       items-center
                       gap-4
                       mt-4
-                      text-xs
+                      text-sm
                       text-zinc-300
                     "
                   >
 
                     <span>
-                      ⬇ {mod.downloads}
+                      ❤️ {mod.likes}
                     </span>
 
                     <span>
-                      ❤️ {mod.likes}
+                      ⬇ {mod.downloads}
                     </span>
 
                   </div>

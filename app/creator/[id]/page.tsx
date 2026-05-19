@@ -165,6 +165,7 @@ export default async function CreatorPage({
         support_url,
         external_purchase_url,
         visibility,
+        release_state,
         early_access,
 
         mod_creators (
