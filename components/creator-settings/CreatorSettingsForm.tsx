@@ -48,9 +48,19 @@ export default function CreatorSettingsForm({
       />
 
       <CreatorSocialsSection
-        form={form}
-        handleChange={handleChange}
-      />
+  form={form}
+  handleSocialChange={(
+  field: string,
+  value: string
+) => {
+
+  form.socials = {
+    ...form.socials,
+    [field]: value,
+  };
+
+}}
+/>
 
       <CreatorSettingsSubmit
         loading={loading}

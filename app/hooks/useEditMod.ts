@@ -60,20 +60,49 @@ export default function useEditMod(modId: string | string[]) {
   }
 
   async function fetchCreators() {
-    const { data, error } =
-      await supabase
-        .from("creators")
-        .select("*");
 
-    if (error) {
-      console.error(error);
-      return;
-    }
+  const {
+    data: userData,
+  } = await supabase.auth.getUser();
 
-    setCreators(data || []);
-    setAllCreators(data || []);
-    setFilteredCreators(data || []);
+  const userId =
+    userData.user?.id;
+
+  if (!userId) return;
+
+  const { data, error } =
+    await supabase
+      .from("creator_members")
+      .select(`
+        creator:creators (*)
+      `)
+      .eq(
+        "profile_id",
+        userId
+      )
+      .eq(
+        "status",
+        "approved"
+      );
+
+  if (error) {
+    console.error(error);
+    return;
   }
+
+  const creators =
+    data?.map(
+      (item: any) =>
+        item.creator
+    ) || [];
+
+  setCreators(creators);
+
+  setAllCreators(creators);
+
+  setFilteredCreators(creators);
+
+}
 
   function handleChange(
     e: React.ChangeEvent<
@@ -115,6 +144,9 @@ export default function useEditMod(modId: string | string[]) {
 
           description:
             form.description,
+
+          category:
+            form.category,
 
           image:
             form.image,

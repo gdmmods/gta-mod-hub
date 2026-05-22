@@ -2,10 +2,12 @@ import Link from "next/link";
 
 interface CreatorActionsProps {
   creatorId: string;
+  supportUrl?: string;
 }
 
 export default function CreatorActions({
   creatorId,
+  supportUrl,
 }: CreatorActionsProps) {
 
   return (
@@ -38,24 +40,33 @@ export default function CreatorActions({
       </button>
 
       {/* SUPPORT */}
-      <button
-        className="
-          w-full
-          rounded-2xl
-          border
-          border-zinc-800
-          bg-zinc-950/70
-          py-3
-          font-medium
-          text-zinc-300
-          hover:border-purple-500/30
-          hover:text-white
-          transition
-          backdrop-blur-xl
-        "
-      >
-        Support Creator
-      </button>
+      {supportUrl && (
+
+  <a
+    href={supportUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="
+      block
+      w-full
+      rounded-2xl
+      border
+      border-zinc-800
+      bg-zinc-950/70
+      py-3
+      text-center
+      font-medium
+      text-zinc-300
+      hover:border-purple-500/30
+      hover:text-white
+      transition
+      backdrop-blur-xl
+    "
+  >
+    Support Creator
+  </a>
+
+)}
 
       {/* EDIT PROFILE */}
       <Link

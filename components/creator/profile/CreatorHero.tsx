@@ -26,6 +26,12 @@ export default function CreatorHero({
   totalDownloads,
 }: CreatorHeroProps) {
 
+const supportUrl =
+  creator.socials?.patreon ||
+  creator.socials?.kofi ||
+  creator.socials?.store ||
+  creator.socials?.website;
+
   return (
 
     <section
@@ -188,8 +194,12 @@ export default function CreatorHero({
               </div>
 
               <div className="mt-6">
+                
+                
+
                 <CreatorActions
                   creatorId={creator.id}
+                  supportUrl={supportUrl}
                 />
               </div>
 

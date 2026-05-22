@@ -243,19 +243,25 @@ export default async function CreatorPage({
       external_purchase_url:
         m.external_purchase_url ?? null,
 
-      is_paid:
-        m.is_paid ?? false,
-
       price:
         m.price ?? 0,
     })
   ) || [];
 
+  console.log(
+  mods.map((m: any) => ({
+    title: m.title,
+    release_state: m.release_state,
+    visibility: m.visibility,
+    is_paid: m.is_paid,
+  }))
+);
+
     const premiumMods =
   mods.filter(
     (mod: any) =>
-      mod.is_paid ||
-      mod.visibility !== "public"
+      mod.visibility ===
+      "supporters"
   );
 
   /* -----------------------------
@@ -329,6 +335,12 @@ export default async function CreatorPage({
         totalDownloads={totalDownloads}
       />
 
+      {/* FEATURED CREATIONS */}
+      <CreatorFeaturedMod
+        mostDownloaded={mostDownloaded}
+        mostLiked={mostLiked}
+      />
+
       {/* MODS FIRST */}
       <CreatorModsSection
         mods={mods}
@@ -344,11 +356,7 @@ export default async function CreatorPage({
 
       )}
 
-      {/* FEATURED CREATIONS */}
-      <CreatorFeaturedMod
-        mostDownloaded={mostDownloaded}
-        mostLiked={mostLiked}
-      />
+    
 
       {/* SECONDARY ECOSYSTEM */}
       <section

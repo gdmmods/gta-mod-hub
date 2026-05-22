@@ -5,9 +5,10 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
 import CreatorEditBrandingSection from "./CreatorEditBrandingSection";
-import CreatorEditSocialsSection from "./CreatorEditSocialsSection";
 import CreatorEditTagsSection from "./CreatorEditTagsSection";
 import CreatorEditStatsSection from "./CreatorEditStatsSection";
+import CreatorSocialsSection from "@/components/creator-settings/CreatorSocialsSection";
+
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -55,20 +56,42 @@ export default function CreatorEditForm({
 
   async function saveCreator() {
 
+    console.log(
+      "CREATOR DATA:"
+    );
+
+    console.log(
+      creatorData
+    );
+
+    console.log(
+      "SOCIALS:"
+    );
+
+    console.log(
+      creatorData.socials
+    );
+
     setLoading(true);
 
     setSaved(false);
 
-    const { error } =
-      await supabase
-        .from("creators")
-        .update({
-          ...creatorData,
-        })
-        .eq(
-          "id",
-          creator.id
-        );
+    const {
+      data,
+      error,
+    } = await supabase
+      .from("creators")
+      .update({
+        ...creatorData,
+      })
+      .eq(
+        "id",
+        creator.id
+      )
+      .select();
+
+    console.log(data);
+    console.log(error);
 
     if (error) {
 
@@ -82,9 +105,9 @@ export default function CreatorEditForm({
 
       setSaved(true);
 
-        router.push(
-          `/creator/${creator.id}`
-);
+      router.push(
+        `/creator/${creator.id}`
+      );
 
     }
 
@@ -109,11 +132,25 @@ export default function CreatorEditForm({
         }
       />
 
-      <CreatorEditSocialsSection
-        creatorData={creatorData}
-        setCreatorData={
-          setCreatorData
-        }
+      <CreatorSocialsSection
+        form={creatorData}
+        handleSocialChange={(
+          field: string,
+          value: string
+        ) => {
+
+          setCreatorData(
+            (prev: any) => ({
+              ...prev,
+
+              socials: {
+                ...prev.socials,
+                [field]: value,
+              },
+            })
+          );
+
+        }}
       />
 
       <CreatorEditTagsSection
@@ -125,7 +162,6 @@ export default function CreatorEditForm({
 
       <CreatorEditStatsSection />
 
-      {/* SAVE */}
       <div
         className="
           flex

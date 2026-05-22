@@ -40,11 +40,29 @@ export default function useCreatorSettings(
 
       location: "",
 
-      discord: "",
+      socials: {
 
-      youtube: "",
+        discord: "",
 
-      website: "",
+        youtube: "",
+
+        website: "",
+
+        instagram: "",
+
+        twitter: "",
+
+        github: "",
+
+        patreon: "",
+
+        kofi: "",
+
+        store: "",
+
+        support_email: "",
+
+      },
 
     });
 
@@ -84,9 +102,13 @@ export default function useCreatorSettings(
       ) {
 
         console.error(
-            "CREATOR SETTINGS LOAD ERROR:",
-            JSON.stringify(error, null, 2)
-            );
+          "CREATOR SETTINGS LOAD ERROR:",
+          JSON.stringify(
+            error,
+            null,
+            2
+          )
+        );
 
         return;
 
@@ -118,14 +140,39 @@ export default function useCreatorSettings(
         location:
           creator.location || "",
 
-        discord:
-          socials.discord || "",
+        socials: {
 
-        youtube:
-          socials.youtube || "",
+          discord:
+            socials.discord || "",
 
-        website:
-          socials.website || "",
+          youtube:
+            socials.youtube || "",
+
+          website:
+            socials.website || "",
+
+          instagram:
+            socials.instagram || "",
+
+          twitter:
+            socials.twitter || "",
+
+          github:
+            socials.github || "",
+
+          patreon:
+            socials.patreon || "",
+
+          kofi:
+            socials.kofi || "",
+
+          store:
+            socials.store || "",
+
+          support_email:
+            socials.support_email || "",
+
+        },
 
       });
 
@@ -149,14 +196,53 @@ export default function useCreatorSettings(
     e: any
   ) {
 
-    setForm({
+    const name =
+      e.target.name;
 
-      ...form,
+    const value =
+      e.target.value;
 
-      [e.target.name]:
-        e.target.value,
+    /* SOCIALS */
+    if (
+      name.startsWith(
+        "socials."
+      )
+    ) {
 
-    });
+      const socialKey =
+        name.replace(
+          "socials.",
+          ""
+        );
+
+      setForm((prev: any) => ({
+
+        ...prev,
+
+        socials: {
+
+          ...prev.socials,
+
+          [socialKey]:
+            value,
+
+        },
+
+      }));
+
+      return;
+
+    }
+
+    /* NORMAL FIELDS */
+    setForm((prev: any) => ({
+
+      ...prev,
+
+      [name]:
+        value,
+
+    }));
 
   }
 
@@ -172,52 +258,69 @@ export default function useCreatorSettings(
 
     setLoading(true);
 
-    const socials = {
+    console.log(
+      "FINAL FORM:"
+    );
 
-      discord:
-        form.discord,
+    console.log(form);
 
-      youtube:
-        form.youtube,
+    console.log(
+      "FINAL SOCIALS:"
+    );
 
-      website:
-        form.website,
+    console.log(
+      form.socials
+    );
 
-    };
+    const {
+      data,
+      error,
+    } = await supabase
+      .from("creators")
+      .update({
 
-    const { error } =
-      await supabase
-        .from("creators")
-        .update({
+        name:
+          form.name,
 
-          name:
-            form.name,
+        tagline:
+          form.tagline,
 
-          tagline:
-            form.tagline,
+        bio:
+          form.bio,
 
-          bio:
-            form.bio,
+        avatar:
+          form.avatar,
 
-          avatar:
-            form.avatar,
+        banner:
+          form.banner,
 
-          banner:
-            form.banner,
+        specialization:
+          form.specialization,
 
-          specialization:
-            form.specialization,
+        location:
+          form.location,
 
-          location:
-            form.location,
+        socials:
+          form.socials,
 
-          socials,
+      })
+      .eq(
+        "id",
+        creatorId
+      )
+      .select();
 
-        })
-        .eq(
-          "id",
-          creatorId
-        );
+    console.log(
+      "UPDATE RESULT:"
+    );
+
+    console.log(data);
+
+    console.log(
+      "UPDATE ERROR:"
+    );
+
+    console.log(error);
 
     if (error) {
 

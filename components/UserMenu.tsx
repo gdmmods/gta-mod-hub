@@ -17,6 +17,9 @@ export default function UserMenu() {
   const [open, setOpen] =
     useState(false);
 
+  const [session, setSession] =
+    useState<any>(null);
+
   const [
     creatorId,
     setCreatorId,
@@ -67,39 +70,43 @@ export default function UserMenu() {
   }, []);
 
   /* --------------------------------
-     LOAD CREATOR ID
+     LOAD SESSION
   -------------------------------- */
 
   useEffect(() => {
 
-    async function loadCreator() {
+    async function loadSession() {
 
       const {
         data: { session },
       } =
         await supabase.auth.getSession();
 
-      if (!session)
+      setSession(session);
+
+      if (!session) {
+
+        setCreatorId(null);
         return;
+
+      }
+
+      loadCreator(session.user.id);
+
+    }
+
+    async function loadCreator(
+      userId: string
+    ) {
 
       const {
         data,
         error,
       } = await supabase
-        .from(
-          "creator_members"
-        )
-        .select(`
-          creator_id
-        `)
-        .eq(
-          "profile_id",
-          session.user.id
-        )
-        .eq(
-          "status",
-          "approved"
-        )
+        .from("creator_members")
+        .select("creator_id")
+        .eq("profile_id", userId)
+        .eq("status", "approved")
         .maybeSingle();
 
       if (error) {
@@ -113,19 +120,42 @@ export default function UserMenu() {
 
       }
 
-      if (
-        data?.creator_id
-      ) {
-
-        setCreatorId(
-          data.creator_id
-        );
-
-      }
+      setCreatorId(
+        data?.creator_id ?? null
+      );
 
     }
 
-    loadCreator();
+    loadSession();
+
+    const {
+      data: listener,
+    } =
+      supabase.auth.onAuthStateChange(
+        (_event, session) => {
+
+          setSession(session);
+
+          if (!session) {
+
+            setCreatorId(null);
+
+          } else {
+
+            loadCreator(
+              session.user.id
+            );
+
+          }
+
+        }
+      );
+
+    return () => {
+
+      listener.subscription.unsubscribe();
+
+    };
 
   }, []);
 
@@ -136,6 +166,8 @@ export default function UserMenu() {
   async function handleLogout() {
 
     await supabase.auth.signOut();
+
+    setOpen(false);
 
     window.location.href = "/";
 
@@ -158,26 +190,21 @@ export default function UserMenu() {
           flex
           items-center
           justify-center
-
           h-11
           px-5
-
           rounded-xl
-
           border
           border-zinc-800
-
           bg-zinc-950
-
           text-sm
           text-white
-
           hover:border-zinc-700
-
           transition
         "
       >
-        Account
+        {session
+          ? "Account"
+          : "Login"}
       </button>
 
       {/* DROPDOWN */}
@@ -191,86 +218,130 @@ export default function UserMenu() {
             top-full
             mt-6
             w-56
-
             bg-zinc-900/95
             backdrop-blur-xl
-
             border
             border-zinc-800
-
             rounded-2xl
             overflow-hidden
-
             shadow-2xl
-
             z-50
           "
         >
 
-          {/* FAVORITES */}
+          {session ? (
 
-          <Link
-            href="/favorites"
-            className="
-              flex
-              items-center
-              gap-3
+            <>
 
-              px-4
-              py-3
+              {/* FAVORITES */}
 
-              hover:bg-zinc-800
+              <Link
+                href="/favorites"
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  px-4
+                  py-3
+                  hover:bg-zinc-800
+                  transition
+                  text-sm
+                "
+                onClick={() =>
+                  setOpen(false)
+                }
+              >
+                ❤️ Favorites
+              </Link>
 
-              transition
-              text-sm
-            "
-            onClick={() =>
-              setOpen(false)
-            }
-          >
-            ❤️ Favorites
-          </Link>
+              {/* DASHBOARD */}
 
-          {/* DASHBOARD */}
+              <Link
+                href="/dashboard"
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  px-4
+                  py-3
+                  hover:bg-zinc-800
+                  transition
+                  text-sm
+                "
+                onClick={() =>
+                  setOpen(false)
+                }
+              >
+                📊 Dashboard
+              </Link>
 
-          <Link
-            href="/dashboard"
-            className="
-              flex
-              items-center
-              gap-3
+              {/* MY CREATOR PROFILE */}
 
-              px-4
-              py-3
+              {creatorId && (
 
-              hover:bg-zinc-800
+                <Link
+                  href={`/creator/${creatorId}`}
+                  className="
+                    flex
+                    items-center
+                    gap-3
+                    px-4
+                    py-3
+                    hover:bg-zinc-800
+                    transition
+                    text-sm
+                  "
+                  onClick={() =>
+                    setOpen(false)
+                  }
+                >
+                  👤 My Creator Profile
+                </Link>
 
-              transition
-              text-sm
-            "
-            onClick={() =>
-              setOpen(false)
-            }
-          >
-            📊 Dashboard
-          </Link>
+              )}
 
-          {/* MY CREATOR PROFILE */}
+              <div
+                className="
+                  h-px
+                  bg-zinc-800
+                "
+              />
 
-          {creatorId && (
+              {/* LOGOUT */}
+
+              <button
+                onClick={
+                  handleLogout
+                }
+                className="
+                  w-full
+                  flex
+                  items-center
+                  gap-3
+                  px-4
+                  py-3
+                  hover:bg-red-500/10
+                  text-red-400
+                  text-sm
+                  transition
+                "
+              >
+                🚪 Logout
+              </button>
+
+            </>
+
+          ) : (
 
             <Link
-              href={`/creator/${creatorId}`}
+              href="/login"
               className="
                 flex
                 items-center
                 gap-3
-
                 px-4
                 py-3
-
                 hover:bg-zinc-800
-
                 transition
                 text-sm
               "
@@ -278,44 +349,10 @@ export default function UserMenu() {
                 setOpen(false)
               }
             >
-              👤 My Creator Profile
+              🔑 Login
             </Link>
 
           )}
-
-          <div
-            className="
-              h-px
-              bg-zinc-800
-            "
-          />
-
-          {/* LOGOUT */}
-
-          <button
-            onClick={
-              handleLogout
-            }
-            className="
-              w-full
-
-              flex
-              items-center
-              gap-3
-
-              px-4
-              py-3
-
-              hover:bg-red-500/10
-
-              text-red-400
-              text-sm
-
-              transition
-            "
-          >
-            🚪 Logout
-          </button>
 
         </div>
 

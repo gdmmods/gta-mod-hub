@@ -1,12 +1,18 @@
 type Props = {
   form: any;
-  handleChange: any;
+  handleSocialChange: (
+    field: string,
+    value: string
+  ) => void;
 };
 
 export default function CreatorSocialsSection({
   form,
-  handleChange,
+  handleSocialChange,
 }: Props) {
+
+  const socials =
+    form.socials || {};
 
   return (
 
@@ -25,58 +31,60 @@ export default function CreatorSocialsSection({
         </h2>
 
         <p className="text-zinc-400 text-sm">
-          External links and platforms.
+          External links and support platforms.
         </p>
 
       </div>
 
-      <input
-        name="discord"
-        value={form.discord}
-        onChange={handleChange}
-        placeholder="Discord"
-        className="
-          w-full
-          rounded-2xl
-          bg-zinc-950
-          border
-          border-zinc-800
-          px-5
-          py-4
-        "
-      />
+      {[
+        "discord",
+        "youtube",
+        "website",
+        "instagram",
+        "twitter",
+        "github",
+        "patreon",
+        "kofi",
+        "store",
+        "support_email",
+      ].map((field) => (
 
-      <input
-        name="youtube"
-        value={form.youtube}
-        onChange={handleChange}
-        placeholder="YouTube"
-        className="
-          w-full
-          rounded-2xl
-          bg-zinc-950
-          border
-          border-zinc-800
-          px-5
-          py-4
-        "
-      />
+        <input
+          key={field}
+          name={field}
+          value={
+            socials[field] || ""
+          }
+          onChange={(e) =>
+            handleSocialChange(
+              field,
+              e.target.value
+            )
+          }
+          placeholder={
+            field
+              .replace("_", " ")
+              .replace(
+                /\b\w/g,
+                (c) => c.toUpperCase()
+              )
+          }
+          className="
+            w-full
+            rounded-2xl
+            bg-zinc-950
+            border
+            border-zinc-800
+            px-5
+            py-4
+            text-white
+            outline-none
+            focus:border-purple-500
+            transition
+          "
+        />
 
-      <input
-        name="website"
-        value={form.website}
-        onChange={handleChange}
-        placeholder="Website"
-        className="
-          w-full
-          rounded-2xl
-          bg-zinc-950
-          border
-          border-zinc-800
-          px-5
-          py-4
-        "
-      />
+      ))}
 
     </section>
 

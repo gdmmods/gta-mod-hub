@@ -14,6 +14,11 @@ export default function ModMonetizationHub({
     return null;
   }
 
+  console.log(
+    "PREMIUM HUB DATA:",
+    premiumMods
+  );
+
   return (
 
     <section
@@ -56,7 +61,8 @@ export default function ModMonetizationHub({
             text-zinc-400
           "
         >
-          Exclusive supporter creations from {creator?.name}.
+          Exclusive supporter creations from{" "}
+          {creator?.name}.
         </p>
 
       </div>
@@ -72,187 +78,215 @@ export default function ModMonetizationHub({
         "
       >
 
-        {premiumMods.map((mod) => (
+        {premiumMods.map(
+          (mod: any) => {
 
-          <div
-            key={mod.id}
-            className="
-              relative
-              h-[340px]
-              rounded-[34px]
-              overflow-hidden
-              border
-              border-zinc-800
-              group
-            "
-          >
+            console.log(
+              "MOD:",
+              mod
+            );
 
-            {/* IMAGE */}
+            if (!mod) {
+              return null;
+            }
 
-            <img
-              src={mod.image}
-              alt={mod.title}
-              className="
-                absolute
-                inset-0
-                w-full
-                h-full
-                object-cover
-                group-hover:scale-[1.03]
-                transition
-                duration-700
-              "
-            />
-
-            {/* OVERLAY */}
-
-            <div
-              className="
-                absolute
-                inset-0
-                bg-gradient-to-t
-                from-black
-                via-black/70
-                to-black/10
-              "
-            />
-
-            {/* CONTENT */}
-
-            <div
-              className="
-                absolute
-                inset-0
-                p-8
-                flex
-                flex-col
-                justify-end
-              "
-            >
-
-              {/* LABEL */}
-
-              <p
-                className="
-                  text-sm
-                  uppercase
-                  tracking-[0.2em]
-                  text-purple-300
-                  mb-4
-                "
-              >
-                Supporter Exclusive
-              </p>
-
-              {/* TITLE */}
-
-              <h3
-                className="
-                  text-3xl
-                  font-black
-                  leading-tight
-                  line-clamp-2
-                "
-              >
-                {mod.title}
-              </h3>
-
-              {/* DESCRIPTION */}
-
-              <p
-                className="
-                  mt-4
-                  text-sm
-                  text-zinc-300
-                  leading-relaxed
-                  line-clamp-3
-                  max-w-[90%]
-                "
-              >
-                {mod.description}
-              </p>
-
-              {/* STATS */}
+            return (
 
               <div
+                key={mod.id}
                 className="
-                  flex
-                  items-center
-                  gap-5
-                  mt-5
-                  text-sm
-                  text-zinc-300
+                  relative
+                  h-[340px]
+                  rounded-[34px]
+                  overflow-hidden
+                  border
+                  border-zinc-800
+                  group
                 "
               >
 
-                <span>
-                  ⬇ {mod.downloads || 0}
-                </span>
+                {/* IMAGE */}
 
-                <span>
-                  ❤️ {mod.likes || 0}
-                </span>
-
-              </div>
-
-              {/* BUTTONS */}
-
-              <div
-                className="
-                  flex
-                  items-center
-                  gap-4
-                  mt-6
-                "
-              >
-
-                <Link
-                  href={`/mods/${mod.id}`}
+                <img
+                  src={
+                    mod.image ||
+                    mod.cover_image ||
+                    mod.thumbnail ||
+                    "/placeholder.jpg"
+                  }
+                  alt={mod.title}
                   className="
-                    px-5
-                    py-3
-                    rounded-2xl
-                    bg-gradient-to-r
-                    from-purple-600
-                    to-fuchsia-500
-                    text-sm
-                    font-bold
-                    text-white
+                    absolute
+                    inset-0
+                    w-full
+                    h-full
+                    object-cover
+                    group-hover:scale-[1.03]
+                    transition
+                    duration-700
+                  "
+                />
+
+                {/* OVERLAY */}
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    bg-gradient-to-t
+                    from-black
+                    via-black/75
+                    to-black/30
+                  "
+                />
+
+                {/* CONTENT */}
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    p-8
+                    flex
+                    flex-col
+                    justify-end
+                    gap-1
                   "
                 >
-                  View Mod
-                </Link>
 
-                {mod.external_purchase_url && (
+                  {/* LABEL */}
 
-                  <a
-                    href={mod.external_purchase_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <p
                     className="
-                      px-5
-                      py-3
-                      rounded-2xl
-                      border
-                      border-zinc-700
-                      bg-black/40
                       text-sm
-                      font-semibold
-                      text-white
+                      uppercase
+                      tracking-[0.2em]
+                      text-purple-300
+                      mb-4
                     "
                   >
-                    View Store
-                  </a>
+                    Supporter Exclusive
+                  </p>
 
-                )}
+                  {/* TITLE */}
+
+                  <h3
+                    className="
+                      text-2l
+                      lg:text-3xl
+                      font-black
+                      leading-tight
+                      line-clamp-2
+                      max-w-[70%]
+                      drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]
+                    "
+                  >
+                    {mod.title}
+                  </h3>
+
+                  {/* DESCRIPTION */}
+{/*
+
+                  <p
+                    className="
+                      mt-4
+                      text-sm
+                      text-zinc-300
+                      leading-relaxed
+                      line-clamp-2
+                      max-w-[75%]
+                    "
+                  >
+                    {mod.description}
+                  </p>
+*/}
+                  {/* STATS */}
+
+                  <div
+                    className="
+                      flex
+                      items-center
+                      gap-5
+                      mt-5
+                      text-sm
+                      text-zinc-300
+                    "
+                  >
+
+
+                    <span>
+                      ❤️ {mod.likes || 0}
+                    </span>
+
+                  </div>
+
+                  {/* BUTTONS */}
+
+                  <div
+                    className="
+                      flex
+                      items-center
+                      gap-4
+                      mt-6
+                    "
+                  >
+
+                    <Link
+                      href={`/mods/${mod.id}`}
+                      className="
+                        px-5
+                        py-3
+                        rounded-2xl
+                        bg-gradient-to-r
+                        from-purple-600
+                        to-fuchsia-500
+                        text-sm
+                        font-bold
+                        text-white
+                        hover:opacity-90
+                        transition
+                      "
+                    >
+                      View Mod
+                    </Link>
+
+                    {mod.external_purchase_url && (
+
+                      <a
+                        href={
+                          mod.external_purchase_url
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="
+                          px-5
+                          py-3
+                          rounded-2xl
+                          border
+                          border-zinc-700
+                          bg-black/40
+                          text-sm
+                          font-semibold
+                          text-white
+                          hover:opacity-90
+                          transition
+                        "
+                      >
+                        View Store
+                      </a>
+
+                    )}
+
+                  </div>
+
+                </div>
 
               </div>
 
-            </div>
+            );
 
-          </div>
-
-        ))}
+          }
+        )}
 
       </div>
 
