@@ -72,19 +72,9 @@ export default function MobileMenu() {
       href: "/?sort=likes",
     },
 
-    {
-      label: "Dashboard",
-      href: "/dashboard",
-    },
-
-    {
-      label: "Favorites",
-      href: "/favorites",
-    },
-
-    {
-      label: "Upload Mod",
-      href: "/upload",
+{
+      label: "Constitution",
+      href: "/constitution",
     },
 
     {
@@ -96,7 +86,7 @@ export default function MobileMenu() {
       label: "About",
       href: "/about",
     },
-
+    
   ];
 
   return (
