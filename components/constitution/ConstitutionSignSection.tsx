@@ -28,9 +28,14 @@ export default function ConstitutionSignSection() {
     null
   );
 
-  /* -------------------------------
-     LOAD CREATOR
-  ------------------------------- */
+  const [
+    checked,
+    setChecked,
+  ] = useState(false);
+
+  /* --------------------------------
+     LOAD CREATOR + SIGNATURE STATUS
+  -------------------------------- */
 
   useEffect(() => {
 
@@ -40,49 +45,65 @@ export default function ConstitutionSignSection() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) return;
+      if (!user) {
+
+        setChecked(true);
+        return;
+
+      }
 
       const {
-  data: membership,
-} = await supabase
-  .from("creator_members")
-  .select("creator_id")
-  .eq(
-    "profile_id",
-    user.id
-  )
-  .eq(
-    "role",
-    "owner"
-  )
-  .maybeSingle();
-
-if (!membership) return;
-
-setCreatorId(
-  membership.creator_id
-);
-
-      /* CHECK IF ALREADY SIGNED */
-
-      const {
-        data: existing,
+        data: membership,
+        error: membershipError,
       } = await supabase
-        .from(
-          "constitution_signatures"
-        )
-        .select("id")
+        .from("creator_members")
+        .select("creator_id")
         .eq(
-        "creator_id",
-        membership.creator_id
+          "profile_id",
+          user.id
+        )
+        .eq(
+          "role",
+          "owner"
         )
         .maybeSingle();
 
-      if (existing) {
+      if (
+        membershipError ||
+        !membership
+      ) {
 
-        setSigned(true);
+        setChecked(true);
+        return;
 
       }
+
+      setCreatorId(
+        membership.creator_id
+      );
+
+      const {
+  data: existingRows,
+} = await supabase
+  .from(
+    "constitution_signatures"
+  )
+  .select("id")
+  .eq(
+    "creator_id",
+    membership.creator_id
+  );
+
+if (
+  existingRows &&
+  existingRows.length > 0
+) {
+
+  setSigned(true);
+
+}
+
+      setChecked(true);
 
     }
 
@@ -90,49 +111,117 @@ setCreatorId(
 
   }, []);
 
-  /* -------------------------------
-     SIGN
-  ------------------------------- */
+  /* --------------------------------
+     SIGN CONSTITUTION
+  -------------------------------- */
 
   async function signConstitution() {
 
-    if (!creatorId) return;
+  if (!creatorId) return;
 
-    setLoading(true);
+  setLoading(true);
 
-    const { error } =
-      await supabase
-        .from(
-          "constitution_signatures"
-        )
-        .insert({
-          creator_id: creatorId,
-        });
+  /* -------------------------------
+     CHECK EXISTING SIGNATURE
+  ------------------------------- */
 
-    if (error) {
+  const {
+    data: existingRows,
+    error: existingError,
+  } = await supabase
+    .from(
+      "constitution_signatures"
+    )
+    .select("id")
+    .eq(
+      "creator_id",
+      creatorId
+    );
 
-  console.error(
-    "SIGN ERROR:",
-    error
-  );
+  if (existingError) {
 
-  alert(
-    JSON.stringify(error)
-  );
-
-} else {
-
-      setSigned(true);
-
-    }
+    console.error(
+      "CHECK ERROR:",
+      existingError
+    );
 
     setLoading(false);
+
+    return;
 
   }
 
   /* -------------------------------
-     NO CREATOR
+     ALREADY SIGNED
   ------------------------------- */
+
+  if (
+    existingRows &&
+    existingRows.length > 0
+  ) {
+
+    setSigned(true);
+    setLoading(false);
+
+    return;
+
+  }
+
+  /* -------------------------------
+     INSERT SIGNATURE
+  ------------------------------- */
+
+  const {
+    error,
+  } = await supabase
+    .from(
+      "constitution_signatures"
+    )
+    .insert({
+
+      creator_id:
+        creatorId,
+
+    });
+
+  if (error) {
+
+    console.error(
+      "SIGN ERROR:",
+      error
+    );
+
+    alert(
+      JSON.stringify(
+        error,
+        null,
+        2
+      )
+    );
+
+  } else {
+
+    setSigned(true);
+
+  }
+
+  setLoading(false);
+
+}
+
+  /* --------------------------------
+     LOADING
+  -------------------------------- */
+
+  if (!checked) {
+
+    return null;
+
+  }
+
+  /* --------------------------------
+     NO CREATOR PROFILE
+  -------------------------------- */
 
   if (!creatorId) {
 
@@ -164,9 +253,49 @@ setCreatorId(
 
   }
 
-  /* -------------------------------
-     UI
-  ------------------------------- */
+  /* --------------------------------
+     SIGNED STATE
+  -------------------------------- */
+
+  if (signed) {
+
+    return (
+
+      <section
+        className="
+          border
+          border-zinc-800
+          rounded-3xl
+          p-10
+          bg-zinc-950/50
+          backdrop-blur-xl
+        "
+      >
+
+        <div
+          className="
+            border
+            border-emerald-500/30
+            bg-emerald-500/10
+            rounded-2xl
+            px-6
+            py-5
+            text-emerald-400
+            font-medium
+          "
+        >
+          Constitution signed.
+        </div>
+
+      </section>
+
+    );
+
+  }
+
+  /* --------------------------------
+     DEFAULT UI
+  -------------------------------- */
 
   return (
 
@@ -222,53 +351,31 @@ setCreatorId(
 
       </div>
 
-      {!signed ? (
+      <button
+        onClick={signConstitution}
+        disabled={loading}
+        className="
+          h-14
+          px-8
+          rounded-2xl
+          bg-gradient-to-r
+          from-violet-600
+          to-fuchsia-500
+          font-bold
+          text-white
+          transition
+          hover:scale-[1.02]
+        "
+      >
 
-        <button
-          onClick={signConstitution}
-          disabled={loading}
-          className="
-            h-14
-            px-8
-            rounded-2xl
-            bg-gradient-to-r
-            from-violet-600
-            to-fuchsia-500
-            font-bold
-            text-white
-            transition
-            hover:scale-[1.02]
-          "
-        >
+        {loading
+          ? "Signing..."
+          : "Sign Constitution"}
 
-          {loading
-            ? "Signing..."
-            : "Sign Constitution"}
-
-        </button>
-
-      ) : (
-
-        <div
-          className="
-            border
-            border-emerald-500/30
-            bg-emerald-500/10
-            rounded-2xl
-            px-6
-            py-4
-            text-emerald-400
-            font-medium
-            w-fit
-          "
-        >
-          Constitution signed.
-        </div>
-
-      )}
+      </button>
 
     </section>
 
   );
 
-} 
+}

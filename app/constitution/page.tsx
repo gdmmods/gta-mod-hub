@@ -1,5 +1,6 @@
 import Navbar from "@/components/layout/Navbar";
 import ConstitutionSignSection from "@/components/constitution/ConstitutionSignSection";
+import ConstitutionSignatureWall from "@/components/constitution/ConstitutionSignatureWall";
 
 export default function ModvaultConstitutionPage() {
   const principles = [
@@ -92,7 +93,13 @@ export default function ModvaultConstitutionPage() {
           ))}
         </div>
 
-          <ConstitutionSignSection />
+          <div className="mt-12">
+            <ConstitutionSignSection />
+          </div>
+
+          <div className="mt-10">
+            <ConstitutionSignatureWall />
+          </div>
 
         <div className="mt-24 rounded-[40px] border border-purple-500/20 bg-gradient-to-b from-purple-500/10 to-transparent p-10 text-center backdrop-blur-xl">
           <p className="text-sm uppercase tracking-[0.3em] text-purple-400 mb-5">
