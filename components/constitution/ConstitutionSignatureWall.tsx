@@ -22,10 +22,8 @@ type Signature = {
 
 export default function ConstitutionSignatureWall() {
 
-  const [
-    signatures,
-    setSignatures,
-  ] = useState<Signature[]>([]);
+  const [signatures, setSignatures] =
+  useState<any[]>([]);
 
   const [
     hovered,
@@ -39,19 +37,20 @@ export default function ConstitutionSignatureWall() {
   async function loadSignatures() {
 
     const {
-      data,
-      error,
-    } = await supabase
-      .from("constitution_signatures")
-      .select(`
-        id,
-        signed_at,
-        creators (
-          id,
-          name,
-          logo_url
-        )
-      `);
+  data,
+  error,
+} = await supabase
+  .from("constitution_signatures")
+  .select(`
+    id,
+    signed_at,
+    creator_id,
+    creators!constitution_signatures_creator_id_fkey (
+      id,
+      name,
+      avatar
+    )
+  `);
 
     if (error) {
 
@@ -63,9 +62,9 @@ export default function ConstitutionSignatureWall() {
     } else {
 
       setSignatures(
-        data || []
-      );
-
+    data || []
+  );
+      
     }
 
   }
