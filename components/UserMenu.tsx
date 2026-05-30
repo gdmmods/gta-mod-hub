@@ -272,7 +272,28 @@ export default function UserMenu() {
                   setOpen(false)
                 }
               >
-                📊 Dashboard
+                📊 Mods Dashboard
+              </Link>
+
+              {/* PROFILE SETTINGS */}
+
+              <Link
+                href="/settings"
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  px-4
+                  py-3
+                  hover:bg-zinc-800
+                  transition
+                  text-sm
+                "
+                onClick={() =>
+                  setOpen(false)
+                }
+              >
+                ⚙️ Profile Settings
               </Link>
 
               {/* MY CREATOR PROFILE */}
