@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import CreatorOwnershipGuard from "@/components/creator/edit/CreatorOwnershipGuard";
 import CreatorEditLayout from "@/components/creator/edit/CreatorEditLayout";
-import CreatorEditForm from "../../../../components/creator/edit/CreatorEditForm";
+import CreatorEditForm from "@/components/creator/edit/CreatorEditForm";
 
 import { supabaseAdmin } from "@/lib/supabase/admin";
 

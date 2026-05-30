@@ -4,10 +4,11 @@ import { useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
-import CreatorEditBrandingSection from "./CreatorEditBrandingSection";
-import CreatorEditTagsSection from "./CreatorEditTagsSection";
-import CreatorEditStatsSection from "./CreatorEditStatsSection";
+import CreatorEditBrandingSection from "@/components/creator/edit/CreatorEditBrandingSection";
+import CreatorEditTagsSection from "@/components/creator/edit/CreatorEditTagsSection";
+import CreatorEditStatsSection from "@/components/creator/edit/CreatorEditStatsSection";
 import CreatorSocialsSection from "@/components/creator-settings/CreatorSocialsSection";
+import CreatorAliasesSection from "@/components/creator/edit/CreatorAliasesSection";
 
 import { useRouter } from "next/navigation";
 
@@ -26,6 +27,9 @@ export default function CreatorEditForm({
 
   const [saved, setSaved] =
     useState(false);
+
+  const [aliases, setAliases] =
+    useState<string[]>([]);
 
   const [creatorData, setCreatorData] =
     useState({
@@ -116,6 +120,8 @@ export default function CreatorEditForm({
   }
 
   return (
+    
+    
 
     <div
       className="
@@ -159,6 +165,8 @@ export default function CreatorEditForm({
           setCreatorData
         }
       />
+
+      <CreatorAliasesSection />
 
       <CreatorEditStatsSection />
 

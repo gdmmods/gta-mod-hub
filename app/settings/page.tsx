@@ -14,6 +14,7 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [bio, setBio] = useState("");
+  const [creatorId, setCreatorId] = useState<string | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -28,6 +29,17 @@ export default function SettingsPage() {
       setLoading(false);
       return;
     }
+
+    const { data: creatorMember } = await supabase
+        .from("creator_members")
+        .select("creator_id")
+        .eq("profile_id", user.id)
+        .eq("role", "owner")
+        .single();
+
+        if (creatorMember) {
+        setCreatorId(creatorMember.creator_id);
+        }
 
     const { data, error } = await supabase
       .from("profiles")
@@ -93,6 +105,7 @@ export default function SettingsPage() {
  
     <>
     <Navbar />
+
     <main className="min-h-screen bg-black text-white">
       <div className="max-w-3xl mx-auto px-6 py-20">
         <p className="text-purple-400 uppercase tracking-[0.3em] text-sm mb-4">
@@ -177,6 +190,49 @@ export default function SettingsPage() {
             {saving ? "Saving..." : "Save Profile"}
           </button>
 
+          <div className="pt-8 border-t border-zinc-800">
+            <p className="text-purple-400 uppercase tracking-[0.3em] text-sm mb-3">
+                Creator Access
+            </p>
+
+            <h2 className="text-2xl font-bold mb-3">
+                Ready to Publish Mods?
+            </h2>
+
+            <p className="text-zinc-400 mb-6">
+                Create a creator profile and start building your presence on ModVault.
+            </p>
+
+            {creatorId ? (
+            <button
+                onClick={() => router.push(`/creator/${creatorId}`)}
+                className="
+                rounded-xl
+                px-6
+                py-3
+                bg-purple-600
+                hover:bg-purple-500
+                transition
+                "
+            >
+                Manage Creator
+            </button>
+            ) : (
+            <button
+                onClick={() => router.push("/become-creator")}
+                className="
+                rounded-xl
+                px-6
+                py-3
+                bg-zinc-800
+                hover:bg-zinc-700
+                transition
+                "
+            >
+                Become a Creator
+            </button>
+            )}
+            </div>
         </div>
       </div>
     

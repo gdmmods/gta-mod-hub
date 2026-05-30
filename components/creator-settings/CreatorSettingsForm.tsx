@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import CreatorProfileSection from "@/components/creator-settings/CreatorProfileSection";
 
 import CreatorBrandingSection from "@/components/creator-settings/CreatorBrandingSection";
@@ -30,6 +32,9 @@ export default function CreatorSettingsForm({
 
 }: Props) {
 
+const [aliases, setAliases] =
+  useState<string[]>([]);
+
   return (
 
     <form
@@ -46,6 +51,63 @@ export default function CreatorSettingsForm({
         form={form}
         handleChange={handleChange}
       />
+
+      <section className="space-y-4">
+
+      <h2 className="text-2xl font-bold">
+        Creator Aliases
+      </h2>
+
+      <button
+        type="button"
+        onClick={() =>
+          setAliases([
+            ...aliases,
+            "",
+          ])
+        }
+        className="
+          rounded-xl
+          bg-zinc-800
+          px-4
+          py-2
+        "
+      >
+        Add Alias
+      </button>
+
+      {aliases.map(
+        (alias, index) => (
+          <input
+            key={index}
+            value={alias}
+            onChange={(e) => {
+
+              const updated = [
+                ...aliases,
+              ];
+
+              updated[index] =
+                e.target.value;
+
+              setAliases(updated);
+
+            }}
+            placeholder="Alias"
+            className="
+              w-full
+              rounded-xl
+              bg-zinc-950
+              border
+              border-zinc-800
+              px-4
+              py-3
+            "
+          />
+        )
+      )}
+
+    </section>
 
       <CreatorSocialsSection
   form={form}
