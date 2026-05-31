@@ -9,9 +9,16 @@ import {
   supabase,
 } from "@/lib/supabase/client";
 
+import {
+  useRouter,
+} from "next/navigation";
+
 export default function useCreatorSettings(
   creatorId: string
 ) {
+
+  const router =
+  useRouter();
 
   const [
     loading,
@@ -32,11 +39,13 @@ export default function useCreatorSettings(
 
       bio: "",
 
+      status: "",
+
       avatar: "",
 
       banner: "",
 
-      specialization: "",
+      specialization: [] as string[],
 
       location: "",
 
@@ -86,6 +95,7 @@ export default function useCreatorSettings(
           name,
           tagline,
           bio,
+          status,
           avatar,
           banner,
           specialization,
@@ -137,6 +147,9 @@ export default function useCreatorSettings(
         bio:
           creator.bio || "",
 
+        status: 
+          creator.status || "",
+
         avatar:
           creator.avatar || "",
 
@@ -144,7 +157,11 @@ export default function useCreatorSettings(
           creator.banner || "",
 
         specialization:
-          creator.specialization || "",
+          Array.isArray(
+            creator.specialization
+          )
+            ? creator.specialization
+            : [],
 
         location:
           creator.location || "",
@@ -302,6 +319,9 @@ export default function useCreatorSettings(
         bio:
           form.bio,
 
+        status:
+          form.status,
+
         avatar:
           form.avatar,
 
@@ -336,13 +356,10 @@ export default function useCreatorSettings(
 
         const uniqueAliases =
           [...new Set(
-            form.aliases.map(
-              (a) => a.trim()
-            )
-          )]
-          .filter(
-            (a) => a !== ""
-          );
+            form.aliases
+              .map((a) => a.trim())
+              .filter((a) => a !== "")
+          )];
 
         const aliasesToInsert =
           uniqueAliases.map(
@@ -398,21 +415,13 @@ export default function useCreatorSettings(
 
     console.log(error);
 
-    if (error) {
+    if (!error) {
 
-      console.error(error);
+  router.push(
+    `/creator/${creatorId}`
+  );
 
-      alert(
-        "Failed to save creator profile."
-      );
-
-    } else {
-
-      alert(
-        "Creator profile updated."
-      );
-
-    }
+}
 
     setLoading(false);
 

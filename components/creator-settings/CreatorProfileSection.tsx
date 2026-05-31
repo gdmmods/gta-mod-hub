@@ -62,6 +62,22 @@ export default function CreatorProfileSection({
         "
       />
 
+      <input
+        name="status"
+        value={form.status}
+        onChange={handleChange}
+        placeholder="Status badge"
+        className="
+          w-full
+          rounded-2xl
+          bg-zinc-950
+          border
+          border-zinc-800
+          px-5
+          py-4
+        "
+      />
+
       <textarea
         name="bio"
         value={form.bio}
