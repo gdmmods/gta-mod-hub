@@ -8,7 +8,6 @@ import CreatorEditBrandingSection from "@/components/creator/edit/CreatorEditBra
 import CreatorEditTagsSection from "@/components/creator/edit/CreatorEditTagsSection";
 import CreatorEditStatsSection from "@/components/creator/edit/CreatorEditStatsSection";
 import CreatorSocialsSection from "@/components/creator-settings/CreatorSocialsSection";
-import CreatorAliasesSection from "@/components/creator/edit/CreatorAliasesSection";
 
 import { useRouter } from "next/navigation";
 
@@ -165,8 +164,6 @@ export default function CreatorEditForm({
           setCreatorData
         }
       />
-
-      <CreatorAliasesSection />
 
       <CreatorEditStatsSection />
 

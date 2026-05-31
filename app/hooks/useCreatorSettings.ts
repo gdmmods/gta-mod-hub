@@ -40,6 +40,8 @@ export default function useCreatorSettings(
 
       location: "",
 
+      aliases: [] as string[],
+
       socials: {
 
         discord: "",
@@ -114,6 +116,13 @@ export default function useCreatorSettings(
 
       }
 
+      const {
+        data: aliasesData,
+      } = await supabase
+        .from("creator_aliases")
+        .select("alias")
+        .eq("creator_id", creatorId);
+
       const socials =
         creator.socials || {};
 
@@ -139,6 +148,11 @@ export default function useCreatorSettings(
 
         location:
           creator.location || "",
+
+        aliases:
+          aliasesData?.map(
+            (a) => a.alias
+          ) || [],
 
         socials: {
 
@@ -310,6 +324,54 @@ export default function useCreatorSettings(
       )
       .select();
 
+      if (!error) {
+
+        await supabase
+          .from("creator_aliases")
+          .delete()
+          .eq(
+            "creator_id",
+            creatorId
+          );
+
+        const aliasesToInsert =
+          form.aliases
+            .filter(
+              (alias) =>
+                alias.trim() !== ""
+            )
+            .map(
+              (alias) => ({
+                creator_id:
+                  creatorId,
+                alias,
+              })
+            );
+
+        if (
+          aliasesToInsert.length > 0
+        ) {
+
+          const {
+            error:
+              aliasesError,
+          } = await supabase
+            .from(
+              "creator_aliases"
+            )
+            .insert(
+              aliasesToInsert
+            );
+
+          console.log(
+            "ALIASES SAVE ERROR:",
+            aliasesError
+          );
+
+        }
+
+      }
+
     console.log(
       "UPDATE RESULT:"
     );
@@ -342,15 +404,18 @@ export default function useCreatorSettings(
 
   }
 
-  return {
+    return {
 
     form,
+
     setForm,
 
     loading,
+
     loaded,
 
     handleChange,
+
     handleSubmit,
 
   };

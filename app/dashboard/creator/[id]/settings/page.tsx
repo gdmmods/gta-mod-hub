@@ -32,6 +32,7 @@ console.log(
   const {
 
     form,
+    setForm,
 
     loading,
     loaded,
@@ -92,19 +93,11 @@ console.log(
           >
 
             <CreatorSettingsForm
-
               form={form}
-
-              handleChange={
-                handleChange
-              }
-
-              handleSubmit={
-                handleSubmit
-              }
-
+              setForm={setForm}
+              handleChange={handleChange}
+              handleSubmit={handleSubmit}
               loading={loading}
-
             />
 
           </div>

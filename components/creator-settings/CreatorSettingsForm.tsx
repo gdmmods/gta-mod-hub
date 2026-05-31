@@ -12,6 +12,8 @@ type Props = {
 
   form: any;
 
+  setForm: any;
+
   handleChange: any;
 
   handleSubmit: any;
@@ -24,6 +26,8 @@ export default function CreatorSettingsForm({
 
   form,
 
+  setForm,
+
   handleChange,
 
   handleSubmit,
@@ -32,8 +36,7 @@ export default function CreatorSettingsForm({
 
 }: Props) {
 
-const [aliases, setAliases] =
-  useState<string[]>([]);
+  console.log("FORM:", form);
 
   return (
 
@@ -58,42 +61,31 @@ const [aliases, setAliases] =
         Creator Aliases
       </h2>
 
-      <button
-        type="button"
-        onClick={() =>
-          setAliases([
-            ...aliases,
-            "",
-          ])
-        }
-        className="
-          rounded-xl
-          bg-zinc-800
-          px-4
-          py-2
-        "
-      >
-        Add Alias
-      </button>
+      <p className="text-zinc-400 text-sm">
+        Alternate creator names used across platforms.
+      </p>
 
-      {aliases.map(
-        (alias, index) => (
+      {form.aliases?.map(
+        (alias: string, index: number) => (
+
           <input
             key={index}
             value={alias}
             onChange={(e) => {
 
               const updated = [
-                ...aliases,
+                ...form.aliases,
               ];
 
               updated[index] =
                 e.target.value;
 
-              setAliases(updated);
+              setForm((prev: any) => ({
+                ...prev,
+                aliases: updated,
+              }));
 
             }}
-            placeholder="Alias"
             className="
               w-full
               rounded-xl
@@ -104,6 +96,7 @@ const [aliases, setAliases] =
               py-3
             "
           />
+
         )
       )}
 
