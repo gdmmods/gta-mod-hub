@@ -334,19 +334,25 @@ export default function useCreatorSettings(
             creatorId
           );
 
-        const aliasesToInsert =
-          form.aliases
-            .filter(
-              (alias) =>
-                alias.trim() !== ""
+        const uniqueAliases =
+          [...new Set(
+            form.aliases.map(
+              (a) => a.trim()
             )
-            .map(
-              (alias) => ({
-                creator_id:
-                  creatorId,
-                alias,
-              })
-            );
+          )]
+          .filter(
+            (a) => a !== ""
+          );
+
+        const aliasesToInsert =
+          uniqueAliases.map(
+            (alias) => ({
+              creator_id:
+                creatorId,
+              alias,
+            })
+          );
+        
 
         if (
           aliasesToInsert.length > 0
@@ -363,10 +369,18 @@ export default function useCreatorSettings(
               aliasesToInsert
             );
 
-          console.log(
-            "ALIASES SAVE ERROR:",
-            aliasesError
-          );
+          if (aliasesError) {
+
+            console.error(
+              "ALIASES SAVE ERROR:",
+              aliasesError
+            );
+
+            alert(
+              "Failed to save aliases."
+            );
+
+}
 
         }
 
