@@ -6,6 +6,7 @@ import DashboardHero from "@/components/dashboard/DashboardHero";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import DashboardModsGrid from "@/components/dashboard/DashboardModsGrid";
 import DashboardEmptyState from "@/components/dashboard/DashboardEmptyState";
+import DashboardCreatorManager from "@/components/dashboard/DashboardCreatorManager";
 
 import PageLoader from "@/components/ui/PageLoader";
 
@@ -59,6 +60,8 @@ export default function DashboardPage() {
       >
 
         <DashboardHero />
+
+        <DashboardCreatorManager />
 
         <DashboardStats
           creatorCount={

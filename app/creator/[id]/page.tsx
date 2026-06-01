@@ -333,6 +333,7 @@ export default async function CreatorPage({
         modsCount={mods.length}
         totalLikes={totalLikes}
         totalDownloads={totalDownloads}
+        isManaged={isManaged}
       />
 
       {/* FEATURED CREATIONS */}
@@ -390,9 +391,13 @@ export default async function CreatorPage({
 
             {!isManaged && (
 
-              <ClaimCreatorButton
-                creatorId={creator.id}
-              />
+              <div id="claim-profile">
+
+                <ClaimCreatorButton
+                  creatorId={creator.id}
+                />
+
+              </div>
 
             )}
 

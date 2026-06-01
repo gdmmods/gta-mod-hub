@@ -1,15 +1,19 @@
+"use client";
+
 import CreatorVerificationBadge from "./CreatorVerificationBadge";
 
 interface CreatorHeaderProps {
   name: string;
   verified?: boolean;
   status?: string | null;
+  isManaged?: boolean;
 }
 
 export default function CreatorHeader({
   name,
   verified,
   status,
+  isManaged,
 }: CreatorHeaderProps) {
 
   return (
@@ -111,6 +115,45 @@ export default function CreatorHeader({
         <span>
           Creator Ecosystem Profile
         </span>
+
+        {!isManaged && (
+
+          <>
+
+            <div
+              className="
+                w-1
+                h-1
+                rounded-full
+                bg-zinc-700
+              "
+            />
+
+            <button
+              title="
+                This creator profile has not yet been claimed by its creator.
+              "
+              onClick={() =>
+                document
+                  .getElementById(
+                    "claim-profile"
+                  )
+                  ?.scrollIntoView({
+                    behavior: "smooth",
+                  })
+              }
+              className="
+                text-amber-300
+                hover:text-amber-200
+                transition
+              "
+            >
+              ⚡ Unclaimed Creator Profile
+            </button>
+
+          </>
+
+        )}
 
       </div>
 

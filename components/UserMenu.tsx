@@ -96,35 +96,45 @@ export default function UserMenu() {
     }
 
     async function loadCreator(
-      userId: string
-    ) {
+        userId: string
+      ) {
 
-      const {
-        data,
-        error,
-      } = await supabase
-        .from("creator_members")
-        .select("creator_id")
-        .eq("profile_id", userId)
-        .eq("status", "approved")
-        .maybeSingle();
-
-      if (error) {
-
-        console.error(
-          "USER MENU CREATOR LOAD ERROR:",
-          error
+        console.log(
+          "USER ID:",
+          userId
         );
 
-        return;
+        const {
+          data: profile,
+          error: profileError,
+        } = await supabase
+          .from("profiles")
+          .select(`
+            default_creator_id
+          `)
+          .eq(
+            "id",
+            userId
+          )
+          .single();
+
+        if (profileError) {
+
+          console.error(
+            "USER MENU PROFILE ERROR:",
+            profileError
+          );
+
+          return;
+
+        }
+
+        setCreatorId(
+          profile?.default_creator_id ??
+          null
+        );
 
       }
-
-      setCreatorId(
-        data?.creator_id ?? null
-      );
-
-    }
 
     loadSession();
 

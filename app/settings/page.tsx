@@ -200,38 +200,47 @@ export default function SettingsPage() {
             </h2>
 
             <p className="text-zinc-400 mb-6">
-                Create a creator profile and start building your presence on ModVault.
+                Create or Claim a creator profile and start building your presence on ModVault.
             </p>
 
-            {creatorId ? (
-            <button
-                onClick={() => router.push(`/creator/${creatorId}`)}
-                className="
-                rounded-xl
-                px-6
-                py-3
-                bg-purple-600
-                hover:bg-purple-500
-                transition
-                "
-            >
-                Manage Creator
-            </button>
-            ) : (
-            <button
-                onClick={() => router.push("/become-creator")}
-                className="
-                rounded-xl
-                px-6
-                py-3
-                bg-zinc-800
-                hover:bg-zinc-700
-                transition
-                "
-            >
-                Become a Creator
-            </button>
-            )}
+            <div className="flex gap-3 flex-wrap">
+
+                {creatorId && (
+                  <button
+                    onClick={() =>
+                      router.push(`/creator/${creatorId}`)
+                    }
+                    className="
+                      rounded-xl
+                      px-6
+                      py-3
+                      bg-purple-600
+                      hover:bg-purple-500
+                      transition
+                    "
+                  >
+                    Manage Creator
+                  </button>
+                )}
+
+                <button
+                  onClick={() =>
+                    router.push("/become-creator")
+                  }
+                  className="
+                    rounded-xl
+                    px-6
+                    py-3
+                    bg-zinc-800
+                    hover:bg-zinc-700
+                    transition
+                  "
+                >
+                  Create / Claim Creator
+                </button>
+
+              </div>
+
             </div>
         </div>
       </div>

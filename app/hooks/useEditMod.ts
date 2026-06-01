@@ -98,9 +98,43 @@ export default function useEditMod(modId: string | string[]) {
 
   setCreators(creators);
 
-  setAllCreators(creators);
+  /* -----------------------------
+   ALL CREATORS
+  ----------------------------- */
 
-  setFilteredCreators(creators);
+  const {
+    data: creatorData,
+    error: creatorError,
+  } = await supabase
+    .from("creators")
+    .select(`
+      id,
+      name
+    `)
+    .order(
+      "name",
+      {
+        ascending: true,
+      }
+    );
+
+  if (creatorError) {
+
+    console.error(
+      creatorError
+    );
+
+  } else {
+
+    setAllCreators(
+      creatorData || []
+    );
+
+    setFilteredCreators(
+      creatorData || []
+    );
+
+  }
 
 }
 

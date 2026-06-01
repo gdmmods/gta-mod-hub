@@ -14,6 +14,7 @@ type Creator = {
 type Mod = {
   id: string;
   title: string;
+  description?: string;
   image: string;
   source_url?: string;
 
@@ -347,9 +348,8 @@ export default function ModCard({
             line-clamp-2
           "
         >
-          Premium GTA V modification built
-          for immersive gameplay, enhanced
-          visuals and optimized performance.
+          {mod.description ||
+            "No description provided."}
         </p>
 
         {/* STATS */}

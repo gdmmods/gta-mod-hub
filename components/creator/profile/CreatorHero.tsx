@@ -1,3 +1,5 @@
+"use client";
+
 import CreatorActions from "./CreatorActions";
 import CreatorAboutSection from "./CreatorAboutSection";
 import CreatorBio from "./CreatorBio";
@@ -15,6 +17,7 @@ interface CreatorHeroProps {
   modsCount: number;
   totalLikes: number;
   totalDownloads: number;
+  isManaged: boolean;
 }
 
 export default function CreatorHero({
@@ -24,6 +27,7 @@ export default function CreatorHero({
   modsCount,
   totalLikes,
   totalDownloads,
+  isManaged,
 }: CreatorHeroProps) {
 
 const supportUrl =
@@ -212,6 +216,7 @@ const supportUrl =
                 name={creator.name}
                 verified={creator.verified}
                 status={creator.status}
+                isManaged={isManaged}
               />
 
               <div className="mt-6">
