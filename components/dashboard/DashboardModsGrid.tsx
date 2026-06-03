@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 import Link from "next/link";
 
 import DashboardModCard from "./DashboardModCard";
@@ -10,6 +14,20 @@ export default function DashboardModsGrid({
   mods,
 }: Props) {
 
+  const [
+    activeFilter,
+    setActiveFilter,
+  ] = useState("all");
+
+  const filteredMods =
+    activeFilter === "all"
+      ? mods
+      : mods.filter(
+          (item: any) =>
+            item.mods?.status?.toLowerCase() ===
+            activeFilter
+        );
+
   return (
 
     <div>
@@ -17,20 +35,37 @@ export default function DashboardModsGrid({
       <div
         className="
           flex
-          items-center
-          justify-between
+          flex-col
+          md:flex-row
+          md:items-center
+          md:justify-between
+          gap-4
           mb-6
         "
       >
 
-        <h2
-          className="
-            text-2xl
-            font-semibold
-          "
-        >
-          Current Creator Mods
-        </h2>
+        <div>
+
+          <h2
+            className="
+              text-2xl
+              font-semibold
+            "
+          >
+            Your Mods
+          </h2>
+
+          <p
+            className="
+              text-sm
+              text-zinc-500
+              mt-1
+            "
+          >
+            Manage uploads for the currently selected creator.
+          </p>
+
+        </div>
 
         <Link
           href="/upload"
@@ -52,6 +87,52 @@ export default function DashboardModsGrid({
 
       <div
         className="
+          flex
+          flex-wrap
+          gap-3
+          mb-8
+        "
+      >
+
+        {[
+          "all",
+          "published",
+          "draft",
+          "archived",
+        ].map((filter) => (
+
+          <button
+            key={filter}
+            onClick={() =>
+              setActiveFilter(
+                filter
+              )
+            }
+            className={`
+              px-4
+              py-2
+              rounded-xl
+              border
+              text-sm
+              transition
+
+              ${
+                activeFilter === filter
+                  ? "bg-purple-600 border-purple-600"
+                  : "border-zinc-700 hover:border-purple-500"
+              }
+            `}
+          >
+            {filter.charAt(0).toUpperCase() +
+              filter.slice(1)}
+          </button>
+
+        ))}
+
+      </div>
+
+      <div
+        className="
           grid
           md:grid-cols-2
           xl:grid-cols-3
@@ -59,22 +140,24 @@ export default function DashboardModsGrid({
         "
       >
 
-        {mods.map((item: any) => {
+        {filteredMods.map(
+          (item: any) => {
 
-          const mod =
-            item.mods;
+            const mod =
+              item.mods;
 
-          if (!mod)
-            return null;
+            if (!mod)
+              return null;
 
-          return (
-            <DashboardModCard
-              key={mod.id}
-              mod={mod}
-            />
-          );
+            return (
+              <DashboardModCard
+                key={mod.id}
+                mod={mod}
+              />
+            );
 
-        })}
+          }
+        )}
 
       </div>
 

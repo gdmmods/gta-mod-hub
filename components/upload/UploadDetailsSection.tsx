@@ -43,7 +43,7 @@ export default function UploadDetailsSection({
             placeholder={`Full HQ Interior
 LOD Support
 Custom Handling`}
-            value={form.features}
+            value={form.features ?? ""}
             onChange={handleChange}
             rows={5}
             className="
@@ -92,7 +92,7 @@ Custom Handling`}
             name="requirements"
             placeholder={`Game Build 3095
 FiveM Compatible`}
-            value={form.requirements}
+            value={form.requirements ?? ""}
             onChange={handleChange}
             rows={4}
             className="
@@ -140,10 +140,8 @@ FiveM Compatible`}
 
           <textarea
             name="notes"
-            placeholder="
-Known issues, limitations, installation notes...
-"
-            value={form.notes}
+            placeholder="Known issues, limitations, installation notes..."
+            value={form.notes ?? ""}
             onChange={handleChange}
             rows={4}
             className="
@@ -194,7 +192,7 @@ Known issues, limitations, installation notes...
             placeholder={`Adapted by...
 Converted by...
 Original model by...`}
-            value={form.credits}
+            value={form.credits ?? ""}
             onChange={handleChange}
             rows={4}
             className="

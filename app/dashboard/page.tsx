@@ -9,6 +9,7 @@ import DashboardEmptyState from "@/components/dashboard/DashboardEmptyState";
 import DashboardCreatorManager from "@/components/dashboard/DashboardCreatorManager";
 import DashboardCreatorOverview from "@/components/dashboard/DashboardCreatorOverview";
 import PageLoader from "@/components/ui/PageLoader";
+import DashboardRoadmapPreview from "@/components/dashboard/DashboardRoadmapPreview";
 
 import useDashboardData from "@/app/hooks/useDashboardData";
 import useCurrentCreatorData from "@/app/hooks/useCurrentCreatorData";
@@ -98,6 +99,8 @@ export default function DashboardPage() {
           creator={creator}
           modCount={modCount}
         />
+
+        <DashboardRoadmapPreview />
 
         <DashboardStats
           creatorCount={

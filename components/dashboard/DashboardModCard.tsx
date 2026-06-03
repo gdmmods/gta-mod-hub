@@ -8,6 +8,11 @@ export default function DashboardModCard({
   mod,
 }: Props) {
 
+  const createdDate =
+    new Date(
+      mod.created_at
+    ).toLocaleDateString();
+
   return (
 
     <div
@@ -20,30 +25,37 @@ export default function DashboardModCard({
       "
     >
 
-      <div
-        className="
-            inline-flex
+      <div className="relative">
+
+        <img
+          src={mod.image}
+          alt={mod.title}
+          className="
+            w-full
+            h-52
+            object-cover
+          "
+        />
+
+        <div
+          className="
+            absolute
+            top-4
+            left-4
             px-3
             py-1
             rounded-full
             text-xs
             border
             border-zinc-700
-            mb-4
-        "
+            bg-black/70
+            backdrop-blur
+          "
         >
-        {mod.status}
+          {mod.status}
         </div>
 
-      <img
-        src={mod.image}
-        alt={mod.title}
-        className="
-          w-full
-          h-52
-          object-cover
-        "
-      />
+      </div>
 
       <div className="p-5">
 
@@ -51,14 +63,24 @@ export default function DashboardModCard({
           className="
             text-lg
             font-semibold
-            mb-4
           "
         >
           {mod.title}
         </h3>
 
+        <p
+          className="
+            mt-2
+            text-sm
+            text-zinc-500
+          "
+        >
+          Created {createdDate}
+        </p>
+
         <div
           className="
+            mt-5
             flex
             gap-3
           "
