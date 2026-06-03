@@ -5,7 +5,18 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
-export default function DashboardCreatorManager() {
+type Props = {
+
+  onCreatorChanged: () => void;
+
+};
+
+export default function
+DashboardCreatorManager({
+
+  onCreatorChanged,
+
+}: Props){
 
   const [
     creator,
@@ -177,7 +188,11 @@ export default function DashboardCreatorManager() {
       user.id
     );
 
-  window.location.reload();
+  onCreatorChanged();
+
+  await loadCreatorData();
+
+  setShowSwitcher(false);
 
 }
 

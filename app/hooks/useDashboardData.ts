@@ -7,7 +7,9 @@ import {
 
 import { supabase } from "@/lib/supabase/client";
 
-export default function useDashboardData() {
+export default function useDashboardData(
+  refreshKey: number
+) {
 
   const [loading, setLoading] =
     useState(true);
@@ -149,7 +151,7 @@ export default function useDashboardData() {
 
     loadDashboard();
 
-  }, []);
+  }, [refreshKey]);
 
   return {
 

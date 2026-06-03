@@ -8,7 +8,9 @@ import {
 import { supabase }
 from "@/lib/supabase/client";
 
-export default function useCurrentCreatorData() {
+export default function useCurrentCreatorData(
+  refreshKey: number
+) {
 
   const [
     loading,
@@ -29,7 +31,7 @@ export default function useCurrentCreatorData() {
 
     loadData();
 
-  }, []);
+  }, [refreshKey]);
 
   async function loadData() {
 

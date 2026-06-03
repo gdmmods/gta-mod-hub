@@ -13,7 +13,17 @@ import PageLoader from "@/components/ui/PageLoader";
 import useDashboardData from "@/app/hooks/useDashboardData";
 import useCurrentCreatorData from "@/app/hooks/useCurrentCreatorData";
 
+import {
+  useState,
+} from "react";
+
+
 export default function DashboardPage() {
+
+  const [
+  refreshKey,
+  setRefreshKey,
+] = useState(0);
 
   const {
 
@@ -25,7 +35,9 @@ export default function DashboardPage() {
 
   creatorIds,
 
-} = useDashboardData();
+} = useDashboardData(
+  refreshKey
+);
 
     const {
 
@@ -33,7 +45,9 @@ export default function DashboardPage() {
 
     modCount,
 
-  } = useCurrentCreatorData();
+  } = useCurrentCreatorData(
+  refreshKey
+);
 
   /* --------------------------------
      LOADING
@@ -72,7 +86,13 @@ export default function DashboardPage() {
 
         <DashboardHero />
 
-        <DashboardCreatorManager />
+        <DashboardCreatorManager
+          onCreatorChanged={() =>
+            setRefreshKey(
+              prev => prev + 1
+            )
+          }
+        />
 
         <DashboardCreatorOverview
           creator={creator}
