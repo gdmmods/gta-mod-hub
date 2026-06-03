@@ -29,7 +29,7 @@ export default function DashboardModsGrid({
             font-semibold
           "
         >
-          Your Mods
+          Current Creator Mods
         </h2>
 
         <Link

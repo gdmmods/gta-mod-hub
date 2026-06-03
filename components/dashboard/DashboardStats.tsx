@@ -14,26 +14,39 @@ export default function DashboardStats({
       className="
         grid
         md:grid-cols-3
-        gap-6
-        mb-14
+        gap-4
+        mb-10
       "
     >
 
       <div
         className="
-          p-6
-          rounded-3xl
+          p-4
+          rounded-2xl
           border
           border-zinc-800
-          bg-zinc-900
+          bg-zinc-900/50
         "
       >
 
-        <p className="text-sm text-gray-500 mb-2">
+        <p
+          className="
+            text-xs
+            uppercase
+            tracking-wider
+            text-zinc-500
+          "
+        >
           Creator Profiles
         </p>
 
-        <p className="text-3xl font-bold">
+        <p
+          className="
+            mt-2
+            text-xl
+            font-semibold
+          "
+        >
           {creatorCount}
         </p>
 
@@ -41,19 +54,32 @@ export default function DashboardStats({
 
       <div
         className="
-          p-6
-          rounded-3xl
+          p-4
+          rounded-2xl
           border
           border-zinc-800
-          bg-zinc-900
+          bg-zinc-900/50
         "
       >
 
-        <p className="text-sm text-gray-500 mb-2">
-          Uploaded Mods
+        <p
+          className="
+            text-xs
+            uppercase
+            tracking-wider
+            text-zinc-500
+          "
+        >
+          Total Mods
         </p>
 
-        <p className="text-3xl font-bold">
+        <p
+          className="
+            mt-2
+            text-xl
+            font-semibold
+          "
+        >
           {modCount}
         </p>
 
@@ -61,19 +87,33 @@ export default function DashboardStats({
 
       <div
         className="
-          p-6
-          rounded-3xl
+          p-4
+          rounded-2xl
           border
           border-zinc-800
-          bg-zinc-900
+          bg-zinc-900/50
         "
       >
 
-        <p className="text-sm text-gray-500 mb-2">
-          Status
+        <p
+          className="
+            text-xs
+            uppercase
+            tracking-wider
+            text-zinc-500
+          "
+        >
+          Account Status
         </p>
 
-        <p className="text-3xl font-bold">
+        <p
+          className="
+            mt-2
+            text-xl
+            font-semibold
+            text-green-400
+          "
+        >
           Active
         </p>
 

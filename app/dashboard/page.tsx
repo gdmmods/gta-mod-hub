@@ -7,22 +7,33 @@ import DashboardStats from "@/components/dashboard/DashboardStats";
 import DashboardModsGrid from "@/components/dashboard/DashboardModsGrid";
 import DashboardEmptyState from "@/components/dashboard/DashboardEmptyState";
 import DashboardCreatorManager from "@/components/dashboard/DashboardCreatorManager";
-
+import DashboardCreatorOverview from "@/components/dashboard/DashboardCreatorOverview";
 import PageLoader from "@/components/ui/PageLoader";
 
 import useDashboardData from "@/app/hooks/useDashboardData";
+import useCurrentCreatorData from "@/app/hooks/useCurrentCreatorData";
 
 export default function DashboardPage() {
 
   const {
 
-    loading,
+  loading,
 
-    mods,
+  mods,
 
-    creatorIds,
+  currentMods,
 
-  } = useDashboardData();
+  creatorIds,
+
+} = useDashboardData();
+
+    const {
+
+    creator,
+
+    modCount,
+
+  } = useCurrentCreatorData();
 
   /* --------------------------------
      LOADING
@@ -63,6 +74,11 @@ export default function DashboardPage() {
 
         <DashboardCreatorManager />
 
+        <DashboardCreatorOverview
+          creator={creator}
+          modCount={modCount}
+        />
+
         <DashboardStats
           creatorCount={
             creatorIds.length
@@ -79,7 +95,7 @@ export default function DashboardPage() {
         ) : (
 
           <DashboardModsGrid
-            mods={mods}
+            mods={currentMods}
           />
 
         )}

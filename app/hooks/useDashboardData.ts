@@ -15,6 +15,9 @@ export default function useDashboardData() {
   const [mods, setMods] =
     useState<any[]>([]);
 
+  const [currentMods, setCurrentMods] =
+    useState<any[]>([]);
+
   const [creatorIds, setCreatorIds] =
     useState<string[]>([]);
 
@@ -66,11 +69,11 @@ export default function useDashboardData() {
       setCreatorIds(ids);
 
       /* -----------------------------
-         MODS
+         ACCOUNT-WIDE MODS
       ----------------------------- */
 
       const {
-        data,
+        data: allMods,
       } = await supabase
         .from("mod_creators")
         .select(`
@@ -89,7 +92,56 @@ export default function useDashboardData() {
           ids
         );
 
-      setMods(data || []);
+      setMods(
+        allMods || []
+      );
+
+      /* -----------------------------
+         CURRENT CREATOR
+      ----------------------------- */
+
+      const {
+        data: profile,
+      } = await supabase
+        .from("profiles")
+        .select(`
+          default_creator_id
+        `)
+        .eq(
+          "id",
+          session.user.id
+        )
+        .single();
+
+      if (
+        profile?.default_creator_id
+      ) {
+
+        const {
+          data: creatorMods,
+        } = await supabase
+          .from("mod_creators")
+          .select(`
+            mod_id,
+
+            mods (
+              status,
+              id,
+              title,
+              image,
+              created_at
+            )
+          `)
+          .eq(
+            "creator_id",
+            profile.default_creator_id
+          );
+
+        setCurrentMods(
+          creatorMods || []
+        );
+
+      }
 
       setLoading(false);
 
@@ -104,6 +156,8 @@ export default function useDashboardData() {
     loading,
 
     mods,
+
+    currentMods,
 
     creatorIds,
 

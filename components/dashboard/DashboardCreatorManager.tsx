@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { supabase }
-from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 export default function DashboardCreatorManager() {
 
@@ -156,33 +155,31 @@ export default function DashboardCreatorManager() {
   }
 
   async function setDefaultCreator(
-    creatorId: string
-  ) {
+  creatorId: string
+) {
 
-    const {
-      data: {
-        user,
-      },
-    } = await supabase.auth.getUser();
+  const {
+    data: {
+      user,
+    },
+  } = await supabase.auth.getUser();
 
-    if (!user) return;
+  if (!user) return;
 
-    await supabase
-      .from("profiles")
-      .update({
-        default_creator_id:
-          creatorId,
-      })
-      .eq(
-        "id",
-        user.id
-      );
+  await supabase
+    .from("profiles")
+    .update({
+      default_creator_id:
+        creatorId,
+    })
+    .eq(
+      "id",
+      user.id
+    );
 
-    await loadCreatorData();
+  window.location.reload();
 
-    setShowSwitcher(false);
-
-  }
+}
 
   return (
 
