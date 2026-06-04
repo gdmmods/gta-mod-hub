@@ -10,7 +10,7 @@ import DashboardCreatorManager from "@/components/dashboard/DashboardCreatorMana
 import DashboardCreatorOverview from "@/components/dashboard/DashboardCreatorOverview";
 import PageLoader from "@/components/ui/PageLoader";
 import DashboardRoadmapPreview from "@/components/dashboard/DashboardRoadmapPreview";
-import DashboardTeamPanel from "@/components/dashboard/DashboardTeamPanel";
+import TeamControls from "@/components/dashboard/TeamControls";
 
 import useDashboardData from "@/app/hooks/useDashboardData";
 import useCurrentCreatorData from "@/app/hooks/useCurrentCreatorData";
@@ -101,7 +101,7 @@ export default function DashboardPage() {
           modCount={modCount}
         />
 
-        <DashboardTeamPanel
+        <TeamControls
           creator={creator}
         />
 

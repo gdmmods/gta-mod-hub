@@ -439,6 +439,19 @@ DashboardCreatorManager({
             </Link>
 
             <Link
+              href="/create-team"
+              className="
+                rounded-2xl
+                border
+                border-zinc-700
+                px-5
+                py-3
+              "
+            >
+              Create Team
+            </Link>
+
+            <Link
               href="/claim-creator"
               className="
                 rounded-2xl
@@ -476,6 +489,19 @@ DashboardCreatorManager({
             "
           >
             Create Creator
+          </Link>
+
+          <Link
+            href="/create-team"
+            className="
+              rounded-2xl
+              border
+              border-zinc-700
+              px-5
+              py-3
+            "
+          >
+            Create Team
           </Link>
 
           <Link

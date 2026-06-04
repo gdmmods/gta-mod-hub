@@ -10,6 +10,8 @@ import CreatorSettingsSubmit from "@/components/creator-settings/CreatorSettings
 
 import CreatorTypeSection from "@/components/creator-settings/CreatorTypeSection";
 
+import TeamControls from "@/components/dashboard/TeamControls";
+
 type Props = {
 
   form: any;
@@ -56,6 +58,14 @@ export default function CreatorSettingsForm({
         form={form}
         setForm={setForm}
       />
+
+      {form.owner_type === "team" && (
+
+      <TeamControls
+        creator={form}
+      />
+
+    )}
 
       <CreatorBrandingSection
         form={form}

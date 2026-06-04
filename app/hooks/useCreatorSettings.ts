@@ -41,6 +41,8 @@ export default function useCreatorSettings(
 
       status: "",
 
+      owner_id: "",
+
       team_id: "",
 
       owner_type: "user",
@@ -100,6 +102,7 @@ export default function useCreatorSettings(
           tagline,
           bio,
           status,
+          owner_id,
           owner_type,
           team_id,
           avatar,
@@ -155,6 +158,9 @@ export default function useCreatorSettings(
 
         status: 
           creator.status || "",
+
+          owner_id:
+            creator.owner_id || "",
 
           team_id:
           creator.team_id || "",
@@ -315,6 +321,8 @@ export default function useCreatorSettings(
     console.log(
       form.socials
     );
+
+    console.log("FORM:", form);
 
     const becomingTeam =
       form.owner_type === "team" &&
@@ -500,6 +508,37 @@ console.log(
   "FORM TEAM ID:",
   form.team_id
 );
+const {
+  data: founderCreator,
+  error: founderError,
+} = await supabase
+  .from("creators")
+  .select("id")
+  .eq("owner_id", form.owner_id)
+  .eq("owner_type", "user")
+  .single();
+
+console.log(
+  "FOUNDER CREATOR:",
+  founderCreator
+);
+
+console.log(
+  "FOUNDER ERROR:",
+  founderError
+);
+
+if (!founderCreator) {
+
+  console.error(
+    "Could not locate founder creator."
+  );
+
+  setLoading(false);
+
+  return;
+
+}
 
 if (teamId) {
 
@@ -515,7 +554,10 @@ if (teamId) {
     .from("team_members")
     .select("id")
     .eq("team_id", teamId)
-    .eq("creator_id", creatorId)
+    .eq(
+  "creator_id",
+  founderCreator.id
+)
     .maybeSingle();
 
   console.log(
@@ -545,7 +587,7 @@ if (teamId) {
           teamId,
 
         creator_id:
-          creatorId,
+          founderCreator.id,
 
         role:
           "owner",
