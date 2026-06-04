@@ -76,9 +76,11 @@ export default function useCurrentCreatorData(
     } = await supabase
       .from("creators")
       .select(`
-        id,
-        name
-      `)
+            id,
+            name,
+            owner_type,
+            team_id
+          `)
       .eq(
         "id",
         profile.default_creator_id

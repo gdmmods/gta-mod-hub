@@ -400,7 +400,7 @@ DashboardCreatorManager({
             </button>
 
             <Link
-              href={`/creator/settings/${creator.id}`}
+              href={`/dashboard/creator/${creator.id}/settings`}
               className="
                 rounded-2xl
                 bg-purple-600

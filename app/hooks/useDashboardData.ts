@@ -86,7 +86,9 @@ export default function useDashboardData(
             id,
             title,
             image,
-            created_at
+            created_at,
+            added_at,
+            updated_at
           )
         `)
         .in(
@@ -131,7 +133,9 @@ export default function useDashboardData(
               id,
               title,
               image,
-              created_at
+              created_at,
+              added_at,
+              updated_at
             )
           `)
           .eq(

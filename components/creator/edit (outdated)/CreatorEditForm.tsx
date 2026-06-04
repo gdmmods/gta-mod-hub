@@ -4,9 +4,9 @@ import { useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
-import CreatorEditBrandingSection from "@/components/creator/edit/CreatorEditBrandingSection";
+import CreatorEditBrandingSection from "@/components/creator/edit (outdated)/CreatorEditBrandingSection";
 import CreatorEditTagsSection from "@/components/creator-settings/CreatorEditTagsSection";
-import CreatorEditStatsSection from "@/components/creator/edit/CreatorEditStatsSection";
+import CreatorEditStatsSection from "@/components/creator/edit (outdated)/CreatorEditStatsSection";
 import CreatorSocialsSection from "@/components/creator-settings/CreatorSocialsSection";
 
 import { useRouter } from "next/navigation";

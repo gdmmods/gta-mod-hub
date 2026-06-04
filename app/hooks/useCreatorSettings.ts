@@ -41,6 +41,10 @@ export default function useCreatorSettings(
 
       status: "",
 
+      team_id: "",
+
+      owner_type: "user",
+
       avatar: "",
 
       banner: "",
@@ -96,6 +100,8 @@ export default function useCreatorSettings(
           tagline,
           bio,
           status,
+          owner_type,
+          team_id,
           avatar,
           banner,
           specialization,
@@ -149,6 +155,13 @@ export default function useCreatorSettings(
 
         status: 
           creator.status || "",
+
+          team_id:
+          creator.team_id || "",
+
+        owner_type:
+          creator.owner_type ||
+          "user",
 
         avatar:
           creator.avatar || "",
@@ -303,6 +316,56 @@ export default function useCreatorSettings(
       form.socials
     );
 
+    const becomingTeam =
+      form.owner_type === "team" &&
+      !form.team_id;
+
+      let teamId =
+      form.team_id || null;
+
+    const teamSlug =
+      form.name
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-");
+
+      if (becomingTeam) {
+
+        const {
+          data: newTeam,
+          error: teamError,
+        } = await supabase
+          .from("teams")
+          .insert({
+
+              name: form.name,
+
+              slug:
+                teamSlug,
+
+              owner_id:
+                creatorId,
+
+            })
+          .select()
+          .single();
+
+        if (teamError) {
+
+          console.error(
+            teamError
+          );
+
+          setLoading(false);
+
+          return;
+        }
+
+        teamId =
+          newTeam.id;
+
+      }
+
     const {
       data,
       error,
@@ -321,6 +384,12 @@ export default function useCreatorSettings(
 
         status:
           form.status,
+
+          team_id:
+            teamId,
+
+        owner_type:
+          form.owner_type,
 
         avatar:
           form.avatar,
@@ -416,6 +485,99 @@ export default function useCreatorSettings(
     console.log(error);
 
     if (!error) {
+
+console.log(
+  "BECOMING TEAM:",
+  becomingTeam
+);
+
+console.log(
+  "TEAM ID:",
+  teamId
+);
+
+console.log(
+  "FORM TEAM ID:",
+  form.team_id
+);
+
+if (teamId) {
+
+  console.log(
+    "TEAM ID:",
+    teamId
+  );
+
+  const {
+    data: existingMember,
+    error: existingError,
+  } = await supabase
+    .from("team_members")
+    .select("id")
+    .eq("team_id", teamId)
+    .eq("creator_id", creatorId)
+    .maybeSingle();
+
+  console.log(
+    "EXISTING MEMBER:",
+    existingMember
+  );
+
+  console.log(
+    "EXISTING MEMBER ERROR:",
+    existingError
+  );
+
+  if (!existingMember) {
+
+    console.log(
+      "INSERTING OWNER MEMBER"
+    );
+
+    const {
+      data: memberData,
+      error: memberError,
+    } = await supabase
+      .from("team_members")
+      .insert({
+
+        team_id:
+          teamId,
+
+        creator_id:
+          creatorId,
+
+        role:
+          "owner",
+
+        membership_status:
+          "active",
+
+        can_upload:
+          true,
+
+        can_manage_members:
+          true,
+
+        can_manage_team:
+          true,
+
+      })
+      .select();
+
+    console.log(
+      "TEAM MEMBER DATA:",
+      memberData
+    );
+
+    console.log(
+      "TEAM MEMBER ERROR:",
+      memberError
+    );
+
+  }
+
+}
 
   router.push(
     `/creator/${creatorId}`

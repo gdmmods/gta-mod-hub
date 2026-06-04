@@ -8,6 +8,8 @@ import CreatorSocialsSection from "@/components/creator-settings/CreatorSocialsS
 
 import CreatorSettingsSubmit from "@/components/creator-settings/CreatorSettingsSubmit";
 
+import CreatorTypeSection from "@/components/creator-settings/CreatorTypeSection";
+
 type Props = {
 
   form: any;
@@ -48,6 +50,11 @@ export default function CreatorSettingsForm({
       <CreatorProfileSection
         form={form}
         handleChange={handleChange}
+      />
+
+      <CreatorTypeSection
+        form={form}
+        setForm={setForm}
       />
 
       <CreatorBrandingSection

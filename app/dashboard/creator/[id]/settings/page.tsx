@@ -8,7 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 
 import PageLoader from "@/components/ui/PageLoader";
 
-import CreatorOwnershipGuard from "@/components/creator/edit/CreatorOwnershipGuard";
+import CreatorOwnershipGuard from "@/components/creator/edit (outdated)/CreatorOwnershipGuard";
 
 import CreatorSettingsHeader from "@/components/creator-settings/CreatorSettingsHeader";
 

@@ -8,10 +8,19 @@ export default function DashboardModCard({
   mod,
 }: Props) {
 
-  const createdDate =
-    new Date(
-      mod.created_at
-    ).toLocaleDateString();
+  const releaseDate =
+  mod.created_at
+    ? new Date(
+        mod.created_at
+      ).toLocaleDateString(
+        "en-GB",
+        {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }
+      )
+    : "Unknown";
 
   return (
 
@@ -52,12 +61,23 @@ export default function DashboardModCard({
             backdrop-blur
           "
         >
-          {mod.status}
+          {mod.status
+            ?.charAt(0)
+            .toUpperCase() +
+            mod.status?.slice(1)}
+            
         </div>
 
       </div>
 
-      <div className="p-5">
+      <div
+        className="
+          p-5
+          flex
+          flex-col
+          h-[260px]
+        "
+      >
 
         <h3
           className="
@@ -75,12 +95,12 @@ export default function DashboardModCard({
             text-zinc-500
           "
         >
-          Created {createdDate}
+          Released {releaseDate}
         </p>
 
         <div
           className="
-            mt-5
+            mt-auto
             flex
             gap-3
           "
