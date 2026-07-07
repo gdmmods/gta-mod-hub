@@ -286,18 +286,27 @@ console.log(
 }
 
 await recordActivity({
-  actorCreatorId: founderCreator.id,
-
   eventType: "team_created",
 
-  targetType: "team",
-  targetId: team.id,
+  actor: {
+    type: "creator",
+    id: creator.id,
+  },
+
+  target: {
+    type: "team",
+    id: team.id,
+  },
 
   visibility: "public",
 
+  title: "Team created",
+
+  summary: `${creator.name} created the team ${team.name}.`,
+
   metadata: {
-    team_name: team.name,
-    creator_id: creator.id,
+    creatorName: creator.name,
+    teamName: team.name,
   },
 });
 

@@ -1,55 +1,63 @@
 import { supabase } from "@/lib/supabase/client";
 
-interface RecordActivityParams {
-  actorCreatorId: string;
-
+interface RecordActivityOptions {
   eventType: string;
 
-  targetType?: string;
-  targetId?: string;
+  actor: {
+    type: "creator" | "user" | "system";
+    id?: string;
+  };
 
-  parentType?: string;
-  parentId?: string;
+  target: {
+    type: string;
+    id: string;
+  };
 
-  visibility?: string;
+  parent?: {
+    type: string;
+    id: string;
+  };
+
+  visibility?: "public" | "private" | "internal";
+
+  title?: string;
+  summary?: string;
 
   metadata?: Record<string, any>;
 }
 
-export async function recordActivity({
-  actorCreatorId,
-  eventType,
-  targetType,
-  targetId,
-  parentType,
-  parentId,
-  visibility = "private",
-  metadata = {},
-}: RecordActivityParams) {
+export async function recordActivity(
+  options: RecordActivityOptions
+) {
   const { error } = await supabase
     .from("activity_events")
     .insert({
-      actor_creator_id: actorCreatorId,
+      event_type: options.eventType,
 
-      event_type: eventType,
+      actor_type: options.actor.type,
+      actor_id: options.actor.id ?? null,
 
-      target_type: targetType ?? null,
-      target_id: targetId ?? null,
+      target_type: options.target.type,
+      target_id: options.target.id,
 
-      parent_type: parentType ?? null,
-      parent_id: parentId ?? null,
+      parent_type: options.parent?.type ?? null,
+      parent_id: options.parent?.id ?? null,
 
-      visibility,
+      visibility: options.visibility ?? "public",
 
-      metadata,
+      title: options.title ?? null,
+      summary: options.summary ?? null,
+
+      metadata: options.metadata ?? {},
     });
 
   if (error) {
     console.log(
-  "ACTIVITY ERROR:",
-  JSON.stringify(error, null, 2)
-);
+      "ACTIVITY ERROR:",
+      JSON.stringify(error, null, 2)
+    );
 
-console.error(error);
+    console.error(error);
   }
+
 }
