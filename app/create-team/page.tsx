@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { recordActivity } from "@/lib/activity/recordActivity";
+
 import { supabase } from "@/lib/supabase/client";
 
 export default function CreateTeamPage() {
@@ -273,14 +275,31 @@ console.log(
 
   });
 
-if (creatorMemberError) {
+  if (creatorMemberError) {
+  console.error(creatorMemberError);
 
-  console.error(
-    "CREATOR MEMBER ERROR:",
-    creatorMemberError
-  );
+  alert("Failed to create creator membership.");
 
+  setLoading(false);
+
+  return;
 }
+
+await recordActivity({
+  actorCreatorId: founderCreator.id,
+
+  eventType: "team_created",
+
+  targetType: "team",
+  targetId: team.id,
+
+  visibility: "public",
+
+  metadata: {
+    team_name: team.name,
+    creator_id: creator.id,
+  },
+});
 
       router.push(
         `/dashboard/creator/${creator.id}/settings`

@@ -2,6 +2,7 @@ import NavbarLogo from "@/components/navbar/NavbarLogo";
 import NavbarLinks from "@/components/navbar/NavbarLinks";
 import NavbarActions from "@/components/navbar/NavbarActions";
 import NavbarMenu from "@/components/navbar/NavbarMenu";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 export default function Navbar() {
 
@@ -44,6 +45,8 @@ export default function Navbar() {
       </div>
 
         {/* RIGHT */}
+        <NotificationBell unreadCount={5} />
+
         <NavbarActions />
 
       </div>
