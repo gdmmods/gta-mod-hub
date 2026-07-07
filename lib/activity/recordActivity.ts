@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
+import { createNotificationsForEvent } from "@/lib/notifications/createNotifications";
+import { dispatchActivity } from "@/lib/activity/dispatchActivity";
 
 interface RecordActivityOptions {
   eventType: string;
@@ -29,27 +31,29 @@ interface RecordActivityOptions {
 export async function recordActivity(
   options: RecordActivityOptions
 ) {
-  const { error } = await supabase
-    .from("activity_events")
-    .insert({
-      event_type: options.eventType,
+  const { data, error } = await supabase
+  .from("activity_events")
+  .insert({
+    event_type: options.eventType,
 
-      actor_type: options.actor.type,
-      actor_id: options.actor.id ?? null,
+    actor_type: options.actor.type,
+    actor_id: options.actor.id ?? null,
 
-      target_type: options.target.type,
-      target_id: options.target.id,
+    target_type: options.target.type,
+    target_id: options.target.id,
 
-      parent_type: options.parent?.type ?? null,
-      parent_id: options.parent?.id ?? null,
+    parent_type: options.parent?.type ?? null,
+    parent_id: options.parent?.id ?? null,
 
-      visibility: options.visibility ?? "public",
+    visibility: options.visibility ?? "public",
 
-      title: options.title ?? null,
-      summary: options.summary ?? null,
+    title: options.title ?? null,
+    summary: options.summary ?? null,
 
-      metadata: options.metadata ?? {},
-    });
+    metadata: options.metadata ?? {},
+  })
+  .select()
+  .single();
 
   if (error) {
     console.log(
@@ -59,5 +63,11 @@ export async function recordActivity(
 
     console.error(error);
   }
+
+  if (!error && data) {
+  await dispatchActivity(data);
+}
+
+return { data, error };
 
 }

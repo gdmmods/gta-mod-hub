@@ -36,6 +36,10 @@ export default function ModvaultConstitutionPage() {
       title: "Human Creativity Remains Central",
       text: "AI may assist creation, but human craftsmanship, identity, and originality remain core values of the platform.",
     },
+    {
+      title: "Principle of Historical Continuity",
+      text: "Meaningful contributions should be remembered. The platform exists not only to host creative work, but to preserve the history of how that work, its collaborators, and its community evolved over time.",
+    },
   ];
 
   return (
@@ -63,6 +67,151 @@ export default function ModvaultConstitutionPage() {
             creator ecosystem, and long-term direction.
           </p>
         </div>
+
+        {/* ======================================
+                THE FOUR PILLARS
+            ====================================== */}
+
+            <section className="mb-24">
+
+              <div className="text-center mb-14">
+
+                <p className="text-sm uppercase tracking-[0.35em] text-purple-400 mb-4">
+                  Foundation
+                </p>
+
+                <h2 className="text-4xl md:text-5xl font-black mb-6">
+                  The Four Pillars
+                </h2>
+
+                <p className="max-w-3xl mx-auto text-zinc-400 leading-relaxed">
+                  These pillars express the enduring values of ModVault. Every article of
+                  this Constitution exists to reinforce one or more of these principles.
+                  Together, they define who we are, why ModVault exists, and the
+                  responsibility we carry as stewards of creative history.
+                </p>
+
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                <div className="rounded-[30px] border border-zinc-800 bg-zinc-950/70 p-8">
+
+                  <div className="text-4xl mb-5">🏛</div>
+
+                  <h3 className="text-2xl font-black mb-4">
+                    Preservation
+                  </h3>
+
+                  <p className="text-zinc-400 leading-relaxed">
+                    Safeguarding creative work, knowledge, and digital history so future
+                    generations can learn from and build upon the past.
+                  </p>
+
+                </div>
+
+                <div className="rounded-[30px] border border-zinc-800 bg-zinc-950/70 p-8">
+
+                  <div className="text-4xl mb-5">🤝</div>
+
+                  <h3 className="text-2xl font-black mb-4">
+                    Collaboration
+                  </h3>
+
+                  <p className="text-zinc-400 leading-relaxed">
+                    Empowering creators to work together through shared teams,
+                    transparent attribution, mentorship, and collective achievement.
+                  </p>
+
+                </div>
+
+                <div className="rounded-[30px] border border-zinc-800 bg-zinc-950/70 p-8">
+
+                  <div className="text-4xl mb-5">🪪</div>
+
+                  <h3 className="text-2xl font-black mb-4">
+                    Attribution
+                  </h3>
+
+                  <p className="text-zinc-400 leading-relaxed">
+                    Ensuring every meaningful contribution is recognized, traceable,
+                    and permanently connected to those who made it possible.
+                  </p>
+
+                </div>
+
+                <div className="rounded-[30px] border border-zinc-800 bg-zinc-950/70 p-8">
+
+                  <div className="text-4xl mb-5">👁</div>
+
+                  <h3 className="text-2xl font-black mb-4">
+                    Awareness
+                  </h3>
+
+                  <p className="text-zinc-400 leading-relaxed">
+                    Helping creators understand how their community evolves through
+                    meaningful activity, historical continuity, and shared knowledge—
+                    without demanding constant attention or disrupting the creative
+                    process.
+                  </p>
+
+                </div>
+
+              </div>
+
+            </section>
+
+            <section className="mb-24">
+
+              <div className="rounded-[36px] border border-purple-500/20 bg-zinc-950/60 backdrop-blur-xl p-10">
+
+                <h2 className="text-3xl font-black text-center mb-8">
+                  The Cycle of Stewardship
+                </h2>
+
+                <p className="text-zinc-400 text-center max-w-3xl mx-auto leading-relaxed mb-10">
+                  These four pillars are not independent values. Together they form a
+                  continuous cycle that preserves, strengthens, and grows the creative
+                  ecosystem.
+                </p>
+
+                <pre className="text-center text-purple-300 text-lg leading-8 whitespace-pre-wrap">
+            {`          🏛 Preservation
+                            ▲
+                            │
+                            │
+                              👁 Awareness ◄────────► 🪪 Attribution
+                            │
+                            │
+                            ▼
+                      🤝 Collaboration`}
+                </pre>
+
+              </div>
+
+            </section>
+
+          {/* ======================================
+                The Constitution Articles
+            ====================================== */}
+
+            <div className="text-center mb-12">
+
+              <p className="text-sm uppercase tracking-[0.35em] text-purple-400 mb-4">
+                Principles in Practice
+              </p>
+
+              <h2 className="text-4xl font-black">
+                Constitution of ModVault
+              </h2>
+
+              <p className="text-zinc-400 max-w-2xl mx-auto mt-5">
+                The Articles describe how ModVault applies its four pillars through
+                governance, platform design, and community stewardship.
+              </p>
+
+            </div>
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
           {principles.map((item, index) => (
