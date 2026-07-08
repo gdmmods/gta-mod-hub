@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
+import InviteCreatorDialog from "@/components/invitations/InviteCreatorDialog";
+import { createInvitation } from "@/lib/invitations/createInvitation";
+import TeamInvitesTab from "@/components/team/TeamInvitesTab";
+
 type Props = {
   creator: any;
 };
@@ -27,6 +31,8 @@ export default function TeamControls({
   ] = useState(false);
 
   useEffect(() => {
+
+     setMembers([]);
 
     async function loadMembers() {
 
@@ -58,6 +64,42 @@ export default function TeamControls({
     loadMembers();
 
   }, [creator?.team_id]);
+
+  
+
+async function handleInvite(
+  selectedCreator: any,
+  message: string
+) {
+  try {
+
+    await createInvitation({
+
+      senderCreatorId: creator.id,
+
+      recipientCreatorId: selectedCreator.id,
+
+      recipientProfileId:
+        selectedCreator.profile_id,
+
+      teamId: creator.team_id,
+
+      teamCreatorId: creator.id,
+
+      message,
+
+    });
+
+    alert("Invitation sent!");
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert("Failed to send invitation.");
+
+  }
+}
 
   return (
 
@@ -244,13 +286,10 @@ export default function TeamControls({
 
       {activeTab === "invites" && (
 
-        <div>
-
-          <p className="text-zinc-500">
-            Team invitations panel coming next.
-          </p>
-
-        </div>
+        <TeamControls
+          key={creator.team_id ?? creator.id}
+          creator={creator}
+      />
 
       )}
 
