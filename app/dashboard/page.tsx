@@ -101,9 +101,12 @@ export default function DashboardPage() {
           modCount={modCount}
         />
 
-        <TeamControls
-          creator={creator}
-        />
+        {creator?.creator_type === "team" && (
+          <TeamControls
+            key={creator.id}
+            creator={creator}
+          />
+        )}
 
         <DashboardRoadmapPreview />
 

@@ -102,6 +102,7 @@ export default function CreateTeamPage() {
 
       }
 
+      
       /* ---------------------------
          CREATE TEAM
       ---------------------------- */
@@ -149,7 +150,9 @@ export default function CreateTeamPage() {
 
       }
 
-      /* ---------------------------
+
+
+/* ---------------------------
          CREATE TEAM CREATOR
       ---------------------------- */
 
@@ -168,11 +171,13 @@ const {
 
     bio: form.bio,
 
+    creator_type: "team",
+
     status: "active",
 
     owner_type: "team",
 
-    owner_id: user.id,
+    owner_id: team.id,
 
     team_id: team.id,
 
@@ -205,6 +210,14 @@ console.log(
         return;
 
       }
+
+
+      await supabase
+      .from("teams")
+      .update({
+        creator_id: creator.id,
+      })
+      .eq("id", team.id);
 
       /* ---------------------------
          CREATE OWNER MEMBERSHIP

@@ -44,7 +44,13 @@ export default function CreateCreatorPage() {
       .single();
 
     if (creatorError) {
-      console.error(creatorError);
+      console.log(
+  JSON.stringify(
+    creatorError,
+    null,
+    2
+  )
+);
 
       alert(
         "Failed to create creator profile."

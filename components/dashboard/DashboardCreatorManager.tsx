@@ -91,7 +91,9 @@ DashboardCreatorManager({
           creators (
             id,
             name,
-            specialization
+            specialization,
+            creator_type,
+            team_id
           )
         `)
         .eq(

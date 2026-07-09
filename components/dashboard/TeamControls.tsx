@@ -286,8 +286,7 @@ async function handleInvite(
 
       {activeTab === "invites" && (
 
-        <TeamControls
-          key={creator.team_id ?? creator.id}
+        <TeamInvitesTab
           creator={creator}
       />
 
