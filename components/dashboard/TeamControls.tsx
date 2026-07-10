@@ -6,13 +6,16 @@ import { supabase } from "@/lib/supabase/client";
 import InviteCreatorDialog from "@/components/invitations/InviteCreatorDialog";
 import { createInvitation } from "@/lib/invitations/createInvitation";
 import TeamInvitesTab from "@/components/team/TeamInvitesTab";
+import TeamDangerZone from "@/components/team/TeamDangerZone";
 
 type Props = {
   creator: any;
+  onTeamDeleted: () => void;
 };
 
 export default function TeamControls({
   creator,
+  onTeamDeleted,
 }: Props) {
 
   const [
@@ -303,6 +306,11 @@ async function handleInvite(
         </div>
 
       )}
+
+      <TeamDangerZone
+        creator={creator}
+        onTeamDeleted={onTeamDeleted}
+      />
 
     </section>
 

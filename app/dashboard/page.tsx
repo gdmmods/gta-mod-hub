@@ -65,6 +65,8 @@ export default function DashboardPage() {
 
   }
 
+console.log("CURRENT CREATOR", creator);
+
   return (
 
     <main
@@ -101,12 +103,17 @@ export default function DashboardPage() {
           modCount={modCount}
         />
 
-        {creator?.creator_type === "team" && (
-          <TeamControls
-            key={creator.id}
-            creator={creator}
-          />
-        )}
+      {creator?.owner_type === "team" && (
+        <TeamControls
+          key={creator.id}
+          creator={creator}
+          onTeamDeleted={() =>
+            setRefreshKey(
+              prev => prev + 1
+            )
+          }
+        />
+      )}
 
         <DashboardRoadmapPreview />
 

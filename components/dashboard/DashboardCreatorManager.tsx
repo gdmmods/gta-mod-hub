@@ -92,7 +92,6 @@ DashboardCreatorManager({
             id,
             name,
             specialization,
-            creator_type,
             team_id
           )
         `)
