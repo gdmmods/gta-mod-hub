@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { roadmap } from "@/lib/roadmap/roadmap";
 
 import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/roadmap/Hero";
@@ -8,7 +7,15 @@ import DevelopmentSnapshot from "@/components/roadmap/DevelopmentSnapshot";
 import CreatorTracker from "@/components/roadmap/CreatorTracker";
 import Pillars from "@/components/roadmap/Pillars";
 import FooterCTA from "@/components/roadmap/FooterCTA";
-import RoadmapGrid from "@/components/roadmap/RoadmapGrid";
+import CurrentPhase from "@/components/roadmap/CurrentPhase";
+import SupporterPreview from "@/components/roadmap/SupporterPreview";
+
+import RoadmapSection from "@/components/roadmap/RoadmapSection";
+
+import {
+    currentDevelopment,
+    roadmapSections,
+} from "@/lib/roadmap";
 
 export default function RoadmapPage() {
   return (
@@ -16,25 +23,28 @@ export default function RoadmapPage() {
 
       <Navbar />
 
-      <Hero />     
+      <Hero />   
 
-      
+      <CurrentPhase
+          development={currentDevelopment}
+      /> 
 
-      <RoadmapGrid phases={roadmap.slice(0, 5)} />
+        {roadmapSections.map((section) => (
+        <RoadmapSection
+          key={section.id}
+          section={section}
+        />
+      ))}
 
       <Timeline />
 
       <DevelopmentSnapshot />
 
-      <div className="mt-14">
-        <RoadmapGrid phases={roadmap.slice(5)} />
-      </div>
-
-      
-
       <CreatorTracker />
 
       <Pillars />
+
+      <SupporterPreview />
 
       <FooterCTA />
 

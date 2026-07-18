@@ -10,6 +10,7 @@ export default function Pillars() {
           mx-auto
           px-6
           mt-16
+          py-10
         "
       >
 

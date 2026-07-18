@@ -4,7 +4,13 @@ export default function DevelopmentSnapshot() {
     return (
         <>
             {/* DEVELOPMENT SNAPSHOT */}
-            <section className="mt-16">
+            <section className="
+                      relative
+                      max-w-[1600px]
+                      mx-auto
+                      px-6
+                      pt-14
+                    ">
             
               <div
                 className="

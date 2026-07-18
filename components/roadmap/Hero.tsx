@@ -11,6 +11,7 @@ export default function Hero() {
                       mx-auto
                       px-6
                       pt-14
+                      py-10
                     "
                   >
             

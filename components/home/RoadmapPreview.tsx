@@ -8,7 +8,7 @@ import SectionTitle from "@/components/ui/SectionTitle";
 import ProgressBar from "@/components/ui/ProgressBar";
 import CheckboxItem from "@/components/ui/CheckboxItem";
 
-import { roadmap } from "../../lib/roadmap/roadmap";
+import { roadmap } from "../../lib/roadmap/roadmapv1";
 
 export default function RoadmapPreview() {
   const preview = roadmap.slice(0, 3);

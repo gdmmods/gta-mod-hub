@@ -4,7 +4,7 @@ export default function Timeline() {
     return (
         <>
             {/* TIMELINE */}
-        <div className="mt-16">
+        <div className="relative max-w-[1600px] mx-auto mt-16">
 
           <div
             className="
