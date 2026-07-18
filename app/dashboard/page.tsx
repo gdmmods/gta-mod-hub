@@ -104,16 +104,16 @@ console.log("CURRENT CREATOR", creator);
         />
 
       {creator?.owner_type === "team" && (
-        <TeamControls
-          key={creator.id}
-          creator={creator}
-          onTeamDeleted={() =>
-            setRefreshKey(
-              prev => prev + 1
-            )
-          }
-        />
-      )}
+  <TeamControls
+    key={creator.id}
+    creator={creator}
+    onTeamDeleted={() =>
+      setRefreshKey(
+        prev => prev + 1
+      )
+    }
+  />
+)}
 
         <DashboardRoadmapPreview />
 

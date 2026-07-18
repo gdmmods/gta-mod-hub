@@ -301,4 +301,36 @@ export const roadmap = [
       },
     ],
   },
+
+  {
+    phase: "Phase 7",
+
+    title: "Automation / AI",
+
+    status: "planned",
+
+    progress: 0,
+
+    items: [
+      {
+        text: "Auto-import mods",
+        done: false,
+      },
+
+      {
+        text: "Dead link detection",
+        done: false,
+      },
+
+      {
+        text: "Smart recommendations",
+        done: false,
+      },
+
+      {
+        text: "AI tagging & moderation",
+        done: false,
+      },
+    ],
+  },
 ];
