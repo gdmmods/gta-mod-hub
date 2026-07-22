@@ -106,17 +106,17 @@ export default function RoadmapCard({
       </p>
 
       {/* TITLE */}
-      <h2 className="mt-4 text-4xl font-bold tracking-tight">
+      <h2 className="mt-4 text-2xl font-bold tracking-tight">
         {phase.title}
       </h2>
 
       {/* SUMMARY */}
-      <p className="mt-5 leading-7 text-zinc-400">
+      <p className="mt-4 leading-7 text-zinc-400">
         {phase.summary}
       </p>
 
       {/* CAPABILITIES */}
-      <div className="mt-10">
+      <div className="mt-4">
         <p className="mb-5 text-xs uppercase tracking-[0.25em] text-zinc-500">
           Capabilities
         </p>
@@ -129,7 +129,7 @@ export default function RoadmapCard({
             return (
               <div
                 key={idx}
-                className="flex items-center gap-3"
+                className="flex items-center gap-2"
               >
                 <div
                   className={`
@@ -172,7 +172,7 @@ export default function RoadmapCard({
       </div>
 
       {/* PROGRESS */}
-      <div className="mt-10">
+      <div className="mt-8">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs uppercase tracking-[0.2em] text-zinc-500">
             Progress
@@ -194,7 +194,7 @@ export default function RoadmapCard({
       </div>
 
       {/* CURRENT FOCUS */}
-      <div className="mt-10 rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+      <div className="mt-6 rounded-2xl border border-white/5 bg-white/[0.02] p-5">
         <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">
           🎯 Current Focus
         </p>
@@ -203,16 +203,18 @@ export default function RoadmapCard({
           {phase.currentFocus}
         </p>
       </div>
-
+      
       {/* FOOTER */}
-      <div className="mt-8 flex items-center justify-between border-t border-white/5 pt-6">
-        <span className="text-sm text-zinc-500">
-          More details coming soon
-        </span>
+      <div className="hidden">
+        <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-6">
+          <span className="text-sm text-zinc-500">
+            More details coming soon
+          </span>
 
-        <span className="text-sm text-purple-300 transition-transform group-hover:translate-x-1">
-          Explore Phase →
-        </span>
+          <span className="text-sm text-purple-300 transition-transform group-hover:translate-x-1">
+            Explore Phase →
+          </span>
+        </div>
       </div>
     </div>
   );

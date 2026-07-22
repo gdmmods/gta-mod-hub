@@ -8,8 +8,7 @@ export default function DevelopmentSnapshot() {
                       relative
                       max-w-[1600px]
                       mx-auto
-                      px-6
-                      pt-14
+                      px-6                      
                     ">
             
               <div
@@ -76,17 +75,17 @@ export default function DevelopmentSnapshot() {
                           tracking-[0.18em]
                         "
                       >
-                        Latest Progress
+                        NEXT CHAPTER
                       </p>
             
                       <h2 className="text-3xl font-bold">
-                        Ecosystem Architecture Expansion
+                        Building the Creator Ecosystem
                       </h2>
             
                     </div>
             
                   </div>
-            
+
                   <p
                     className="
                       text-zinc-400
@@ -94,12 +93,18 @@ export default function DevelopmentSnapshot() {
                       leading-relaxed
                     "
                   >
-                    ModVault has transitioned from static presentation
-                    pages into a fully interactive ecosystem architecture.
-                    Recent development sessions focused on creator systems,
-                    smart discovery logic, metadata infrastructure,
-                    immersive download flows, dynamic compatibility systems
-                    and scalable recommendation architecture.
+                    Once the platform foundation is complete...                
+                  </p>
+
+                  <p
+                    className="
+                      text-zinc-400
+                      max-w-4xl
+                      leading-relaxed
+                    "
+                  >                   
+                    This next chapter focuses on transforming ModVault into a living ecosystem where creators, 
+                    teams, asset creators, projects, communities and reputation become interconnected.
                   </p>
             
                   {/* GRID */}
@@ -124,17 +129,17 @@ export default function DevelopmentSnapshot() {
                     >
             
                       <p className="font-semibold">
-                        Smart Discovery Engine
+                        Creator Experience
                       </p>
             
                       <div className="mt-5 space-y-4 text-sm">
             
                         {[
-                          "Tag-based recommendation system",
-                          "Creator relationship matching",
-                          "Category fallback architecture",
-                          "Duplicate prevention logic",
-                          "Scalable recommendation foundations",
+                          "Activity Hub",
+                          "Creator Activity Infrastructure",
+                          "Following & Feeds",
+                          "Reputation & Recognition",
+                          "Discovery Experience",
                         ].map((item) => (
             
                           <div
@@ -170,17 +175,17 @@ export default function DevelopmentSnapshot() {
                     >
             
                       <p className="font-semibold">
-                        Interactive Mod Ecosystem
+                        Collaboration & Community
                       </p>
             
                       <div className="mt-5 space-y-4 text-sm">
             
                         {[
-                          "Portal-based fullscreen modals",
-                          "Immersive download experience",
-                          "Technical compatibility systems",
-                          "Dynamic metadata architecture",
-                          "Creator activity infrastructure",
+                          "Teams & Organizations",
+                          "Journals & Updates",
+                          "Community Presence",
+                          "Shared Projects",
+                          "Creator Connections",
                         ].map((item) => (
             
                           <div
@@ -216,16 +221,16 @@ export default function DevelopmentSnapshot() {
                     >
             
                       <p className="font-semibold">
-                        Infrastructure Progress
+                        Ecosystem Expansion
                       </p>
             
                       <div className="mt-5 space-y-4">
             
                         {[
-                          ["Dynamic Systems", "82%"],
-                          ["Creator Ecosystem", "61%"],
-                          ["Discovery Architecture", "74%"],
-                          ["AI Preparation", "35%"],
+                          ["Creator Experience", "100%"],
+                          ["Community Systems", "75%"],
+                          ["Recognition ", "60%"],
+                          ["Federation", "15%"],
                         ].map(([name, value]) => (
             
                           <div key={name}>

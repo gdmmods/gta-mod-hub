@@ -24,16 +24,12 @@ export const foundation: RoadmapSection = {
 
       capabilities: [
         { title: "Next.js application architecture", status: "complete" },
-        { title: "Supabase backend", status: "complete" },
+        { title: "Supabase backend & RLS", status: "complete" },
         { title: "Authentication", status: "complete" },
         { title: "User profiles", status: "complete" },
         { title: "Dashboard architecture", status: "complete" },
-        { title: "Creator context", status: "complete" },
-        { title: "Creator switching", status: "complete" },
+        { title: "Creator context & switching", status: "complete" },
         { title: "Database architecture", status: "complete" },
-        { title: "Row Level Security", status: "progress" },
-        { title: "Transactional RPC operations", status: "progress" },
-        { title: "Production hardening", status: "planned" },
       ],
 
       currentFocus:
@@ -76,7 +72,7 @@ export const foundation: RoadmapSection = {
       title: "Creator Identity",
 
       summary:
-        "Giving creators ownership of their public identity while separating people, accounts and creator profiles.",
+        "iving creators full control over their public identity.",
 
       state: "development",
 

@@ -8,8 +8,7 @@ export default function CreatorTracker() {
         className="
           max-w-[1600px]
           mx-auto
-          px-6
-          mt-10
+          px-6          
         "
       >
 

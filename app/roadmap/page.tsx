@@ -4,17 +4,17 @@ import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/roadmap/Hero";
 import Timeline from "@/components/roadmap/Timeline";
 import DevelopmentSnapshot from "@/components/roadmap/DevelopmentSnapshot";
-import CreatorTracker from "@/components/roadmap/CreatorTracker";
 import Pillars from "@/components/roadmap/Pillars";
-import FooterCTA from "@/components/roadmap/FooterCTA";
 import CurrentPhase from "@/components/roadmap/CurrentPhase";
 import SupporterPreview from "@/components/roadmap/SupporterPreview";
+import LaunchMilestone from "@/components/roadmap/LaunchMilestone";
 
 import RoadmapSection from "@/components/roadmap/RoadmapSection";
-
 import {
-    currentDevelopment,
-    roadmapSections,
+  currentDevelopment,
+  foundation,
+  creatorEcosystem,
+  creatorFederation,
 } from "@/lib/roadmap";
 
 export default function RoadmapPage() {
@@ -25,28 +25,31 @@ export default function RoadmapPage() {
 
       <Hero />   
 
-      <CurrentPhase
-          development={currentDevelopment}
-      /> 
-
-        {roadmapSections.map((section) => (
-        <RoadmapSection
-          key={section.id}
-          section={section}
-        />
-      ))}
-
       <Timeline />
+
+      <CurrentPhase
+        development={currentDevelopment}
+      />
+
+      <RoadmapSection
+        section={foundation}
+      />
+
+      <LaunchMilestone />
+
+      <RoadmapSection
+        section={creatorEcosystem}
+      />
 
       <DevelopmentSnapshot />
 
-      <CreatorTracker />
+      <RoadmapSection
+        section={creatorFederation}
+      />
 
       <Pillars />
 
       <SupporterPreview />
-
-      <FooterCTA />
 
     </main>
   );
