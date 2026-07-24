@@ -8,7 +8,7 @@ export default function CurrentPhase({
   development,
 }: CurrentPhaseProps) {
   return (
-    <section className="max-w-[1600px] mx-auto px-6 pt-10 my-10">
+    <section className="max-w-[1600px] mx-auto px-6 pt-10">
       <div
         className="
           relative
