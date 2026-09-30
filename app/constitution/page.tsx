@@ -14,11 +14,11 @@ export default function ModvaultConstitutionPage() {
     },
     {
       title: "Preservation of Modding Culture",
-      text: "Mods are digital craftsmanship. Modvault exists to preserve experimentation, collaboration, creativity, and modding history.",
+      text: "Modding is digital craftsmanship. ModVault exists to preserve the people, projects, assets, collaboration, experimentation, and history that shape the game modding ecosystem."
     },
     {
       title: "Respect for Attribution",
-      text: "Credit matters. Derivative work should acknowledge origins where applicable. Reuploads without attribution damage the ecosystem.",
+      text: "Credit matters. Meaningful contributions should be acknowledged, preserved, and traceable whenever reasonably possible. Derivative work should recognize its origins, and reuploads without attribution weaken the creative ecosystem."
     },
     {
       title: "Trust Is Earned",
@@ -38,8 +38,17 @@ export default function ModvaultConstitutionPage() {
     },
     {
       title: "Principle of Historical Continuity",
-      text: "Meaningful contributions should be remembered. The platform exists not only to host creative work, but to preserve the history of how that work, its collaborators, and its community evolved over time.",
+      text: "Meaningful contributions should be remembered. ModVault exists not only to preserve creative work, but to document the relationships, collaboration, and history through which creators, projects, communities, and platforms evolve over time."
     },
+    {
+    title: "Creator-Controlled Import",
+    text: "Creators remain in control of how their work is preserved. ModVault imports and connects creative history through creator-authorized actions and official platform partnerships whenever reasonably possible. The platform is built on trust, transparency, and stewardship—not on indiscriminate collection of third-party content."
+    },
+    {
+      title: "Interconnected Creativity",
+      text: "Creative work does not exist in isolation. ModVault recognizes that projects are built through the combined efforts of creators, collaborators, assets, tools, platforms, and communities. Preserving these relationships strengthens the collective history of game creation."
+    }
+
   ];
 
   return (
@@ -134,8 +143,7 @@ export default function ModvaultConstitutionPage() {
                   </h3>
 
                   <p className="text-zinc-400 leading-relaxed">
-                    Ensuring every meaningful contribution is recognized, traceable,
-                    and permanently connected to those who made it possible.
+                    Ensuring meaningful contributions are recognized, traceable, and permanently connected to the creators, collaborators, and projects that made them possible.
                   </p>
 
                 </div>
@@ -149,7 +157,7 @@ export default function ModvaultConstitutionPage() {
                   </h3>
 
                   <p className="text-zinc-400 leading-relaxed">
-                    Helping creators understand how their community evolves through
+                    Helping creators understand how their ecosystem evolves through
                     meaningful activity, historical continuity, and shared knowledge—
                     without demanding constant attention or disrupting the creative
                     process.

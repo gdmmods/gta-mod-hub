@@ -28,6 +28,10 @@ export default function CreateCreatorPage() {
       return;
     }
 
+    console.log("CREATE CREATOR USER:", user);
+console.log("CREATE CREATOR USER ID:", user?.id);
+console.log("CREATE CREATOR EMAIL:", user?.email);
+
     const {
       data: creator,
       error: creatorError,
@@ -68,7 +72,7 @@ export default function CreateCreatorPage() {
         creator_id: creator.id,
         profile_id: user.id,
         role: "owner",
-        status: "active",
+        status: "approved",
         verified: true,
       });
 
