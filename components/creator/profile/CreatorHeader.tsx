@@ -7,6 +7,7 @@ interface CreatorHeaderProps {
   verified?: boolean;
   status?: string | null;
   isManaged?: boolean;
+  games?: any[];
 }
 
 export default function CreatorHeader({
@@ -14,6 +15,7 @@ export default function CreatorHeader({
   verified,
   status,
   isManaged,
+  games,
 }: CreatorHeaderProps) {
 
   return (
@@ -111,6 +113,44 @@ export default function CreatorHeader({
             bg-zinc-700
           "
         />
+
+        {/* GAMES */}
+
+        {games && games.length > 0 && (
+
+          <div
+            className="
+              flex
+              flex-wrap
+              items-center
+              gap-2
+              mt-1
+            "
+          >
+
+            {games.map((game) => (
+
+              <span
+                key={game.id}
+                className="
+                  px-3
+                  py-1.5
+                  rounded-2xl
+                  bg-zinc-900
+                  border
+                  border-zinc-800
+                  text-sm
+                  text-zinc-300
+                "
+              >
+                {game.name}
+              </span>
+
+            ))}
+
+          </div>
+
+        )}
 
         <span>
           Creator Ecosystem Profile

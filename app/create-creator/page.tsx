@@ -2,7 +2,11 @@
 
 import Navbar from "@/components/layout/Navbar";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
@@ -12,8 +16,38 @@ export default function CreateCreatorPage() {
   const [name, setName] = useState("");
   const [tagline, setTagline] = useState("");
   const [bio, setBio] = useState("");
+  const [games, setGames] = useState<any[]>([]);
+  const [selectedGames, setSelectedGames] = useState<string[]>([]);
 
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+      async function loadGames() {
+        const {
+          data,
+          error,
+        } = await supabase
+          .from("games")
+          .select("id, name, slug")
+          .eq("status", "active")
+          .order("name");
+
+          console.log("GAMES:", data);
+          console.log("GAMES ERROR:", error);
+
+        if (error) {
+          console.error(
+            "GAME LOAD ERROR:",
+            error
+          );
+          return;
+        }
+
+        setGames(data || []);
+      }
+
+      loadGames();
+    }, []);
 
   async function createCreator() {
     setSaving(true);
@@ -43,6 +77,7 @@ console.log("CREATE CREATOR EMAIL:", user?.email);
         bio,
         owner_id: user.id,
         status: "active",
+        games: selectedGames,
       })
       .select()
       .single();
@@ -317,6 +352,103 @@ console.log("CREATE CREATOR EMAIL:", user?.email);
                   py-3
                 "
               />
+
+            </div>
+
+            <div>
+
+              <label
+                className="
+                  block
+                  text-sm
+                  mb-3
+                "
+              >
+                Games
+              </label>
+
+              <p
+                className="
+                  text-zinc-500
+                  text-sm
+                  mb-4
+                "
+              >
+                Select the games you create
+                content for.
+              </p>
+
+              <div
+                className="
+                  grid
+                  grid-cols-1
+                  md:grid-cols-2
+                  gap-3
+                "
+              >
+
+                {games.map((game) => {
+
+                  const selected =
+                    selectedGames.includes(
+                      game.id
+                    );
+
+                  return (
+                    <label
+                      key={game.id}
+                      className={`
+                        flex
+                        items-center
+                        gap-3
+                        rounded-xl
+                        border
+                        px-4
+                        py-3
+                        cursor-pointer
+                        transition
+                        ${
+                          selected
+                            ? "border-purple-500 bg-purple-500/10"
+                            : "border-zinc-800 bg-zinc-900"
+                        }
+                      `}
+                    >
+
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => {
+
+                          setSelectedGames(
+                            (current) =>
+                              current.includes(
+                                game.id
+                              )
+                                ? current.filter(
+                                    (id) =>
+                                      id !== game.id
+                                  )
+                                : [
+                                    ...current,
+                                    game.id,
+                                  ]
+                          );
+
+                        }}
+                        className="accent-purple-500"
+                      />
+
+                      <span>
+                        {game.name}
+                      </span>
+
+                    </label>
+                  );
+
+                })}
+
+              </div>
 
             </div>
 

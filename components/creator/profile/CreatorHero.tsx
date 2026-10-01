@@ -18,6 +18,7 @@ interface CreatorHeroProps {
   totalLikes: number;
   totalDownloads: number;
   isManaged: boolean;
+  creatorGames: any[];
 }
 
 export default function CreatorHero({
@@ -28,6 +29,7 @@ export default function CreatorHero({
   totalLikes,
   totalDownloads,
   isManaged,
+  creatorGames,
 }: CreatorHeroProps) {
 
 const supportUrl =
@@ -217,6 +219,7 @@ const supportUrl =
                 verified={creator.verified}
                 status={creator.status}
                 isManaged={isManaged}
+                games={creatorGames}
               />
 
               <div className="mt-6">

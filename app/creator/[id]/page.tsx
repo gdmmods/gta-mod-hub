@@ -57,7 +57,8 @@ export default async function CreatorPage({
       specialization,
       socials,
       verified,
-      status
+      status,
+      games
     `)
     .eq("id", creatorId)
     .maybeSingle();
@@ -77,6 +78,46 @@ export default async function CreatorPage({
         Creator not found
       </div>
     );
+
+  }
+
+    /* -----------------------------
+     FETCH CREATOR GAMES
+  ----------------------------- */
+
+  const creatorGameIds =
+    creator.games || [];
+
+  let creatorGames: any[] = [];
+
+  if (creatorGameIds.length > 0) {
+
+    const {
+      data: games,
+      error: gamesError,
+    } = await supabase
+      .from("games")
+      .select(`
+        id,
+        name,
+        slug
+      `)
+      .in(
+        "id",
+        creatorGameIds
+      );
+
+    if (gamesError) {
+
+      console.error(
+        "CREATOR GAMES ERROR:",
+        gamesError
+      );
+
+    }
+
+    creatorGames =
+      games || [];
 
   }
 
@@ -334,6 +375,7 @@ export default async function CreatorPage({
         totalLikes={totalLikes}
         totalDownloads={totalDownloads}
         isManaged={isManaged}
+        creatorGames={creatorGames}
       />
 
       {/* FEATURED CREATIONS */}
