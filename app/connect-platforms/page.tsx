@@ -422,6 +422,59 @@ export default function ConnectPlatformsPage() {
                     return;
                 }
 
+                const {
+                  error: eventError,
+                } = await supabase
+                  .from("activity_events")
+                  .insert({
+                    event_type:
+                      "creator_connected_platform",
+
+                    target_type:
+                      "creator",
+
+                    target_id:
+                      currentCreatorId,
+
+                    visibility:
+                      "public",
+
+                    title:
+                      `${selectedPlatform.name} connected`,
+
+                    summary:
+                      `Connected ${username.trim()} on ${selectedPlatform.name}.`,
+
+                    metadata: {
+                      platform_id:
+                        selectedPlatform.id,
+
+                      platform_name:
+                        selectedPlatform.name,
+
+                      username:
+                        username.trim(),
+
+                      profile_url:
+                        profileUrl.trim() || null,
+                    },
+
+                    actor_type:
+                      "creator",
+
+                    actor_id:
+                      currentCreatorId,
+                  });
+
+                if (eventError) {
+
+                  console.error(
+                    "ACTIVITY EVENT ERROR:",
+                    eventError
+                  );
+
+                }
+
                 await loadConnectedIdentities(
                     currentCreatorId
                 );

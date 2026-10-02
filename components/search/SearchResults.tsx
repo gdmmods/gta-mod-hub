@@ -1,13 +1,9 @@
 import Link from "next/link";
 
 type Props = {
-
   mods: any[];
-
   creators: any[];
-
   active: string;
-
 };
 
 export default function SearchResults({
@@ -21,6 +17,7 @@ export default function SearchResults({
     <div className="space-y-14">
 
       {/* MODS */}
+
       {(active === "all" ||
         active === "mods") && (
 
@@ -53,14 +50,10 @@ export default function SearchResults({
                 className="
                   rounded-3xl
                   overflow-hidden
-
                   border
                   border-zinc-800
-
                   bg-zinc-900
-
                   hover:border-purple-500
-
                   transition
                 "
               >
@@ -99,6 +92,7 @@ export default function SearchResults({
       )}
 
       {/* CREATORS */}
+
       {(active === "all" ||
         active === "creators") && (
 
@@ -123,70 +117,130 @@ export default function SearchResults({
             "
           >
 
-            {creators.map((creator) => (
+            {creators.map((creator) => {
 
-              <Link
-                key={creator.id}
-                href={`/creator/${creator.id}`}
-                className="
-                  p-6
+              const isTeam =
+                creator.owner_type === "team";
 
-                  rounded-3xl
+              const label =
+                isTeam
+                  ? "Team"
+                  : "Creator";
 
-                  border
-                  border-zinc-800
+              const initial =
+                creator.name
+                  ?.charAt(0)
+                  ?.toUpperCase() || "?";
 
-                  bg-zinc-900
+              return (
 
-                  hover:border-purple-500
-
-                  transition
-                "
-              >
-
-                <div
+                <Link
+                  key={creator.id}
+                  href={`/creator/${creator.id}`}
                   className="
-                    flex
-                    items-center
-                    gap-4
+                    p-6
+                    rounded-3xl
+                    border
+                    border-zinc-800
+                    bg-zinc-900
+                    hover:border-purple-500
+                    transition
                   "
                 >
 
-                  <img
-                    src={
-                      creator.avatar ||
-                      "/placeholder-avatar.jpg"
-                    }
-                    alt={creator.name}
+                  <div
                     className="
-                      w-14
-                      h-14
-                      rounded-full
-                      object-cover
-
-                      border
-                      border-zinc-700
+                      flex
+                      items-center
+                      gap-4
                     "
-                  />
+                  >
 
-                  <div>
+                    {/* AVATAR */}
 
-                    <h3
+                    <div
                       className="
+                        w-14
+                        h-14
+                        shrink-0
+                        rounded-full
+                        overflow-hidden
+                        border
+                        border-zinc-700
+                        bg-zinc-950
+                        flex
+                        items-center
+                        justify-center
                         text-lg
                         font-semibold
+                        text-zinc-400
                       "
                     >
-                      {creator.name}
-                    </h3>
+
+                      {creator.avatar ? (
+
+                        <img
+                          src={creator.avatar}
+                          alt={creator.name}
+                          className="
+                            w-full
+                            h-full
+                            object-cover
+                          "
+                          onError={(e) => {
+                            e.currentTarget.style.display =
+                              "none";
+
+                            e.currentTarget.parentElement
+                              ?.classList.add(
+                                "avatar-fallback"
+                              );
+                          }}
+                        />
+
+                      ) : (
+
+                        initial
+
+                      )}
+
+                    </div>
+
+                    {/* IDENTITY */}
+
+                    <div>
+
+                      <h3
+                        className="
+                          text-lg
+                          font-semibold
+                        "
+                      >
+                        {creator.name}
+                      </h3>
+
+                      <span
+                        className="
+                          inline-block
+                          mt-1
+                          text-xs
+                          uppercase
+                          tracking-wider
+                          text-zinc-500
+                        "
+                      >
+                        {label}
+                      </span>
+
+                    </div>
 
                   </div>
 
-                </div>
+                </Link>
 
-              </Link>
+              );
 
-            ))}
+            })}
 
           </div>
 

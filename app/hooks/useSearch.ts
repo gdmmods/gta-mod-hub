@@ -5,8 +5,7 @@ import {
   useState,
 } from "react";
 
-import { supabase }
-from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 export default function useSearch(
   query: string
@@ -27,17 +26,13 @@ export default function useSearch(
 
     async function runSearch() {
 
-      
-
       setLoading(true);
 
       /* -----------------------------
          MOD SEARCH
       ----------------------------- */
 
-      const {
-        data: modData,
-      } = await supabase
+      let modQuery = supabase
         .from("mods")
         .select(`
           id,
@@ -48,68 +43,53 @@ export default function useSearch(
         .eq(
           "status",
           "published"
-        )
-        query.trim()
-  ? supabase
-      .from("mods")
-      .select(`
-        id,
-        title,
-        image,
-        status
-      `)
-      .eq(
-        "status",
-        "published"
-      )
-      .ilike(
-        "title",
-        `%${query}%`
-      )
-  : supabase
-      .from("mods")
-      .select(`
-        id,
-        title,
-        image,
-        status
-      `)
-      .eq(
-        "status",
-        "published"
-      );
+        );
+
+      if (query.trim()) {
+
+        modQuery = modQuery.ilike(
+          "title",
+          `%${query}%`
+        );
+
+      }
+
+      const {
+        data: modData,
+      } = await modQuery;
+
 
       /* -----------------------------
          CREATOR SEARCH
       ----------------------------- */
 
-      const {
-        data: creatorData,
-      } = await supabase
+      let creatorQuery = supabase
         .from("creators")
         .select(`
           id,
-          name
-        `)
-        query.trim()
-  ? supabase
-      .from("creators")
-      .select(`
-        id,
-        name,
-        avatar
-      `)
-      .ilike(
-        "name",
-        `%${query}%`
-      )
-  : supabase
-      .from("creators")
-      .select(`
-        id,
-        name,
-        avatar
-      `);
+          name,
+          avatar,
+          owner_type
+        `);
+
+      if (query.trim()) {
+
+        creatorQuery =
+          creatorQuery.ilike(
+            "name",
+            `%${query}%`
+          );
+
+      }
+
+      const {
+        data: creatorData,
+      } = await creatorQuery;
+
+
+      /* -----------------------------
+         SET RESULTS
+      ----------------------------- */
 
       setMods(
         modData || []

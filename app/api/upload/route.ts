@@ -173,6 +173,9 @@ export async function POST(
 
           /* SYSTEM */
 
+          creator_id:
+            body.creator_id,
+
           created_by:
             user.id,
 
