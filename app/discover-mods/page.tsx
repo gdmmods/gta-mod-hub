@@ -48,6 +48,9 @@ export default function DiscoverModsPage() {
   const [currentCreatorId, setCurrentCreatorId] =
   useState<string | null>(null);
 
+  const [projectActions, setProjectActions] =
+  useState<Record<string, string>>({});
+
   useEffect(() => {
 
     async function loadConnectedPlatforms() {
@@ -151,6 +154,23 @@ export default function DiscoverModsPage() {
     loadConnectedPlatforms();
 
   }, []);
+
+  function handleProjectAction(
+  project: any,
+  action: string
+) {
+
+  const key =
+    `${project.platform}-${project.externalId}`;
+
+  setProjectActions(
+    (current) => ({
+      ...current,
+      [key]: action,
+    })
+  );
+
+}
 
   async function handleDiscovery() {
 
@@ -276,8 +296,8 @@ export default function DiscoverModsPage() {
       const existingMod =
         existingMods.find(
           (mod: any) =>
-            mod.source_url ===
-            project.projectUrl
+            mod.source_url?.split("#")[0] ===
+            project.projectUrl?.split("#")[0]
         );
 
       return {
@@ -691,28 +711,33 @@ export default function DiscoverModsPage() {
       projects before choosing what to add.
     </p>
 
-    <div className="space-y-3">
-
-      {projects.map(
-        (project, index) => (
+    <div
+  className="
+    rounded-2xl
+    border
+    border-zinc-800
+    bg-zinc-900
+    overflow-hidden
+  "
+>
+  {projects.map(
+    (project, index) => (
 
           <div
             key={`${project.platform}-${project.externalId}-${index}`}
             className="
-              rounded-2xl
-              border
-              border-zinc-800
-              bg-zinc-900
               p-5
+              border-b
+              border-zinc-800
+              last:border-b-0
             "
           >
 
             <div
               className="
-                flex
-                items-center
-                justify-between
-                gap-6
+                grid
+                grid-cols-1
+                gap-2
               "
             >
 
@@ -737,22 +762,168 @@ export default function DiscoverModsPage() {
                   {project.platform}
                 </p>
 
+                <div
+                  className="
+                    flex
+                    items-end
+                    justify-between
+                    gap-4
+                    mt-2
+                  "
+                >
+
+                </div>
+
                 {project.matchStatus === "existing" ? (
-                  <p className="text-sm text-zinc-400 mt-2">
+                  <p className="text-sm text-zinc-400">
                     Already in ModVault
                   </p>
                 ) : (
-                  <p className="text-sm text-emerald-400 mt-2">
+                  <p className="text-sm text-emerald-400">
                     New project
+                  </p>
+                  
+                )}
+
+                {projectActions[
+                  `${project.platform}-${project.externalId}`
+                ] === "add" && (
+                  <p className="text-sm text-emerald-400">
+                    Queued to be added
+                  </p>
+                )}
+
+                {projectActions[
+                  `${project.platform}-${project.externalId}`
+                ] === "update" && (
+                  <p className="text-sm text-emerald-400 mt-1">
+                    Queued for update
+                  </p>
+                )}
+
+                {projectActions[
+                  `${project.platform}-${project.externalId}`
+                ] === "ignore" && (
+                  <p className="text-sm text-red-400 mt-1">
+                    Ignored
                   </p>
                 )}
 
               </div>
 
+              <div
+                className="
+                  flex
+                  items-center
+                  justify-end
+                  gap-2
+                  shrink-0
+                "
+              >
+
+              <div className="flex items-center gap-2">
+
+                {project.matchStatus === "existing" ? (
+
+                  <button
+                    onClick={() =>
+                      handleProjectAction(
+                        project,
+                        "update"
+                      )
+                    }
+                    className={`
+                      px-3
+                      py-2
+                      rounded-lg
+                      text-sm
+                      ${
+                        projectActions[
+                          `${project.platform}-${project.externalId}`
+                        ] === "update"
+                          ? "bg-emerald-600 hover:bg-emerald-500"
+                          : "bg-purple-600 hover:bg-purple-500"
+                      }
+                    `}
+                  >
+                    {
+                      projectActions[
+                        `${project.platform}-${project.externalId}`
+                      ] === "update"
+                        ? "Updated ✓"
+                        : "Update"
+                    }
+                  </button>
+
+                ) : (
+
+                  <button
+                    onClick={() =>
+                      handleProjectAction(
+                        project,
+                        "add"
+                      )
+                    }
+                    className={`
+                      px-3
+                      py-2
+                      rounded-lg
+                      text-sm
+                      ${
+                        projectActions[
+                          `${project.platform}-${project.externalId}`
+                        ] === "add"
+                          ? "bg-emerald-600 hover:bg-emerald-500"
+                          : "bg-purple-600 hover:bg-purple-500"
+                      }
+                    `}
+                  >
+                    {
+                      projectActions[
+                        `${project.platform}-${project.externalId}`
+                      ] === "add"
+                        ? "Added ✓"
+                        : "Add"
+                    }
+                  </button>
+
+                )}
+
+                <button
+                  onClick={() =>
+                    handleProjectAction(
+                      project,
+                      "ignore"
+                    )
+                  }
+                  className={`
+                    px-3
+                    py-2
+                    rounded-lg
+                    text-sm
+                    border
+                    ${
+                      projectActions[
+                        `${project.platform}-${project.externalId}`
+                      ] === "ignore"
+                        ? "border-red-500 bg-red-900/30 text-red-400 hover:bg-red-900/50"
+                        : "border-zinc-700 hover:bg-zinc-800"
+                    }
+                  `}
+                >
+                  {
+                    projectActions[
+                      `${project.platform}-${project.externalId}`
+                    ] === "ignore"
+                      ? "Ignored"
+                      : "Ignore"
+                  }
+                </button>
+
+              </div>
+
               <a
-                href={
-                  project.projectUrl
-                }
+                href={project.projectUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="
@@ -760,10 +931,13 @@ export default function DiscoverModsPage() {
                   hover:text-purple-300
                   text-sm
                   shrink-0
+                  ml-4
                 "
               >
                 View Project →
               </a>
+
+              </div>
 
             </div>
 
