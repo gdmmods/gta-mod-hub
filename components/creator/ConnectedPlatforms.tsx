@@ -1,5 +1,17 @@
 "use client";
 
+import { useState } from "react";
+
+import { supabase } from "@/lib/supabase/client";
+
+import {
+  createVerificationChallenge,
+} from "@/lib/connectors/gta5modsVerification";
+
+import {
+  getPlatformConnector,
+} from "@/lib/connectors";
+
 interface ConnectedPlatformsProps {
   identities: any[];
   loading: boolean;
@@ -9,6 +21,80 @@ export default function ConnectedPlatforms({
   identities,
   loading,
 }: ConnectedPlatformsProps) {
+
+  const [verifyingId, setVerifyingId] =
+    useState<string | null>(null);
+
+  const [verificationChallenge, setVerificationChallenge] =
+    useState<any | null>(null);
+
+  const [verificationInstructions, setVerificationInstructions] =
+  useState<string | null>(null);
+
+  async function beginVerification(
+  identity: any
+) {
+  const challenge =
+    createVerificationChallenge();
+
+  const existingMetadata =
+    identity.metadata || {};
+
+  const metadata = {
+    ...existingMetadata,
+    verification: challenge,
+  };
+
+  const {
+    error,
+  } = await supabase
+    .from("external_identities")
+    .update({
+      metadata,
+      verification_status: "pending",
+    })
+    .eq("id", identity.id);
+
+  if (error) {
+    console.error(
+      "VERIFICATION START ERROR:",
+      error
+    );
+    return;
+  }
+
+  const connector =
+  identity.platform?.slug
+    ? getPlatformConnector(
+        identity.platform.slug
+      )
+    : null;
+
+let instructions:
+  string | null = null;
+
+if (
+  connector?.verification?.instructions &&
+  identity.profile_url
+) {
+  instructions =
+    await connector.verification.instructions(
+      identity.profile_url
+    );
+}
+
+setVerificationInstructions(
+  instructions
+);
+
+setVerificationChallenge(
+  challenge
+);
+
+setVerifyingId(
+  identity.id
+);
+}
 
   return (
     <div
@@ -128,43 +214,165 @@ export default function ConnectedPlatforms({
 
               </div>
 
-              <div className="text-right">
+                  <div className="text-right">
 
-                <div
-                  className="
-                    text-xs
-                    uppercase
-                    tracking-wider
-                    text-zinc-500
-                  "
-                >
-                  {identity.verification_status ||
-                    "pending"}
-                </div>
+      <div
+        className="
+          text-xs
+          uppercase
+          tracking-wider
+          text-zinc-500
+        "
+      >
+        {identity.verification_status ||
+          "pending"}
+      </div>
 
-                {identity.profile_url && (
+      {identity.profile_url && (
 
-                  <a
-                    href={identity.profile_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="
-                      inline-block
-                      mt-2
-                      text-sm
-                      text-purple-400
-                      hover:text-purple-300
-                      transition
-                    "
-                  >
-                    View Profile →
-                  </a>
+        <a
+          href={identity.profile_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="
+            block
+            mt-2
+            text-sm
+            text-purple-400
+            hover:text-purple-300
+            transition
+          "
+        >
+          View Profile →
+        </a>
 
-                )}
+      )}
 
+      {identity.verification_status !== "verified" && (
+
+        <button
+          type="button"
+          onClick={() =>
+            setVerifyingId(
+              verifyingId === identity.id
+                ? null
+                : identity.id
+            )
+          }
+          className="
+            mt-2
+            text-sm
+            text-zinc-300
+            hover:text-white
+            transition
+          "
+        >
+          {verifyingId === identity.id
+            ? "Cancel Verification"
+            : "Verify Identity"}
+        </button>
+
+      )}
+
+    </div>
+
+    {verifyingId === identity.id && (
+
+      <div
+        className="
+          mt-5
+          rounded-2xl
+          border
+          border-zinc-800
+          bg-black
+          p-5
+        "
+      >
+
+        <p
+          className="
+            text-xs
+            uppercase
+            tracking-[0.2em]
+            text-purple-400
+            mb-2
+          "
+        >
+          Identity Verification
+        </p>
+
+        <p className="text-sm text-zinc-400">
+          Verify that you control this
+          {identity.platform?.name
+            ? ` ${identity.platform.name}`
+            : ""} identity before using it
+          for project discovery.
+        </p>
+
+        {verificationChallenge &&
+          verifyingId === identity.id && (
+            <div className="mt-5">
+              <p className="text-xs uppercase tracking-wider text-zinc-500 mb-2">
+                Your verification code
+              </p>
+
+              <div className="
+                rounded-lg
+                border
+                border-zinc-700
+                bg-zinc-900
+                px-4
+                py-3
+                font-mono
+                text-lg
+                tracking-wider
+              ">
+                {verificationChallenge.code}
               </div>
-
             </div>
+          )}
+
+          {verificationInstructions &&
+            verifyingId === identity.id && (
+              <p
+                className="
+                  mt-4
+                  text-sm
+                  text-zinc-400
+                "
+              >
+                {verificationInstructions}
+              </p>
+            )}
+
+        <div className="mt-4">
+
+          <button
+            type="button"
+              onClick={() =>
+                beginVerification(identity)
+              }
+            className="
+              px-4
+              py-2
+              rounded-lg
+              bg-purple-600
+              hover:bg-purple-500
+              text-sm
+              transition
+            "
+          >
+            Begin Verification
+          </button>
+
+        </div>
+
+      </div>
+
+    )}
+
+  </div>
+
 
           ))}
 

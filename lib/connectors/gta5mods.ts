@@ -3,6 +3,9 @@ import type {
   PlatformConnector,
 } from "./types";
 
+import {
+  getGta5ModsVerificationInstructions,
+} from "./gta5modsVerification";
 
 function normalizeUrl(
   href: string
@@ -706,6 +709,22 @@ async function fetchPage(
 export const gta5ModsConnector:
   PlatformConnector = {
 
+  verification: {
+
+  instructions: async () =>
+    getGta5ModsVerificationInstructions(),
+
+  start: async () => {
+    return {
+      supported: true,
+    };
+  },
+
+  check: async () => {
+    return false;
+  },
+
+},
 
   async discover(
     profileUrl: string
