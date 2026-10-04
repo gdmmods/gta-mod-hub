@@ -720,9 +720,40 @@ export const gta5ModsConnector:
     };
   },
 
-  check: async () => {
+  check: async (
+  profileUrl,
+  verificationCode
+) => {
+
+  try {
+
+    const html =
+      await fetchPage(
+        profileUrl
+      );
+
+    const visibleText =
+      cleanText(
+        html
+      );
+
+    return visibleText.includes(
+      verificationCode
+    );
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "GTA5-MODS VERIFICATION ERROR:",
+      error
+    );
+
     return false;
-  },
+
+  }
+},
 
 },
 

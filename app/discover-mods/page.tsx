@@ -48,6 +48,16 @@ export default function DiscoverModsPage() {
   const [currentCreatorId, setCurrentCreatorId] =
   useState<string | null>(null);
 
+  const [selectedIdentityIds, setSelectedIdentityIds] =
+  useState<string[]>([]);
+
+  const hasVerifiedIdentity =
+  identities.some(
+    (identity) =>
+      identity.verification_status ===
+      "verified"
+  );
+
   const [projectActions, setProjectActions] =
   useState<Record<string, string>>({});
 
@@ -144,9 +154,33 @@ export default function DiscoverModsPage() {
         return;
       }
 
+      const loadedIdentities =
+  (data || []).map(
+    (identity: any) => ({
+      ...identity,
+      platform:
+        Array.isArray(identity.platform)
+          ? identity.platform[0] || null
+          : identity.platform,
+    })
+  ) as Identity[];
+
       setIdentities(
-        (data || []) as any[]
-        );
+        loadedIdentities
+      );
+
+      setSelectedIdentityIds(
+        loadedIdentities
+          .filter(
+            (identity) =>
+              identity.verification_status ===
+              "verified"
+          )
+          .map(
+            (identity) =>
+              identity.id
+          )
+      );
 
       setLoading(false);
     }
@@ -241,6 +275,21 @@ export default function DiscoverModsPage() {
     if (!connector) {
       continue;
     }
+
+    if (
+      identity.verification_status !==
+      "verified"
+    ) {
+      continue;
+    }
+
+    if (
+  !selectedIdentityIds.includes(
+    identity.id
+  )
+) {
+  continue;
+}
 
     /*
       Only discover from the profile URL
@@ -439,8 +488,7 @@ export default function DiscoverModsPage() {
 
               <p
                 className="
-                  text-zinc-500
-                  text-sm
+                mb-2
                 "
               >
                 These are the external identities
@@ -508,17 +556,56 @@ export default function DiscoverModsPage() {
 
                     <div
                       key={identity.id}
-                      className="
+                      onClick={() => {
+                        if (
+                          identity.verification_status !==
+                          "verified"
+                        ) {
+                          return;
+                        }
+
+                        setSelectedIdentityIds(
+                          (current) =>
+                            current.includes(identity.id)
+                              ? current.filter(
+                                  (id) =>
+                                    id !== identity.id
+                                )
+                              : [
+                                  ...current,
+                                  identity.id,
+                                ]
+                        );
+                      }}
+                      className={`
                         flex
                         items-center
                         justify-between
                         gap-6
                         rounded-2xl
                         border
-                        border-zinc-800
-                        bg-zinc-900
                         p-5
-                      "
+                        transition
+                        ${
+                          identity.verification_status ===
+                          "verified"
+                            ? "cursor-pointer"
+                            : "cursor-not-allowed"
+                        }
+                        ${
+                          selectedIdentityIds.includes(
+                            identity.id
+                          )
+                            ? "border-purple-500 bg-purple-950/20"
+                            : "border-zinc-800 bg-zinc-900"
+                        }
+                        ${
+                          identity.verification_status !==
+                          "verified"
+                            ? "opacity-60"
+                            : ""
+                        }
+                      `}
                     >
 
                       <div>
@@ -545,17 +632,26 @@ export default function DiscoverModsPage() {
 
                       </div>
 
-                      <span
-                        className="
+                      <div
+                        className={`
+                          inline-flex
+                          items-center
+                          gap-1.5
                           text-xs
+                          font-medium
                           uppercase
                           tracking-wider
-                          text-zinc-500
-                        "
+                          ${
+                            identity.verification_status === "verified"
+                              ? "text-emerald-400"
+                              : "text-amber-400"
+                          }
+                        `}
                       >
-                        {identity.verification_status ||
-                          "pending"}
-                      </span>
+                        {identity.verification_status === "verified"
+                          ? "✓ VERIFIED"
+                          : "◷ PENDING"}
+                      </div>
 
                     </div>
 
@@ -605,15 +701,27 @@ export default function DiscoverModsPage() {
 
                   <p
                     className="
-                      text-zinc-500
+                      text-amber-400
                       text-sm
                       max-w-xl
                     "
                   >
-                    ModVault will discover projects
-                    from your connected platforms.
+                    ModVault will discover projects from your verified platforms.
                     Nothing will be imported automatically.
                   </p>
+
+                  {!hasVerifiedIdentity && (
+                  <p
+                    className="
+                      mt-3
+                      text-sm
+                      text-amber-400
+                    "
+                  >
+                    Verify at least one connected platform
+                    before discovering your work.
+                  </p>
+                )}
 
                 </div>
 
@@ -621,7 +729,10 @@ export default function DiscoverModsPage() {
                   onClick={
                     handleDiscovery
                   }
-                  disabled={discovering}
+                  disabled={
+                    discovering ||
+                    !hasVerifiedIdentity
+                  }
                   className="
                     shrink-0
                     px-5
@@ -637,7 +748,9 @@ export default function DiscoverModsPage() {
                 >
                   {discovering
                     ? "Discovering..."
-                    : "Discover Mods"}
+                    : hasVerifiedIdentity
+                      ? "Discover Mods"
+                      : "Verify a Platform First"}
                 </button>
 
               </div>

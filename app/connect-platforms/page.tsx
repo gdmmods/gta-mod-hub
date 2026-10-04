@@ -59,6 +59,7 @@ export default function ConnectPlatformsPage() {
             profile_url,
             verification_status,
             connected_at,
+            metadata,
             platform:platforms (
                 id,
                 name,
@@ -322,25 +323,53 @@ export default function ConnectPlatformsPage() {
 
               </div>
 
-              <button
-                onClick={() =>
-                  setShowPicker(
-                    !showPicker
-                  )
-                }
+              <div
                 className="
-                  shrink-0
-                  px-5
-                  py-3
-                  rounded-xl
-                  bg-purple-600
-                  hover:bg-purple-500
-                  transition
-                  font-medium
+                  flex
+                  items-center
+                  gap-3
                 "
               >
-                + Connect Platform
-              </button>
+                <a
+                  href="/discover-mods"
+                  className="
+                    inline-flex
+                    px-5
+                    py-3
+                    rounded-xl
+                    border
+                    border-zinc-700
+                    hover:border-purple-500
+                    hover:text-purple-300
+                    transition
+                    font-medium
+                  "
+                >
+                  Discover Your Mods →
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPicker(true);
+                    setSelectedPlatform(null);
+                    setUsername("");
+                    setProfileUrl("");
+                  }}
+                  className="
+                    shrink-0
+                    px-5
+                    py-3
+                    rounded-xl
+                    bg-purple-600
+                    hover:bg-purple-500
+                    transition
+                    font-medium
+                  "
+                >
+                  + Connect Platform
+                </button>
+              </div>
 
             </div>
 

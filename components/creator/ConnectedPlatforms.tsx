@@ -31,9 +31,64 @@ export default function ConnectedPlatforms({
   const [verificationInstructions, setVerificationInstructions] =
   useState<string | null>(null);
 
+  const [checkingVerification, setCheckingVerification] =
+  useState(false);
+
+  async function openVerification(
+  identity: any
+) {
+  if (verifyingId === identity.id) {
+    setVerifyingId(null);
+    setVerificationChallenge(null);
+    setVerificationInstructions(null);
+    return;
+  }
+
+  setVerifyingId(identity.id);
+
+  const savedChallenge =
+    identity.metadata?.verification;
+
+  if (
+    savedChallenge?.code &&
+    savedChallenge.status !== "expired"
+  ) {
+    setVerificationChallenge(
+      savedChallenge
+    );
+  } else {
+    setVerificationChallenge(null);
+  }
+
+  const connector =
+    identity.platform?.slug
+      ? getPlatformConnector(
+          identity.platform.slug
+        )
+      : null;
+
+  let instructions:
+    string | null = null;
+
+  if (
+    connector?.verification?.instructions &&
+    identity.profile_url
+  ) {
+    instructions =
+      await connector.verification.instructions(
+        identity.profile_url
+      );
+  }
+
+  setVerificationInstructions(
+    instructions
+  );
+}
+
   async function beginVerification(
   identity: any
 ) {
+
   const challenge =
     createVerificationChallenge();
 
@@ -94,6 +149,118 @@ setVerificationChallenge(
 setVerifyingId(
   identity.id
 );
+}
+
+async function checkVerification(
+  identity: any
+) {
+
+  const code =
+  verificationChallenge?.code ||
+    identity.metadata?.verification?.code;
+
+  const connector =
+    identity.platform?.slug;
+
+  if (
+    !connector ||
+    !identity.profile_url ||
+    !code
+  ) {
+    return;
+  }
+
+  setCheckingVerification(true);
+
+  try {
+
+    const response =
+  await fetch(
+    "/api/verify-platform",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+
+      body: JSON.stringify({
+        connector,
+        profileUrl:
+          identity.profile_url,
+        verificationCode:
+          code,
+      }),
+    }
+  );
+
+const result =
+  await response.json();
+
+if (!response.ok) {
+  console.error(
+    "VERIFICATION REQUEST ERROR:",
+    result
+  );
+  return;
+}
+
+const verified =
+  result.verified;
+
+    if (!verified) {
+      console.log(
+        "Verification code not found."
+      );
+      return;
+    }
+
+    const existingMetadata =
+      identity.metadata || {};
+
+    const verification = {
+      ...(existingMetadata.verification || {}),
+      code,
+      status: "verified",
+    };
+
+    const metadata = {
+      ...existingMetadata,
+      verification,
+    };
+
+    const {
+      error,
+    } = await supabase
+      .from("external_identities")
+      .update({
+        metadata,
+        verification_status: "verified",
+        verified_at: new Date().toISOString(),
+      })
+      .eq(
+        "id",
+        identity.id
+      );
+
+    if (error) {
+      console.error(
+        "VERIFICATION UPDATE ERROR:",
+        error
+      );
+      return;
+    }
+
+    setVerificationChallenge(
+      verification
+    );
+
+  } finally {
+
+    setCheckingVerification(false);
+
+  }
 }
 
   return (
@@ -217,16 +384,25 @@ setVerifyingId(
                   <div className="text-right">
 
       <div
-        className="
-          text-xs
-          uppercase
-          tracking-wider
-          text-zinc-500
-        "
-      >
-        {identity.verification_status ||
-          "pending"}
-      </div>
+  className={`
+    inline-flex
+    items-center
+    gap-1.5
+    text-xs
+    font-medium
+    uppercase
+    tracking-wider
+    ${
+      identity.verification_status === "verified"
+        ? "text-emerald-400"
+        : "text-amber-400"
+    }
+  `}
+>
+  {identity.verification_status === "verified"
+    ? "✓ VERIFIED"
+    : "◷ PENDING"}
+</div>
 
       {identity.profile_url && (
 
@@ -253,11 +429,7 @@ setVerifyingId(
         <button
           type="button"
           onClick={() =>
-            setVerifyingId(
-              verifyingId === identity.id
-                ? null
-                : identity.id
-            )
+            openVerification(identity)
           }
           className="
             mt-2
@@ -350,7 +522,9 @@ setVerifyingId(
           <button
             type="button"
               onClick={() =>
-                beginVerification(identity)
+                verificationChallenge?.code
+                  ? checkVerification(identity)
+                  : beginVerification(identity)
               }
             className="
               px-4
@@ -362,7 +536,11 @@ setVerifyingId(
               transition
             "
           >
-            Begin Verification
+            {checkingVerification
+              ? "Checking..."
+              : verificationChallenge?.code
+                ? "Check Verification"
+                : "Begin Verification"}
           </button>
 
         </div>
