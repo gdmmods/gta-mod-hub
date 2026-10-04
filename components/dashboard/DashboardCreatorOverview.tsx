@@ -4,6 +4,8 @@ type Props = {
 
   modCount: number;
 
+  hasConnectedPlatform: boolean;
+
 };
 
 export default function DashboardCreatorOverview({
@@ -11,6 +13,8 @@ export default function DashboardCreatorOverview({
   creator,
 
   modCount,
+
+  hasConnectedPlatform,
 
 }: Props) {
 
@@ -239,6 +243,48 @@ export default function DashboardCreatorOverview({
         </span>
 
       </div>
+
+      <div
+  className="
+    mt-4
+    flex
+    flex-wrap
+    gap-3
+  "
+>
+  <a
+    href="/connect-platforms"
+    className="
+      px-4
+      py-2
+      rounded-lg
+      border
+      border-zinc-700
+      text-sm
+      hover:bg-zinc-800
+      transition
+    "
+  >
+    Connect Platforms
+  </a>
+
+  {hasConnectedPlatform && (
+    <a
+      href="/discover-mods"
+      className="
+        px-4
+        py-2
+        rounded-lg
+        bg-purple-600
+        text-sm
+        hover:bg-purple-500
+        transition
+      "
+    >
+      Discover Mods
+    </a>
+  )}
+</div>
 
     </div>
 

@@ -43,11 +43,13 @@ export default function DashboardPage() {
 
     const {
 
-    creator,
+  creator,
 
-    modCount,
+  modCount,
 
-  } = useCurrentCreatorData(
+  hasConnectedPlatform,
+
+} = useCurrentCreatorData(
   refreshKey
 );
 
@@ -101,6 +103,7 @@ console.log("CURRENT CREATOR", creator);
         <DashboardCreatorOverview
           creator={creator}
           modCount={modCount}
+          hasConnectedPlatform={hasConnectedPlatform}
         />
 
       {creator?.owner_type === "team" && (

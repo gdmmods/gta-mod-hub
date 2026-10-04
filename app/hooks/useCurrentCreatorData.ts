@@ -27,6 +27,11 @@ export default function useCurrentCreatorData(
     setModCount,
   ] = useState(0);
 
+  const [
+  hasConnectedPlatform,
+  setHasConnectedPlatform,
+] = useState(false);
+
   useEffect(() => {
 
     loadData();
@@ -111,18 +116,40 @@ export default function useCurrentCreatorData(
       count || 0
     );
 
+    const {
+      count: connectedPlatformCount,
+    } = await supabase
+      .from("external_identities")
+      .select(
+        "*",
+        {
+          count: "exact",
+          head: true,
+        }
+      )
+      .eq(
+        "creator_id",
+        profile.default_creator_id
+      );
+
+    setHasConnectedPlatform(
+      (connectedPlatformCount || 0) > 0
+    );
+
     setLoading(false);
 
   }
 
   return {
 
-    loading,
+  loading,
 
-    creator,
+  creator,
 
-    modCount,
+  modCount,
 
-  };
+  hasConnectedPlatform,
+
+};
 
 }
