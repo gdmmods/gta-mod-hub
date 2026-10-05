@@ -9,6 +9,9 @@ import { supabase } from "@/lib/supabase/client";
 
 import Navbar from "@/components/layout/Navbar";
 
+import DiscoverPlatforms from "@/components/discover/DiscoverPlatforms";
+import DiscoveryResults from "@/components/discover/DiscoveryResults";
+
 type Identity = {
   id: string;
   username: string;
@@ -37,29 +40,29 @@ export default function DiscoverModsPage() {
     useState<string | null>(null);
 
   const [projects, setProjects] =
-  useState<any[]>([]);
+    useState<any[]>([]);
 
   const [existingMods, setExistingMods] =
-  useState<any[]>([]);
+    useState<any[]>([]);
 
   const [discoveryError, setDiscoveryError] =
-  useState<string | null>(null);
+    useState<string | null>(null);
 
   const [currentCreatorId, setCurrentCreatorId] =
-  useState<string | null>(null);
+    useState<string | null>(null);
 
   const [selectedIdentityIds, setSelectedIdentityIds] =
-  useState<string[]>([]);
-
-  const hasVerifiedIdentity =
-  identities.some(
-    (identity) =>
-      identity.verification_status ===
-      "verified"
-  );
+    useState<string[]>([]);
 
   const [projectActions, setProjectActions] =
-  useState<Record<string, string>>({});
+    useState<Record<string, string>>({});
+
+  const hasVerifiedIdentity =
+    identities.some(
+      (identity) =>
+        identity.verification_status ===
+        "verified"
+    );
 
   useEffect(() => {
 
@@ -155,15 +158,17 @@ export default function DiscoverModsPage() {
       }
 
       const loadedIdentities =
-  (data || []).map(
-    (identity: any) => ({
-      ...identity,
-      platform:
-        Array.isArray(identity.platform)
-          ? identity.platform[0] || null
-          : identity.platform,
-    })
-  ) as Identity[];
+        (data || []).map(
+          (identity: any) => ({
+            ...identity,
+            platform:
+              Array.isArray(
+                identity.platform
+              )
+                ? identity.platform[0] || null
+                : identity.platform,
+          })
+        ) as Identity[];
 
       setIdentities(
         loadedIdentities
@@ -189,7 +194,26 @@ export default function DiscoverModsPage() {
 
   }, []);
 
-  function handleProjectAction(
+  function handleToggleIdentity(
+    identityId: string
+  ) {
+
+    setSelectedIdentityIds(
+      (current) =>
+        current.includes(identityId)
+          ? current.filter(
+              (id) =>
+                id !== identityId
+            )
+          : [
+              ...current,
+              identityId,
+            ]
+    );
+
+  }
+
+  async function handleProjectAction(
   project: any,
   action: string
 ) {
@@ -197,13 +221,243 @@ export default function DiscoverModsPage() {
   const key =
     `${project.platform}-${project.externalId}`;
 
+  /*
+    Ignore is still a local discovery action.
+  */
+
+  if (action === "ignore") {
+
   setProjectActions(
-    (current) => ({
+    current => ({
       ...current,
-      [key]: action,
+      [`${project.platform}-${project.externalId}`]:
+        "ignore",
     })
   );
 
+  return;
+}
+
+  /*
+    Update will be wired separately.
+  */
+
+  if (action === "update") {
+
+  if (!project.existingMod?.id) {
+    console.error(
+      "UPDATE ERROR: Missing existing mod ID."
+    );
+
+    return;
+  }
+
+  const {
+    data: {
+      session,
+    },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    setMessage(
+      "Your session has expired. Please sign in again."
+    );
+
+    return;
+  }
+
+  const response =
+    await fetch(
+      "/api/update-mod",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          Authorization:
+            `Bearer ${session.access_token}`,
+        },
+
+        body: JSON.stringify({
+          modId:
+            project.existingMod.id,
+
+          project,
+        }),
+      }
+    );
+
+  const result =
+    await response.json();
+
+  if (!response.ok) {
+
+    console.error(
+      "UPDATE ERROR:",
+      {
+        result,
+        status:
+          response.status,
+        statusText:
+          response.statusText,
+      }
+    );
+
+    return;
+  }
+
+  setProjectActions(
+    current => ({
+      ...current,
+      [`${project.platform}-${project.externalId}`]:
+        "update",
+    })
+  );
+
+  return;
+}
+
+  /*
+    Add = explicit creator-authorized import.
+  */
+
+  if (
+    action === "add" &&
+    !currentCreatorId
+  ) {
+    return;
+  }
+
+  try {
+
+    const {
+      data: {
+        session,
+      },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      setMessage(
+        "Your session has expired. Please sign in again."
+      );
+
+      return;
+    }
+
+    const response =
+      await fetch(
+        "/api/import-mod",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${session.access_token}`,
+          },
+
+          body: JSON.stringify({
+            creatorId:
+              currentCreatorId,
+
+            project,
+          }),
+        }
+      );
+
+    const responseText =
+  await response.text();
+
+let result: any = {};
+
+try {
+  result =
+    JSON.parse(responseText);
+} catch {
+  result = {
+    raw: responseText,
+  };
+}
+
+if (!response.ok) {
+
+  console.error(
+    "IMPORT ERROR:",
+    {
+      status: response.status,
+      statusText: response.statusText,
+      result,
+    }
+  );
+
+  setMessage(
+    result.error ||
+      `Import failed (${response.status}).`
+  );
+
+  return;
+}
+
+    /*
+      Only mark the project as added
+      after the API confirms success.
+    */
+
+    setProjectActions(
+      (current) => ({
+        ...current,
+        [key]: "add",
+      })
+    );
+
+    /*
+      Update the local project so it
+      immediately behaves like an
+      imported ModVault record.
+    */
+
+    setProjects(
+      (current) =>
+        current.map(
+          (item) => {
+
+            const itemKey =
+              `${item.platform}-${item.externalId}`;
+
+            if (
+              itemKey !== key
+            ) {
+              return item;
+            }
+
+            return {
+              ...item,
+
+              matchStatus:
+                "existing",
+
+              existingMod:
+                result.mod || null,
+            };
+          }
+        )
+    );
+
+  } catch (error) {
+
+    console.error(
+      "IMPORT REQUEST ERROR:",
+      error
+    );
+
+    setMessage(
+      "Could not import this project."
+    );
+  }
 }
 
   async function handleDiscovery() {
@@ -214,12 +468,10 @@ export default function DiscoverModsPage() {
 
     setDiscovering(true);
     setMessage(null);
-
     setDiscoveryError(null);
-    setMessage(null);
     setProjects([]);
 
-        let existingMods: any[] = [];
+    let existingMods: any[] = [];
 
     if (currentCreatorId) {
 
@@ -260,136 +512,136 @@ export default function DiscoverModsPage() {
 
     }
 
+    try {
 
-  try {
+      const allProjects: any[] = [];
 
-  const allProjects: any[] = [];
+      for (
+        const identity of identities
+      ) {
 
-  for (
-    const identity of identities
-  ) {
+        const connector =
+          identity.platform?.slug;
 
-    const connector =
-      identity.platform?.slug;
-
-    if (!connector) {
-      continue;
-    }
-
-    if (
-      identity.verification_status !==
-      "verified"
-    ) {
-      continue;
-    }
-
-    if (
-  !selectedIdentityIds.includes(
-    identity.id
-  )
-) {
-  continue;
-}
-
-    /*
-      Only discover from the profile URL
-      the creator explicitly connected.
-    */
-
-    if (!identity.profile_url) {
-      continue;
-    }
-
-    const response =
-      await fetch(
-        "/api/discover-platform",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            connector,
-            profileUrl:
-              identity.profile_url,
-          }),
+        if (!connector) {
+          continue;
         }
+
+        if (
+          identity.verification_status !==
+          "verified"
+        ) {
+          continue;
+        }
+
+        if (
+          !selectedIdentityIds.includes(
+            identity.id
+          )
+        ) {
+          continue;
+        }
+
+        /*
+          Only discover from the profile URL
+          the creator explicitly connected.
+        */
+
+        if (!identity.profile_url) {
+          continue;
+        }
+
+        const response =
+          await fetch(
+            "/api/discover-platform",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                connector,
+                profileUrl:
+                  identity.profile_url,
+              }),
+            }
+          );
+
+        const result =
+          await response.json();
+
+        if (!response.ok) {
+
+          console.error(
+            "DISCOVERY ERROR:",
+            result
+          );
+
+          continue;
+        }
+
+        allProjects.push(
+          ...(result.projects || [])
+        );
+
+      }
+
+      const enrichedProjects =
+        allProjects.map(
+          (project: any) => {
+
+            const existingMod =
+              existingMods.find(
+                (mod: any) =>
+                  mod.source_url?.split("#")[0] ===
+                  project.projectUrl?.split("#")[0]
+              );
+
+            return {
+
+              ...project,
+
+              matchStatus:
+                existingMod
+                  ? "existing"
+                  : "new",
+
+              existingMod:
+                existingMod || null,
+
+            };
+
+          }
+        );
+
+      setProjects(
+        enrichedProjects
       );
 
-    const result =
-      await response.json();
+      setMessage(
+        `Discovery complete. Found ${allProjects.length} project${allProjects.length === 1 ? "" : "s"}.`
+      );
 
-    if (!response.ok) {
+    } catch (error) {
 
       console.error(
         "DISCOVERY ERROR:",
-        result
+        error
       );
 
-      continue;
+      setDiscoveryError(
+        "We couldn't complete platform discovery."
+      );
+
+    } finally {
+
+      setDiscovering(false);
+
     }
 
-    allProjects.push(
-      ...(result.projects || [])
-    );
-
-  }
-
-  const enrichedProjects =
-  allProjects.map(
-    (project: any) => {
-
-      const existingMod =
-        existingMods.find(
-          (mod: any) =>
-            mod.source_url?.split("#")[0] ===
-            project.projectUrl?.split("#")[0]
-        );
-
-      return {
-
-        ...project,
-
-        matchStatus:
-          existingMod
-            ? "existing"
-            : "new",
-
-        existingMod:
-          existingMod || null,
-
-      };
-      
-    }
-  );
-
-  setProjects(
-  enrichedProjects
-);
-
-  setMessage(
-    `Discovery complete. Found ${allProjects.length} project${allProjects.length === 1 ? "" : "s"}.`
-  );
-
-} catch (error) {
-
-  console.error(
-    "DISCOVERY ERROR:",
-    error
-  );
-
-  setDiscoveryError(
-    "We couldn't complete platform discovery."
-  );
-
-} finally {
-
-  setDiscovering(false);
-
-}
   }
 
   return (
@@ -449,621 +701,31 @@ export default function DiscoverModsPage() {
             or updated.
           </p>
 
-          {/* CONNECTED PLATFORMS */}
-
-          <section
-            className="
-              rounded-[32px]
-              border
-              border-zinc-800
-              bg-zinc-950
-              p-8
-              mb-8
-            "
-          >
-
-            <div className="mb-8">
-
-              <p
-                className="
-                  text-purple-400
-                  uppercase
-                  tracking-[0.2em]
-                  text-xs
-                  mb-3
-                "
-              >
-                Connected Sources
-              </p>
-
-              <h2
-                className="
-                  text-2xl
-                  font-bold
-                  mb-2
-                "
-              >
-                Your Platforms
-              </h2>
-
-              <p
-                className="
-                mb-2
-                "
-              >
-                These are the external identities
-                ModVault can use for discovery.
-              </p>
-
-            </div>
-
-            {loading ? (
-
-              <p className="text-zinc-500">
-                Loading connected platforms...
-              </p>
-
-            ) : identities.length === 0 ? (
-
-              <div
-                className="
-                  rounded-2xl
-                  border
-                  border-zinc-800
-                  bg-black
-                  p-6
-                "
-              >
-
-                <p
-                  className="
-                    text-zinc-400
-                    mb-4
-                  "
-                >
-                  You haven't connected any
-                  external platforms yet.
-                </p>
-
-                <a
-                  href="/connect-platforms"
-                  className="
-                    inline-flex
-                    px-5
-                    py-3
-                    rounded-xl
-                    bg-purple-600
-                    hover:bg-purple-500
-                    transition
-                    font-medium
-                  "
-                >
-                  Connect a Platform
-                </a>
-
-              </div>
-
-            ) : (
-
-              <div
-                className="
-                  space-y-3
-                "
-              >
-
-                {identities.map(
-                  (identity) => (
-
-                    <div
-                      key={identity.id}
-                      onClick={() => {
-                        if (
-                          identity.verification_status !==
-                          "verified"
-                        ) {
-                          return;
-                        }
-
-                        setSelectedIdentityIds(
-                          (current) =>
-                            current.includes(identity.id)
-                              ? current.filter(
-                                  (id) =>
-                                    id !== identity.id
-                                )
-                              : [
-                                  ...current,
-                                  identity.id,
-                                ]
-                        );
-                      }}
-                      className={`
-                        flex
-                        items-center
-                        justify-between
-                        gap-6
-                        rounded-2xl
-                        border
-                        p-5
-                        transition
-                        ${
-                          identity.verification_status ===
-                          "verified"
-                            ? "cursor-pointer"
-                            : "cursor-not-allowed"
-                        }
-                        ${
-                          selectedIdentityIds.includes(
-                            identity.id
-                          )
-                            ? "border-purple-500 bg-purple-950/20"
-                            : "border-zinc-800 bg-zinc-900"
-                        }
-                        ${
-                          identity.verification_status !==
-                          "verified"
-                            ? "opacity-60"
-                            : ""
-                        }
-                      `}
-                    >
-
-                      <div>
-
-                        <h3
-                          className="
-                            font-semibold
-                            text-lg
-                          "
-                        >
-                          {identity.platform?.name ||
-                            "Unknown Platform"}
-                        </h3>
-
-                        <p
-                          className="
-                            text-sm
-                            text-zinc-500
-                            mt-1
-                          "
-                        >
-                          {identity.username}
-                        </p>
-
-                      </div>
-
-                      <div
-                        className={`
-                          inline-flex
-                          items-center
-                          gap-1.5
-                          text-xs
-                          font-medium
-                          uppercase
-                          tracking-wider
-                          ${
-                            identity.verification_status === "verified"
-                              ? "text-emerald-400"
-                              : "text-amber-400"
-                          }
-                        `}
-                      >
-                        {identity.verification_status === "verified"
-                          ? "✓ VERIFIED"
-                          : "◷ PENDING"}
-                      </div>
-
-                    </div>
-
-                  )
-                )}
-
-              </div>
-
-            )}
-
-          </section>
-
-          {/* DISCOVERY ACTION */}
-
-          {identities.length > 0 && (
-
-            <section
-              className="
-                rounded-[32px]
-                border
-                border-zinc-800
-                bg-zinc-950
-                p-8
-              "
-            >
-
-              <div
-                className="
-                  flex
-                  items-center
-                  justify-between
-                  gap-6
-                "
-              >
-
-                <div>
-
-                  <h2
-                    className="
-                      text-xl
-                      font-bold
-                      mb-2
-                    "
-                  >
-                    Find Your Existing Work
-                  </h2>
-
-                  <p
-                    className="
-                      text-amber-400
-                      text-sm
-                      max-w-xl
-                    "
-                  >
-                    ModVault will discover projects from your verified platforms.
-                    Nothing will be imported automatically.
-                  </p>
-
-                  {!hasVerifiedIdentity && (
-                  <p
-                    className="
-                      mt-3
-                      text-sm
-                      text-amber-400
-                    "
-                  >
-                    Verify at least one connected platform
-                    before discovering your work.
-                  </p>
-                )}
-
-                </div>
-
-                <button
-                  onClick={
-                    handleDiscovery
-                  }
-                  disabled={
-                    discovering ||
-                    !hasVerifiedIdentity
-                  }
-                  className="
-                    shrink-0
-                    px-5
-                    py-3
-                    rounded-xl
-                    bg-purple-600
-                    hover:bg-purple-500
-                    disabled:opacity-40
-                    disabled:cursor-not-allowed
-                    transition
-                    font-medium
-                  "
-                >
-                  {discovering
-                    ? "Discovering..."
-                    : hasVerifiedIdentity
-                      ? "Discover Mods"
-                      : "Verify a Platform First"}
-                </button>
-
-              </div>
-
-              {message && (
-
-                <div
-                  className="
-                    mt-6
-                    rounded-2xl
-                    border
-                    border-zinc-800
-                    bg-black
-                    p-5
-                    text-sm
-                    text-zinc-400
-                  "
-                >
-                  {message}
-                </div>
-
-              )}
-
-            </section>
-
-          )}
-
-          {projects.length > 0 && (
-
-  <section
-    className="
-      mt-8
-      rounded-[32px]
-      border
-      border-zinc-800
-      bg-zinc-950
-      p-8
-    "
-  >
-
-    <p
-      className="
-        text-purple-400
-        uppercase
-        tracking-[0.2em]
-        text-xs
-        mb-3
-      "
-    >
-      Discovery Results
-    </p>
-
-    <h2
-      className="
-        text-2xl
-        font-bold
-        mb-2
-      "
-    >
-      Projects Found
-    </h2>
-
-    <p
-      className="
-        text-zinc-500
-        text-sm
-        mb-6
-      "
-    >
-      Nothing has been imported. Review these
-      projects before choosing what to add.
-    </p>
-
-    <div
-  className="
-    rounded-2xl
-    border
-    border-zinc-800
-    bg-zinc-900
-    overflow-hidden
-  "
->
-  {projects.map(
-    (project, index) => (
-
-          <div
-            key={`${project.platform}-${project.externalId}-${index}`}
-            className="
-              p-5
-              border-b
-              border-zinc-800
-              last:border-b-0
-            "
-          >
-
-            <div
-              className="
-                grid
-                grid-cols-1
-                gap-2
-              "
-            >
-
-              <div>
-
-                <h3
-                  className="
-                    text-lg
-                    font-semibold
-                  "
-                >
-                  {project.title}
-                </h3>
-
-                <p
-                  className="
-                    text-sm
-                    text-zinc-500
-                    mt-1
-                  "
-                >
-                  {project.platform}
-                </p>
-
-                <div
-                  className="
-                    flex
-                    items-end
-                    justify-between
-                    gap-4
-                    mt-2
-                  "
-                >
-
-                </div>
-
-                {project.matchStatus === "existing" ? (
-                  <p className="text-sm text-zinc-400">
-                    Already in ModVault
-                  </p>
-                ) : (
-                  <p className="text-sm text-emerald-400">
-                    New project
-                  </p>
-                  
-                )}
-
-                {projectActions[
-                  `${project.platform}-${project.externalId}`
-                ] === "add" && (
-                  <p className="text-sm text-emerald-400">
-                    Queued to be added
-                  </p>
-                )}
-
-                {projectActions[
-                  `${project.platform}-${project.externalId}`
-                ] === "update" && (
-                  <p className="text-sm text-emerald-400 mt-1">
-                    Queued for update
-                  </p>
-                )}
-
-                {projectActions[
-                  `${project.platform}-${project.externalId}`
-                ] === "ignore" && (
-                  <p className="text-sm text-red-400 mt-1">
-                    Ignored
-                  </p>
-                )}
-
-              </div>
-
-              <div
-                className="
-                  flex
-                  items-center
-                  justify-end
-                  gap-2
-                  shrink-0
-                "
-              >
-
-              <div className="flex items-center gap-2">
-
-                {project.matchStatus === "existing" ? (
-
-                  <button
-                    onClick={() =>
-                      handleProjectAction(
-                        project,
-                        "update"
-                      )
-                    }
-                    className={`
-                      px-3
-                      py-2
-                      rounded-lg
-                      text-sm
-                      ${
-                        projectActions[
-                          `${project.platform}-${project.externalId}`
-                        ] === "update"
-                          ? "bg-emerald-600 hover:bg-emerald-500"
-                          : "bg-purple-600 hover:bg-purple-500"
-                      }
-                    `}
-                  >
-                    {
-                      projectActions[
-                        `${project.platform}-${project.externalId}`
-                      ] === "update"
-                        ? "Updated ✓"
-                        : "Update"
-                    }
-                  </button>
-
-                ) : (
-
-                  <button
-                    onClick={() =>
-                      handleProjectAction(
-                        project,
-                        "add"
-                      )
-                    }
-                    className={`
-                      px-3
-                      py-2
-                      rounded-lg
-                      text-sm
-                      ${
-                        projectActions[
-                          `${project.platform}-${project.externalId}`
-                        ] === "add"
-                          ? "bg-emerald-600 hover:bg-emerald-500"
-                          : "bg-purple-600 hover:bg-purple-500"
-                      }
-                    `}
-                  >
-                    {
-                      projectActions[
-                        `${project.platform}-${project.externalId}`
-                      ] === "add"
-                        ? "Added ✓"
-                        : "Add"
-                    }
-                  </button>
-
-                )}
-
-                <button
-                  onClick={() =>
-                    handleProjectAction(
-                      project,
-                      "ignore"
-                    )
-                  }
-                  className={`
-                    px-3
-                    py-2
-                    rounded-lg
-                    text-sm
-                    border
-                    ${
-                      projectActions[
-                        `${project.platform}-${project.externalId}`
-                      ] === "ignore"
-                        ? "border-red-500 bg-red-900/30 text-red-400 hover:bg-red-900/50"
-                        : "border-zinc-700 hover:bg-zinc-800"
-                    }
-                  `}
-                >
-                  {
-                    projectActions[
-                      `${project.platform}-${project.externalId}`
-                    ] === "ignore"
-                      ? "Ignored"
-                      : "Ignore"
-                  }
-                </button>
-
-              </div>
-
-              <a
-                href={project.projectUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="
-                  text-purple-400
-                  hover:text-purple-300
-                  text-sm
-                  shrink-0
-                  ml-4
-                "
-              >
-                View Project →
-              </a>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        )
-      )}
-
-    </div>
-
-  </section>
-
-)}
+          <DiscoverPlatforms
+            identities={identities}
+            loading={loading}
+            selectedIdentityIds={
+              selectedIdentityIds
+            }
+            discovering={discovering}
+            hasVerifiedIdentity={
+              hasVerifiedIdentity
+            }
+            message={message}
+            onToggleIdentity={
+              handleToggleIdentity
+            }
+            onDiscover={
+              handleDiscovery
+            }
+          />
+
+          <DiscoveryResults
+            projects={projects}
+            projectActions={projectActions}
+            creatorId={currentCreatorId}
+            onProjectAction={handleProjectAction}
+          />
 
         </div>
 

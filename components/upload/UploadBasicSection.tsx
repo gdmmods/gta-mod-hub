@@ -109,7 +109,7 @@ export default function UploadBasicSection({
             placeholder="
               Describe the mod, quality level, compatibility, or unique details...
             "
-            value={form.description}
+            value={form.description ?? ""}
             onChange={handleChange}
             rows={6}
             className="

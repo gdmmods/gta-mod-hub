@@ -152,9 +152,22 @@ export default function CreatorHeader({
 
         )}
 
-        <span>
-          Creator Ecosystem Profile
-        </span>
+        {isManaged && (
+
+            <span
+              className="
+                px-3
+                py-1.5
+                rounded-2xl
+                text-sm
+                text-amber-300
+                hover:text-amber-200
+              "
+            >
+              Creator Ecosystem Profile
+            </span>
+
+          )}
 
         {!isManaged && (
 
