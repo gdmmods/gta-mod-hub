@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-import DownloadButton from "@/components/DownloadButton";
 import LikeButton from "@/components/LikeButton";
 import FavoriteModButton from "@/components/FavoriteModButton";
-import ProtectedDownloadButton from "@/components/mod/ProtectedDownloadButton";
-import PremiumBadge from "@/components/mod/PremiumBadge";
+import ReleaseStatusBadge from "@/components/mod/ReleaseStatusBadge";
+import DownloadButton from "@/components/DownloadButton";
+import CreatorBackupButton from "@/components/mod/CreatorBackupButton";
 
 export default function ModSidebar({
   mod,
@@ -77,6 +77,8 @@ export default function ModSidebar({
               {mod.title}
             </h1>
 
+            
+
           </div>
 
           {mod.verified && (
@@ -100,14 +102,11 @@ export default function ModSidebar({
 
         </div>
 
-        {/* PREMIUM STATUS */}
+        {/* RELEASE STATUS */}
         <div className="mt-5">
-
-          <PremiumBadge
+          <ReleaseStatusBadge
             visibility={mod.visibility}
-            isPaid={mod.is_paid}
           />
-
         </div>
 
         {/* CREATORS */}
@@ -263,99 +262,48 @@ export default function ModSidebar({
 
       </div>
 
-      {/* ACTIONS */}
+      {/* DOWNLOAD */}
+
+{(
+  mod.visibility === "public" ||
+  mod.visibility === "early_access"
+) && (
+  <div className="space-y-3">
+
+    {mod.download_url && (
+      <DownloadButton
+        url={mod.download_url}
+        id={mod.id}
+      />
+    )}
+
+    {mod.creator_backup_url && (
+      <CreatorBackupButton
+        url={mod.creator_backup_url}
+      />
+    )}
+
+  </div>
+)}
+
+{(
+  mod.visibility === "public" ||
+  mod.visibility === "early_access"
+) && mod.download_url && (
+
+  <CreatorBackupButton
+    url={mod.download_url}
+  />
+
+)}
+
+      {/* COMMUNITY ACTIONS */}
       <div className="mt-8 space-y-3">
 
         {/* --------------------------------
-   DOWNLOAD / ACCESS
--------------------------------- */}
+            DOWNLOAD / ACCESS
+          -------------------------------- */}
 
-{mod.protected_file ? (
-
-  <ProtectedDownloadButton
-    modId={mod.id}
-  />
-
-) : mod.external_purchase_url ? (
-
-  <a
-    href={
-      mod.external_purchase_url
-    }
-    target="_blank"
-    className="
-      w-full
-      flex
-      justify-center
-      items-center
-
-      rounded-2xl
-
-      bg-gradient-to-r
-      from-purple-600
-      to-purple-500
-
-      py-4
-
-      font-semibold
-      text-white
-
-      shadow-[0_0_40px_rgba(168,85,247,0.25)]
-
-      hover:opacity-90
-      transition
-    "
-  >
-    Get Premium Access
-  </a>
-
-) : (
-
-  <DownloadButton
-    url={
-      mod.download_url ||
-      mod.source_url
-    }
-    id={mod.id}
-  />
-
-)}
-
-{/* SUPPORT CREATOR */}
-{mod.support_url && (
-
-  <a
-    href={mod.support_url}
-    target="_blank"
-    className="
-      w-full
-      flex
-      justify-center
-      items-center
-
-      rounded-2xl
-
-      border
-      border-purple-500/20
-
-      bg-purple-500/10
-
-      hover:bg-purple-500/20
-
-      transition
-
-      py-3
-
-      text-sm
-      font-medium
-
-      text-purple-300
-    "
-  >
-    Support Creator
-  </a>
-
-)}
 
         <div className="grid grid-cols-2 gap-3">
 

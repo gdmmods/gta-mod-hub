@@ -11,7 +11,6 @@ import CreatorActivity from "@/components/creator/profile/CreatorActivity";
 import CreatorFeaturedMod from "@/components/creator/profile/CreatorFeaturedMod";
 import CreatorModsSection from "@/components/creator/profile/CreatorModsSection";
 import CreatorSidebar from "@/components/creator/profile/CreatorSidebar";
-import ModMonetizationHub from "@/components/mod/ModMonetizationHub";
 
 export default async function CreatorPage({
   params,
@@ -200,11 +199,7 @@ export default async function CreatorPage({
         downloads,
         source_url,
         tags,
-
-        is_paid,
-        price,
-        support_url,
-        external_purchase_url,
+    
         visibility,
         release_state,
         early_access,
@@ -270,7 +265,7 @@ export default async function CreatorPage({
       mod_creators:
         m.mod_creators ?? [],
 
-      // monetization
+      // release information
 
       visibility:
         m.visibility ?? "public",
@@ -278,32 +273,9 @@ export default async function CreatorPage({
       release_state:
         m.release_state ?? "public",
 
-      support_url:
-        m.support_url ?? null,
-
-      external_purchase_url:
-        m.external_purchase_url ?? null,
-
-      price:
-        m.price ?? 0,
     })
   ) || [];
 
-  console.log(
-  mods.map((m: any) => ({
-    title: m.title,
-    release_state: m.release_state,
-    visibility: m.visibility,
-    is_paid: m.is_paid,
-  }))
-);
-
-    const premiumMods =
-  mods.filter(
-    (mod: any) =>
-      mod.visibility ===
-      "supporters"
-  );
 
   /* -----------------------------
      STATS
@@ -388,16 +360,6 @@ export default async function CreatorPage({
       <CreatorModsSection
         mods={mods}
       />
-
-      {/* PREMIUM ECOSYSTEM */}
-      {premiumMods.length > 0 && (
-
-        <ModMonetizationHub
-          creator={creator}
-          premiumMods={premiumMods}
-        />
-
-      )}
 
     
 

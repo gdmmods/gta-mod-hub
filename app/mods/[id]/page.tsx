@@ -351,11 +351,71 @@ if (
         >
 
           {/* LEFT CONTENT */}
-          <div className="min-w-0">
+<div className="min-w-0">
 
-            <ModTabs mod={mod} />
+  {mod.visibility === "supporters" && (
+    <div
+      className="
+        mb-5
+        rounded-[30px]
+        border
+        border-purple-500/10
+        bg-purple-500/5
+        p-6
+      "
+    >
+      <p
+        className="
+          text-[11px]
+          uppercase
+          tracking-[0.2em]
+          text-purple-400
+        "
+      >
+        Release Information
+      </p>
 
-          </div>
+      <h3
+        className="
+          text-lg
+          font-semibold
+          mt-2
+        "
+      >
+        Restricted / Supporter Release
+      </h3>
+
+      <p
+        className="
+          text-sm
+          text-zinc-400
+          mt-3
+          leading-relaxed
+        "
+      >
+        Release status is descriptive only.
+        ModVault does not provide, sell, or facilitate access to externally
+        restricted projects.
+      </p>
+
+      <p
+        className="
+          text-sm
+          text-zinc-500
+          mt-3
+          leading-relaxed
+        "
+      >
+        This project is documented as a restricted or supporter release.
+        Any external release remains subject to the creator's rights,
+        permissions, and the rules of the platform where it is distributed.
+      </p>
+    </div>
+  )}
+
+  <ModTabs mod={mod} />
+
+</div>
 
           {/* RIGHT ECOSYSTEM */}
           <div className="space-y-5">

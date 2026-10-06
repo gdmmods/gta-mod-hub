@@ -7,9 +7,7 @@ export default function UploadMonetizationSection({
   form,
   handleChange,
 }: Props) {
-
   return (
-
     <section
       className="
         rounded-[32px]
@@ -20,10 +18,8 @@ export default function UploadMonetizationSection({
         space-y-6
       "
     >
-
       {/* HEADER */}
       <div>
-
         <p
           className="
             text-sm
@@ -32,7 +28,7 @@ export default function UploadMonetizationSection({
             text-purple-400
           "
         >
-          Monetization
+          Documentation
         </p>
 
         <h2
@@ -42,14 +38,12 @@ export default function UploadMonetizationSection({
             mt-2
           "
         >
-          Access & Support
+          Release Information
         </h2>
-
       </div>
 
-      {/* ACCESS TYPE */}
+      {/* RELEASE STATUS */}
       <div>
-
         <label
           className="
             text-sm
@@ -58,7 +52,7 @@ export default function UploadMonetizationSection({
             block
           "
         >
-          Access Type
+          Release Status
         </label>
 
         <select
@@ -77,321 +71,50 @@ export default function UploadMonetizationSection({
             outline-none
           "
         >
-
           <option value="public">
-            Public / Free
-          </option>
-
-          <option value="supporters">
-            Supporters Only
+            Public Release
           </option>
 
           <option value="early_access">
-            Early Access
+            Public Beta / Early Access
           </option>
 
+          <option value="supporters">
+            Restricted / Supporter Release
+          </option>
         </select>
 
-      </div>
-
-      {/* ---------------------------------
-         SUPPORTER INFO
-      --------------------------------- */}
-
-      {form.visibility !== "public" && (
-
-        <div
-          className="
-            rounded-2xl
-            border
-            border-purple-500/10
-            bg-purple-500/5
-            px-6
-            py-5
-            space-y-5
-          "
-        >
-
-          <div>
-
-            <h3
-              className="
-                text-lg
-                font-semibold
-              "
-            >
-              External Support Access
-            </h3>
-
-            <p
-              className="
-                text-sm
-                text-zinc-400
-                mt-2
-                leading-relaxed
-              "
-            >
-              Supporter and early-access
-              releases currently use
-              Patreon, Gumroad, Tebex,
-              Ko-fi, or external creator
-              stores for monetization.
-            </p>
-
-          </div>
-
-          {/* SUPPORT URL */}
-          <div>
-
-            <label
-              className="
-                text-sm
-                text-zinc-400
-                mb-2
-                block
-              "
-            >
-              Patreon / Support URL
-            </label>
-
-            <input
-              type="text"
-              name="support_url"
-              value={form.support_url || ""}
-              onChange={handleChange}
-              placeholder="https://patreon.com/..."
-              className="
-                w-full
-                rounded-2xl
-                border
-                border-zinc-800
-                bg-black/40
-                px-4
-                py-3
-                text-white
-                outline-none
-              "
-            />
-
-          </div>
-
-          {/* PURCHASE URL */}
-          <div>
-
-            <label
-              className="
-                text-sm
-                text-zinc-400
-                mb-2
-                block
-              "
-            >
-              External Purchase URL
-            </label>
-
-            <input
-              type="text"
-              name="external_purchase_url"
-              value={
-                form.external_purchase_url || ""
-              }
-              onChange={handleChange}
-              placeholder="https://..."
-              className="
-                w-full
-                rounded-2xl
-                border
-                border-zinc-800
-                bg-black/40
-                px-4
-                py-3
-                text-white
-                outline-none
-              "
-            />
-
-          </div>
-
-        </div>
-
-      )}
-
-      {/* ---------------------------------
-         MODVAULT MARKETPLACE
-      --------------------------------- */}
-
-      <div
-        className="
-          flex
-          items-center
-          justify-between
-          rounded-2xl
-          border
-          border-zinc-800
-          bg-black/30
-          px-5
-          py-5
-        "
-      >
-
-        <div>
-
-          <h3
+        {/* RESTRICTED RELEASE INFORMATION */}
+        {form.visibility === "supporters" && (
+          <div
             className="
-              font-semibold
-              text-lg
-            "
-          >
-            Paid Mod on ModVault
-          </h3>
-
-          <p
-            className="
-              text-sm
-              text-zinc-500
-              mt-1
-              leading-relaxed
-            "
-          >
-            Sell this creation directly
-            through the future ModVault
-            marketplace ecosystem.
-          </p>
-
-        </div>
-
-        <div
-  className="
-    flex
-    items-start
-    justify-between
-
-    rounded-2xl
-    border
-    border-zinc-800
-
-    bg-black/20
-
-    px-5
-    py-5
-
-    opacity-50
-  "
->
-
-  <div>
-
-    <div
-      className="
-        flex
-        items-center
-        gap-3
-      "
-    >
-
-      <h3 className="font-semibold">
-        Paid Mod on ModVault
-      </h3>
-
-      <span
-        className="
-          rounded-full
-          border
-          border-purple-500/20
-
-          bg-purple-500/10
-
-          px-3
-          py-1
-
-          text-[10px]
-          uppercase
-          tracking-[0.2em]
-
-          text-purple-300
-        "
-      >
-        Coming Soon
-      </span>
-
-    </div>
-
-    <p
-      className="
-        text-sm
-        text-zinc-500
-        mt-2
-        max-w-xl
-        leading-relaxed
-      "
-    >
-      Native marketplace sales,
-      secure delivery,
-      ownership verification,
-      and creator payouts
-      are currently in development.
-    </p>
-
-  </div>
-
-  <input
-    type="checkbox"
-    disabled
-    checked={false}
-    className="
-      w-5
-      h-5
-
-      cursor-not-allowed
-    "
-  />
-
-</div>
-
-      </div>
-
-      {/* PRICE */}
-      {false && (
-
-        <div>
-
-          <label
-            className="
-              text-sm
-              text-zinc-400
-              mb-2
-              block
-            "
-          >
-            Suggested Price
-          </label>
-
-          <input
-            type="number"
-            step="0.01"
-            name="price"
-            value={form.price || ""}
-            onChange={handleChange}
-            placeholder="5.00"
-            className="
-              w-full
+              mt-4
               rounded-2xl
               border
-              border-zinc-800
-              bg-black/40
-              px-4
-              py-3
-              text-white
-              outline-none
+              border-purple-500/10
+              bg-purple-500/5
+              px-6
+              py-5
             "
-          />
+          >
+            <h3 className="text-lg font-semibold">
+              Release Information
+            </h3>
 
-        </div>
+            <p className="text-sm text-zinc-400 mt-2 leading-relaxed">
+              Release status is descriptive only.
+              ModVault does not provide, sell, or facilitate access to
+              externally restricted projects.
+            </p>
 
-      )}
-
+            <p className="text-sm text-zinc-500 mt-4 leading-relaxed">
+              This project is documented as a restricted or supporter release.
+              Any external release remains subject to the creator's rights,
+              permissions, and the rules of the platform where it is distributed.
+            </p>
+          </div>
+        )}
+      </div>
     </section>
-
   );
-
 }

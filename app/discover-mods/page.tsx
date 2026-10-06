@@ -486,10 +486,6 @@ if (!response.ok) {
           source_url,
           status,
           origin,
-          is_paid,
-          access_type,
-          price_label,
-          external_purchase_url
         `)
         .eq(
           "creator_id",

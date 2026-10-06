@@ -1,38 +1,21 @@
 interface Props {
   visibility?: string;
-  isPaid?: boolean;
   className?: string;
 }
 
-export default function PremiumBadge({
+export default function ReleaseStatusBadge({
   visibility,
-  isPaid,
   className = "",
 }: Props) {
 
-  if (
-    visibility === "public" &&
-    !isPaid
-  ) {
+  if (!visibility || visibility === "public") {
     return null;
   }
 
   let label = "";
   let styles = "";
 
-  if (visibility === "supporters") {
-
-    label = "Supporters Only";
-
-    styles = `
-      bg-purple-500/20
-      border-purple-500/20
-      text-purple-300
-    `;
-
-  } else if (
-    visibility === "early_access"
-  ) {
+  if (visibility === "early_access") {
 
     label = "Early Access";
 
@@ -42,43 +25,37 @@ export default function PremiumBadge({
       text-amber-300
     `;
 
-  } else if (isPaid) {
+  } else if (visibility === "supporters") {
 
-    label = "Paid";
+    label = "Restricted Release";
 
     styles = `
-      bg-emerald-500/20
-      border-emerald-500/20
-      text-emerald-300
+      bg-purple-500/20
+      border-purple-500/20
+      text-purple-300
     `;
 
+  } else {
+    return null;
   }
 
   return (
-
     <div
       className={`
         inline-flex
         items-center
-
         rounded-full
         border
-
         px-3
         py-1
-
         text-xs
         font-medium
-
         backdrop-blur-xl
-
         ${styles}
         ${className}
       `}
     >
       {label}
     </div>
-
   );
-
 }

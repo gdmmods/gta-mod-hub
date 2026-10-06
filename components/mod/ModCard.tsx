@@ -3,7 +3,6 @@
 import Link from "next/link";
 
 import HoverActions from "../HoverActionsClient";
-import PremiumBadge from "@/components/mod/PremiumBadge";
 import { getCreators } from "@/lib/getCreators";
 
 type Creator = {
@@ -20,12 +19,6 @@ type Mod = {
 
   verified?: boolean;
   category?: string;
-
-  is_paid?: boolean;
-
-  visibility?: string;
-
-  price?: number;
 
   mod_creators?: {
     creators: Creator;
@@ -228,12 +221,6 @@ export default function ModCard({
 
           </div>
 
-          {/* PREMIUM */}
-          <PremiumBadge
-            visibility={mod.visibility}
-            isPaid={mod.is_paid}
-          />
-
           {/* CENTER ACTIONS */}
           <div
             className="
@@ -392,26 +379,7 @@ export default function ModCard({
           >
             ⬇ {downloads}
           </div>
-
-          {mod.is_paid && (mod.price ?? 0) > 0 && (
-
-          <div
-            className="
-              rounded-2xl
-              border
-              border-emerald-500/20
-              bg-emerald-500/10
-              px-3
-              py-2
-              text-sm
-              text-emerald-300
-            "
-          >
-            💎 ${mod.price}
-          </div>
-
-        )}
-
+          
         </div>
 
         {/* PUSH DOWN */}

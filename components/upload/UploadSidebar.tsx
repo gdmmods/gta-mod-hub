@@ -58,14 +58,14 @@ export default function UploadSidebar({
           </li>
 
           <li>
-            • Include working download links
+            • Include a working source or download link
           </li>
 
         </ul>
 
       </div>
 
-      {/* PREMIUM NOTE */}
+      {/* PRESENTATION NOTE */}
       <div
         className="
           bg-gradient-to-br

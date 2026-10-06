@@ -14,11 +14,6 @@ export default function ModMonetizationHub({
     return null;
   }
 
-  console.log(
-    "PREMIUM HUB DATA:",
-    premiumMods
-  );
-
   return (
 
     <section
@@ -32,40 +27,35 @@ export default function ModMonetizationHub({
 
       {/* HEADER */}
 
-      <div className="mb-6">
+            <p
+        className="
+          text-sm
+          uppercase
+          tracking-[0.2em]
+          text-purple-400
+        "
+      >
+        Release Documentation
+      </p>
 
-        <p
-          className="
-            text-sm
-            uppercase
-            tracking-[0.2em]
-            text-purple-400
-          "
-        >
-          Supporter Access
-        </p>
+      <h2
+        className="
+          text-3xl
+          font-bold
+          mt-2
+        "
+      >
+        Restricted Releases
+      </h2>
 
-        <h2
-          className="
-            text-3xl
-            font-bold
-            mt-2
-          "
-        >
-          Premium Releases
-        </h2>
-
-        <p
-          className="
-            mt-3
-            text-zinc-400
-          "
-        >
-          Exclusive supporter creations from{" "}
-          {creator?.name}.
-        </p>
-
-      </div>
+      <p
+        className="
+          mt-3
+          text-zinc-400
+        "
+      >
+        Projects from {creator?.name} that have been documented as restricted or externally released.
+      </p>
 
       {/* GRID */}
 
@@ -80,11 +70,6 @@ export default function ModMonetizationHub({
 
         {premiumMods.map(
           (mod: any) => {
-
-            console.log(
-              "MOD:",
-              mod
-            );
 
             if (!mod) {
               return null;
@@ -165,7 +150,7 @@ export default function ModMonetizationHub({
                       mb-4
                     "
                   >
-                    Supporter Exclusive
+                    External / Restricted Release
                   </p>
 
                   {/* TITLE */}
@@ -184,22 +169,7 @@ export default function ModMonetizationHub({
                     {mod.title}
                   </h3>
 
-                  {/* DESCRIPTION */}
-{/*
-
-                  <p
-                    className="
-                      mt-4
-                      text-sm
-                      text-zinc-300
-                      leading-relaxed
-                      line-clamp-2
-                      max-w-[75%]
-                    "
-                  >
-                    {mod.description}
-                  </p>
-*/}
+                 
                   {/* STATS */}
 
                   <div
@@ -248,34 +218,7 @@ export default function ModMonetizationHub({
                       "
                     >
                       View Mod
-                    </Link>
-
-                    {mod.external_purchase_url && (
-
-                      <a
-                        href={
-                          mod.external_purchase_url
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="
-                          px-5
-                          py-3
-                          rounded-2xl
-                          border
-                          border-zinc-700
-                          bg-black/40
-                          text-sm
-                          font-semibold
-                          text-white
-                          hover:opacity-90
-                          transition
-                        "
-                      >
-                        View Store
-                      </a>
-
-                    )}
+                    </Link>                  
 
                   </div>
 

@@ -45,7 +45,7 @@ export default function UploadHero() {
       >
         Creator-owned uploads,
         structured metadata,
-        premium presentation,
+        creator-focused presentation,
         and long-term preservation.
       </p>
 
