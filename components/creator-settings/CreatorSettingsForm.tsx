@@ -58,12 +58,18 @@ export default function CreatorSettingsForm({
         form={form}
         setForm={setForm}
       />
-
+      
       {form.owner_type === "team" && (
-
-      <TeamControls
-        creator={form}
-      />
+  <TeamControls
+    creator={form}
+    onTeamDeleted={() => {
+      setForm((previous: any) => ({
+        ...previous,
+        owner_type: "individual",
+        team_id: null,
+      }));
+    }}
+  />
 
     )}
 

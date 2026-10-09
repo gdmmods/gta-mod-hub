@@ -35,18 +35,26 @@ export default function ModvaultConstitutionPage() {
     {
       title: "Human Creativity Remains Central",
       text: "AI may assist creation, but human craftsmanship, identity, and originality remain core values of the platform.",
-    },
+    },    
     {
       title: "Principle of Historical Continuity",
       text: "Meaningful contributions should be remembered. ModVault exists not only to preserve creative work, but to document the relationships, collaboration, and history through which creators, projects, communities, and platforms evolve over time."
     },
     {
-    title: "Creator-Controlled Import",
-    text: "Creators remain in control of how their work is preserved. ModVault imports and connects creative history through creator-authorized actions and official platform partnerships whenever reasonably possible. The platform is built on trust, transparency, and stewardship—not on indiscriminate collection of third-party content."
+      title: "Creator-Controlled Preservation & Import",
+      text: "Creators remain in control of how their work is preserved and connected. ModVault imports and connects creative history through creator-authorized actions and official platform partnerships whenever reasonably possible. The platform is built on trust, transparency, and stewardship—not indiscriminate collection of third-party content."
     },
     {
       title: "Interconnected Creativity",
       text: "Creative work does not exist in isolation. ModVault recognizes that projects are built through the combined efforts of creators, collaborators, assets, tools, platforms, and communities. Preserving these relationships strengthens the collective history of game creation."
+    },
+    {
+      title: "Creator-Centered Distribution",
+      text: "ModVault exists to preserve, document, connect, and support creative work and the people who create it. The platform should create value around creators, knowledge, history, expertise, and infrastructure—not depend on selling, licensing, or facilitating access to third-party intellectual property where the necessary rights are not held."
+    },
+    {
+      title: "Documentation Is Not Distribution",
+      text: "ModVault may document the existence, history, attribution, status, and provenance of creative work without necessarily hosting or redistributing the underlying files. Creator-authorized distribution may be supported where appropriate, but documentation does not by itself constitute permission to distribute."
     }
 
   ];
@@ -169,7 +177,7 @@ export default function ModvaultConstitutionPage() {
 
             </section>
 
-            <section className="mb-24">
+            <section className="mb-10">
 
               <div className="rounded-[36px] border border-purple-500/20 bg-zinc-950/60 backdrop-blur-xl p-10">
 
@@ -183,17 +191,13 @@ export default function ModvaultConstitutionPage() {
                   ecosystem.
                 </p>
 
-                <pre className="text-center text-purple-300 text-lg leading-8 whitespace-pre-wrap">
-            {`          🏛 Preservation
-                            ▲
-                            │
-                            │
-                              👁 Awareness ◄────────► 🪪 Attribution
-                            │
-                            │
-                            ▼
-                      🤝 Collaboration`}
-                </pre>
+                <div className="mt-8 overflow-hidden rounded-[24px] border border-purple-500/10">
+                  <img
+                    src="/images/cycle-stewardship.png"
+                    alt="The Cycle of Stewardship: Preservation, Awareness, Attribution, and Collaboration connected through the ModVault ecosystem, with a seed representing growth."
+                    className="w-full h-auto"
+                  />
+                </div>
 
               </div>
 
@@ -203,7 +207,7 @@ export default function ModvaultConstitutionPage() {
                 The Constitution Articles
             ====================================== */}
 
-            <div className="text-center mb-12">
+            <div className="text-center mb-16">
 
               <p className="text-sm uppercase tracking-[0.35em] text-purple-400 mb-4">
                 Principles in Practice
@@ -258,7 +262,7 @@ export default function ModvaultConstitutionPage() {
             <ConstitutionSignatureWall />
           </div>
 
-        <div className="mt-24 rounded-[40px] border border-purple-500/20 bg-gradient-to-b from-purple-500/10 to-transparent p-10 text-center backdrop-blur-xl">
+        <div className="mt-10 rounded-[40px] border border-purple-500/20 bg-gradient-to-b from-purple-500/10 to-transparent p-10 text-center backdrop-blur-xl">
           <p className="text-sm uppercase tracking-[0.3em] text-purple-400 mb-5">
             Version 1.0
           </p>
@@ -270,9 +274,27 @@ export default function ModvaultConstitutionPage() {
           </h3>
 
           <p className="max-w-2xl mx-auto text-zinc-400 leading-relaxed">
-            Modvault is not designed to become an extraction machine. The
-            platform exists to protect creativity, preserve modding culture,
-            and create a trustworthy ecosystem for both creators and players.
+            ModVault exists to protect creativity, preserve modding culture,
+            recognize the people behind the work, and build infrastructure
+            that allows the ecosystem around them to grow.
+          </p>
+        </div>
+
+        <div className="mt-10 rounded-[40px] border border-purple-500/20 bg-zinc-950/60 p-10 text-center">
+          <p className="text-sm uppercase tracking-[0.3em] text-purple-400 mb-5">
+            The Guiding Vision
+          </p>
+
+          <h3 className="text-3xl md:text-5xl font-black leading-tight">
+            Let’s build the kind of ecosystem
+            <br />
+            I wish existed when I was creating.
+          </h3>
+
+          <p className="max-w-2xl mx-auto mt-6 text-zinc-400 leading-relaxed">
+            A place where creators are remembered, contributions are recognized,
+            history is preserved, collaboration is encouraged, and the friction
+            between creating and being part of the ecosystem is reduced.
           </p>
         </div>
       </section>
