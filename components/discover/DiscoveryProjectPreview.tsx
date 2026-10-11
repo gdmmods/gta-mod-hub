@@ -1,5 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
+interface PreviewMetadata {
+  title: string | null;
+  description: string | null;
+  author: string | null;
+  category: string | null;
+  imageUrl: string | null;
+  screenshots: string[];
+  projectUrl: string;
+}
+
 interface DiscoveryProjectPreviewProps {
   project: any;
   onClose: () => void;
@@ -9,188 +21,210 @@ export default function DiscoveryProjectPreview({
   project,
   onClose,
 }: DiscoveryProjectPreviewProps) {
+  const [metadata, setMetadata] =
+    useState<PreviewMetadata | null>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadMetadata() {
+      setLoading(true);
+      setError(null);
+      setMetadata(null);
+
+      try {
+        const response = await fetch(
+          "/api/discover-platform/preview",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              projectUrl: project.projectUrl,
+            }),
+            signal: controller.signal,
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            result.error ?? "Unable to load project metadata."
+          );
+        }
+
+        setMetadata(result.metadata);
+      } catch (err) {
+        if (
+          err instanceof Error &&
+          err.name === "AbortError"
+        ) {
+          return;
+        }
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load project metadata."
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadMetadata();
+
+    return () => controller.abort();
+  }, [project.projectUrl]);
+
+  const screenshots = [
+    ...new Set(
+      [
+        metadata?.imageUrl,
+        ...(metadata?.screenshots ?? []),
+        project.imageUrl,
+      ].filter(
+        (image): image is string =>
+          typeof image === "string" &&
+          image.length > 0
+      )
+    ),
+  ];
+
   return (
-    <div
-      className="
-        mt-4
-        rounded-2xl
-        border
-        border-zinc-800
-        bg-black
-        p-5
-      "
-    >
-      <div
-        className="
-          flex
-          items-start
-          justify-between
-          gap-6
-          mb-5
-        "
-      >
+    <div className="mt-4 rounded-2xl border border-zinc-800 bg-black p-5">
+      <div className="mb-5 flex items-start justify-between gap-6">
         <div>
-          <p
-            className="
-              text-purple-400
-              uppercase
-              tracking-[0.2em]
-              text-xs
-              mb-2
-            "
-          >
+          <p className="mb-2 text-xs uppercase tracking-[0.2em] text-purple-400">
             Project Preview
           </p>
 
-          <h4
-            className="
-              text-lg
-              font-semibold
-            "
-          >
-            {project.title}
+          <h4 className="text-lg font-semibold">
+            {metadata?.title ?? project.title}
           </h4>
         </div>
 
         <button
           type="button"
           onClick={onClose}
-          className="
-            text-sm
-            text-zinc-500
-            hover:text-white
-            transition
-          "
+          className="text-sm text-zinc-500 transition hover:text-white"
         >
           Close
         </button>
       </div>
 
-      <div
-        className="
-          grid
-          grid-cols-1
-          md:grid-cols-2
-          gap-4
-        "
-      >
-        <div
-          className="
-            rounded-xl
-            border
-            border-zinc-800
-            bg-zinc-950
-            p-4
-          "
-        >
-          <p className="text-xs uppercase tracking-wider text-zinc-600 mb-1">
-            Platform
-          </p>
-
-          <p className="text-sm text-zinc-300">
-            {project.platform}
+      {loading && (
+        <div className="mb-5 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+          <p className="text-sm text-zinc-400">
+            Loading source project metadata…
           </p>
         </div>
+      )}
 
-        <div
-          className="
-            rounded-xl
-            border
-            border-zinc-800
-            bg-zinc-950
-            p-4
-          "
-        >
-          <p className="text-xs uppercase tracking-wider text-zinc-600 mb-1">
-            Status
+      {error && (
+        <div className="mb-5 rounded-xl border border-amber-900/60 bg-amber-950/20 p-4">
+          <p className="text-sm text-amber-300">
+            {error}
           </p>
 
-          <p className="text-sm text-zinc-300">
-            {project.matchStatus === "existing"
-              ? "Already in ModVault"
-              : "New project"}
+          <p className="mt-1 text-xs text-zinc-500">
+            The original discovery information is still available below.
           </p>
         </div>
+      )}
 
-        <div
-          className="
-            rounded-xl
-            border
-            border-zinc-800
-            bg-zinc-950
-            p-4
-          "
-        >
-          <p className="text-xs uppercase tracking-wider text-zinc-600 mb-1">
-            External ID
-          </p>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <InfoCard label="Platform">
+          {project.platform}
+        </InfoCard>
 
-          <p className="text-sm text-zinc-300 break-all">
+        <InfoCard label="Status">
+          {project.matchStatus === "existing"
+            ? "Already in ModVault"
+            : "New project"}
+        </InfoCard>
+
+        <InfoCard label="Author">
+          {metadata?.author ?? "Not available"}
+        </InfoCard>
+
+        <InfoCard label="Category">
+          {metadata?.category ?? "Not available"}
+        </InfoCard>
+
+        <InfoCard label="External ID">
+          <span className="break-all">
             {project.externalId}
-          </p>
-        </div>
+          </span>
+        </InfoCard>
 
-        <div
-          className="
-            rounded-xl
-            border
-            border-zinc-800
-            bg-zinc-950
-            p-4
-          "
-        >
-          <p className="text-xs uppercase tracking-wider text-zinc-600 mb-1">
-            Source
-          </p>
-
+        <InfoCard label="Source">
           <a
             href={project.projectUrl}
             target="_blank"
-            rel="noreferrer"
-            className="
-              text-sm
-              text-purple-400
-              hover:text-purple-300
-              break-all
-            "
+            rel="noopener noreferrer"
+            className="break-all text-purple-400 hover:text-purple-300"
           >
-            {project.projectUrl}
+            Open original project →
           </a>
-        </div>
+        </InfoCard>
       </div>
 
-      {project.imageUrl && (
+      <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+        <p className="mb-2 text-xs uppercase tracking-wider text-zinc-600">
+          Description
+        </p>
+
+        {metadata?.description ? (
+          <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-300">
+            {metadata.description}
+          </p>
+        ) : (
+          <p className="text-sm text-zinc-500">
+            {loading
+              ? "Retrieving description…"
+              : "No description available."}
+          </p>
+        )}
+      </div>
+
+      {screenshots.length > 0 && (
         <div className="mt-4">
-          <p className="text-xs uppercase tracking-wider text-zinc-600 mb-2">
-            Source Image
+          <p className="mb-3 text-xs uppercase tracking-wider text-zinc-600">
+            Source Images
           </p>
 
-          <img
-            src={project.imageUrl}
-            alt={project.title}
-            className="
-              max-h-48
-              rounded-xl
-              border
-              border-zinc-800
-              object-contain
-            "
-          />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {screenshots.map((src, index) => (
+              <a
+                key={`${src}-${index}`}
+                href={src}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950"
+              >
+                <img
+                  src={src}
+                  alt={`${project.title} source image ${index + 1}`}
+                  loading="lazy"
+                  className="h-48 w-full object-contain"
+                />
+              </a>
+            ))}
+          </div>
         </div>
       )}
 
       {project.existingMod && (
-        <div
-          className="
-            mt-4
-            rounded-xl
-            border
-            border-zinc-800
-            bg-zinc-950
-            p-4
-          "
-        >
-          <p className="text-xs uppercase tracking-wider text-zinc-600 mb-2">
+        <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+          <p className="mb-2 text-xs uppercase tracking-wider text-zinc-600">
             Existing ModVault Record
           </p>
 
@@ -198,20 +232,34 @@ export default function DiscoveryProjectPreview({
             {project.existingMod.title}
           </p>
 
-          <p className="text-xs text-zinc-600 mt-1">
+          <p className="mt-1 text-xs text-zinc-600">
             {project.existingMod.status || "No status"}
           </p>
         </div>
       )}
 
-      <p
-        className="
-          text-xs
-          text-zinc-600
-          mt-5
-        "
-      >
+      <p className="mt-5 text-xs text-zinc-600">
         Preview only. Nothing will be imported or changed in ModVault.
+      </p>
+    </div>
+  );
+}
+
+function InfoCard({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+      <p className="mb-1 text-xs uppercase tracking-wider text-zinc-600">
+        {label}
+      </p>
+
+      <p className="text-sm text-zinc-300">
+        {children}
       </p>
     </div>
   );
