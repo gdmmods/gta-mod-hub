@@ -92,7 +92,7 @@ export default function UploadLinksSection({
             placeholder="
               https://download-link.com/...
             "
-            value={form.download_url}
+            value={form.download_url ?? ""}
             onChange={handleChange}
             className="
               w-full

@@ -8,10 +8,12 @@ import DashboardModCard from "./DashboardModCard";
 
 type Props = {
   mods: any[];
+  onModChanged?: () => void;
 };
 
 export default function DashboardModsGrid({
   mods,
+  onModChanged,
 }: Props) {
 
   const [
@@ -369,6 +371,7 @@ export default function DashboardModsGrid({
               <DashboardModCard
                 key={mod.id}
                 mod={mod}
+                onModChanged={onModChanged}
               />
             );
 

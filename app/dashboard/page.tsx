@@ -129,7 +129,7 @@ console.log("CURRENT CREATOR", creator);
           }
         />
 
-        {mods.length === 0 ? (
+                {mods.length === 0 ? (
 
           <DashboardEmptyState />
 
@@ -137,6 +137,9 @@ console.log("CURRENT CREATOR", creator);
 
           <DashboardModsGrid
             mods={currentMods}
+            onModChanged={() =>
+              setRefreshKey(prev => prev + 1)
+            }
           />
 
         )}

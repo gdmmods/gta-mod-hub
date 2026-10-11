@@ -485,7 +485,7 @@ if (!response.ok) {
           title,
           source_url,
           status,
-          origin,
+          origin
         `)
         .eq(
           "creator_id",
@@ -493,13 +493,16 @@ if (!response.ok) {
         );
 
       if (existingModsError) {
-
-        console.error(
-          "EXISTING MODS LOAD ERROR:",
-          existingModsError
-        );
-
-      } else {
+  console.error(
+    "EXISTING MODS LOAD ERROR:",
+    JSON.stringify(
+      existingModsError,
+      Object.getOwnPropertyNames(existingModsError),
+      2
+    ),
+    existingModsError
+  );
+} else {
 
         existingMods =
           existingModsData || [];

@@ -15,11 +15,13 @@ interface PreviewMetadata {
 interface DiscoveryProjectPreviewProps {
   project: any;
   onClose: () => void;
+  onMetadataLoaded: (metadata: PreviewMetadata) => void;
 }
 
 export default function DiscoveryProjectPreview({
   project,
   onClose,
+  onMetadataLoaded,
 }: DiscoveryProjectPreviewProps) {
   const [metadata, setMetadata] =
     useState<PreviewMetadata | null>(null);
@@ -59,6 +61,7 @@ export default function DiscoveryProjectPreview({
         }
 
         setMetadata(result.metadata);
+        onMetadataLoaded(result.metadata);
       } catch (err) {
         if (
           err instanceof Error &&

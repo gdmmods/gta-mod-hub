@@ -236,12 +236,12 @@ export default function useEditMod(modId: string | string[]) {
 
     setLoading(false);
 
-    if (error) {
+          if (error) {
       console.error(error);
       return;
     }
 
-    alert("Mod updated successfully.");
+    window.location.href = "/dashboard";
   }
 
   async function handleDelete() {

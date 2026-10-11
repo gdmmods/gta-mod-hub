@@ -55,6 +55,19 @@ const supabase =
       project,
     } = body;
 
+    console.log("IMPORT PROJECT PAYLOAD:", {
+  title: project?.title,
+  projectUrl: project?.projectUrl,
+  description: project?.description,
+  author: project?.author,
+  category: project?.category,
+  platform: project?.platform,
+  screenshots: project?.screenshots,
+  screenshotCount: Array.isArray(project?.screenshots)
+    ? project.screenshots.length
+    : 0,
+});
+
     if (
       !creatorId ||
       !project
@@ -147,34 +160,43 @@ const supabase =
       than downloading or rehosting files.
     */
 
-   const {
-    data: mod,
-    error: modError,
-    } = await supabase
-    .from("mods")
-    .insert({
-        title:
-        project.title,
+    const screenshots = Array.isArray(project.screenshots)
+  ? project.screenshots
+  : [];
 
-        creator_id:
-        creatorId,
+   const { data: mod, error: modError } = await supabase
+  .from("mods")
+  .insert({
+    title: project.title,
+    creator_id: creatorId,
+    source_url: project.projectUrl,
+    status: "draft",
+    release_state: "public",
+    origin: project.platform,
 
-        source_url:
-        project.projectUrl,
-
-        status:
-        "draft",
-
-        release_state:
-        "public",
-
-        origin:
-        project.platform,
-    })
-      .select(
-        "id, title, creator_id, source_url, status, origin"
-      )
-      .single();
+    // Metadata from the discovery preview
+    description: project.description ?? null,
+    image: project.imageUrl ?? project.screenshots?.[0] ?? null,
+    images: project.screenshots?.length
+      ? JSON.stringify(project.screenshots)
+      : null,
+    category: project.category ?? null,
+    creator: project.author ?? null,
+  })
+  .select(`
+  id,
+  title,
+  creator_id,
+  source_url,
+  status,
+  origin,
+  description,
+  image,
+  images,
+  category,
+  creator
+`)
+  .single();
 
     if (modError) {
 

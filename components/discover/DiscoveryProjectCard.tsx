@@ -24,6 +24,9 @@ export default function DiscoveryProjectCard({
   const isExisting =
     project.matchStatus === "existing";
 
+    const [previewMetadata, setPreviewMetadata] =
+  useState<any>(null);
+
   return (
     <div
       className="
@@ -135,12 +138,25 @@ export default function DiscoveryProjectCard({
 
               <button
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  if (!previewMetadata) {
+                    setPreviewOpen(true);
+                    return;
+                  }
+
                   onAction(
-                    project,
+                    {
+                      ...project,
+                      title: previewMetadata.title ?? project.title,
+                      description: previewMetadata.description,
+                      author: previewMetadata.author,
+                      category: previewMetadata.category,
+                      imageUrl: previewMetadata.imageUrl,
+                      screenshots: previewMetadata.screenshots,
+                    },
                     "add"
-                  )
-                }
+                  );
+                }}
                 className={`
                   px-3
                   py-2
@@ -155,7 +171,9 @@ export default function DiscoveryProjectCard({
               >
                 {action === "add"
                   ? "Added ✓"
-                  : "Add"}
+                  : previewMetadata
+                    ? "Add"
+                    : "Preview to Add"}
               </button>
 
             )}
@@ -233,13 +251,14 @@ export default function DiscoveryProjectCard({
       </div>
 
       {previewOpen && (
-        <DiscoveryProjectPreview
-          project={project}
-          onClose={() =>
-            setPreviewOpen(false)
-          }
-        />
-      )}
+  <DiscoveryProjectPreview
+    project={project}
+    onClose={() => setPreviewOpen(false)}
+    onMetadataLoaded={(metadata) => {
+      setPreviewMetadata(metadata);
+    }}
+  />
+)}
 
     </div>
   );
