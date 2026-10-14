@@ -115,11 +115,14 @@ export default function DiscoveryProjectPreview({
     ),
   ];
 
-  const parsedSections = [
-    ["Features", metadata?.parsedDetails?.features],
-    ["Known Bugs", metadata?.parsedDetails?.knownBugs],
-    ["Requirements", metadata?.parsedDetails?.requirements],
-    ["Credits", metadata?.parsedDetails?.credits],
+  const fullDescription =
+    metadata?.parsedDetails?.description ?? metadata?.description;
+
+  const parsedSections: Array<[string, string | null]> = [
+    ["Features", metadata?.parsedDetails?.features ?? null],
+    ["Known Bugs", metadata?.parsedDetails?.knownBugs ?? null],
+    ["Requirements", metadata?.parsedDetails?.requirements ?? null],
+    ["Credits", metadata?.parsedDetails?.credits ?? null],
   ].filter((section): section is [string, string] =>
     typeof section[1] === "string" && section[1].trim().length > 0
   );
@@ -208,9 +211,9 @@ export default function DiscoveryProjectPreview({
           Description
         </p>
 
-        {metadata?.parsedDetails?.description ?? metadata?.description ? (
+        {fullDescription ? (
           <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-300">
-            {metadata.parsedDetails?.description ?? metadata.description}
+            {fullDescription}
           </p>
         ) : (
           <p className="text-sm text-zinc-500">
