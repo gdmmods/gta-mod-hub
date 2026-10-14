@@ -12,6 +12,7 @@ export type Gta5ModsDetails = {
   fileSize: string | null;
   downloads: number | null;
   lastUpdated: string | null;
+  knownBugs: string | null;
 };
 
 /* ----------------------------------------
@@ -184,12 +185,10 @@ function parseCount(value: string | null): number | null {
 function extractDescriptionSection(
   descriptionHtml: string,
   heading: string,
-  nextHeading?: string
+  stopPatterns: RegExp[] = []
 ): string | null {
-  const escapedHeading = escapeRegex(heading);
-
   const headingRegex = new RegExp(
-    `<(?:b|strong)\\b[^>]*>\\s*${escapedHeading}\\s*:?\\s*<\\/(?:b|strong)>`,
+    `<(?:b|strong)\\b[^>]*>\\s*${escapeRegex(heading)}\\s*:?\\s*<\\/(?:b|strong)>`,
     "i"
   );
 
@@ -200,25 +199,19 @@ function extractDescriptionSection(
   }
 
   const start = headingMatch.index + headingMatch[0].length;
-
   const remainingHtml = descriptionHtml.slice(start);
 
-  const nextHeadingRegex = nextHeading
-    ? new RegExp(
-        `<(?:b|strong)\\b[^>]*>\\s*${escapeRegex(nextHeading)}\\s*:?\\s*<\\/(?:b|strong)>`,
-        "i"
-      )
-    : null;
+  let end = remainingHtml.length;
 
-  const nextMatch = nextHeadingRegex
-    ? nextHeadingRegex.exec(remainingHtml)
-    : null;
+  for (const pattern of stopPatterns) {
+    const match = pattern.exec(remainingHtml);
 
-  const sectionHtml = nextMatch
-    ? remainingHtml.slice(0, nextMatch.index)
-    : remainingHtml;
+    if (match && match.index < end) {
+      end = match.index;
+    }
+  }
 
-  return cleanText(sectionHtml) || null;
+  return cleanText(remainingHtml.slice(0, end)) || null;
 }
 
 /**
@@ -281,13 +274,31 @@ export function extractGta5ModsDetails(
     cleanText(descriptionHtml) ||
     getMetaContent(html, "property", "og:description");
 
-  /* FEATURES */
+    /* FEATURES */
 
   const features = extractDescriptionSection(
     descriptionHtml,
     "Features",
-    "Known Bugs"
+    [
+      /<(?:b|strong)\b[^>]*>\s*Known Bugs\s*:?\s*<\/(?:b|strong)>/i,
+      /<(?:b|strong)\b[^>]*>\s*Credits\s*:?\s*<\/(?:b|strong)>/i,
+    ]
   );
+
+  
+  /* KNOWN BUGS */
+
+  const knownBugs = extractDescriptionSection(
+    descriptionHtml,
+    "Known Bugs",
+    [
+      /<(?:b|strong)\b[^>]*>\s*Credits\s*:?\s*<\/(?:b|strong)>/i,
+      /<(?:b|strong)\b[^>]*>[^<]*INSTALL IN README[^<]*<\/(?:b|strong)>/i,
+      /Install and Enjoy\s*;?\s*\)?/i,
+      /See Ya Soon Peeps\.?/i,
+    ]
+  );
+
 
   /* REQUIREMENTS */
 
@@ -302,7 +313,10 @@ export function extractGta5ModsDetails(
 
   const credits = extractDescriptionSection(
     descriptionHtml,
-    "Credits"
+    "Credits",
+    [
+      /<(?:b|strong)\b[^>]*>[^<]*INSTALL IN README[^<]*<\/(?:b|strong)>/i,
+    ]
   );
 
   /* GALLERY */
@@ -362,7 +376,7 @@ export function extractGta5ModsDetails(
     if (segments.length === 2) {
       category = segments[0]
         .replace(/-/g, " ")
-        .replace(/\b\w/g, (character) => character.toUpperCase());
+        .toLowerCase();
     }
   } catch {
     category = null;
@@ -426,19 +440,19 @@ export function extractGta5ModsDetails(
     );
   }
 
-  /* LAST UPDATED */
+    /* LAST UPDATED */
 
   let lastUpdated: string | null = null;
 
   const dateMatch = html.match(
-    /Last Updated\s*<\/?[^>]*>\s*([^<\n]+)/i
+    /Last Updated\s*:?\s*<\/?[^>]*>\s*([^<\n]+)/i
   );
 
   if (dateMatch?.[1]) {
     lastUpdated = cleanText(dateMatch[1]) || null;
   }
 
-  if (!lastUpdated) {
+  if (!lastUpdated || lastUpdated === ":") {
     const jsonLdDate = html.match(
       /"dateModified"\s*:\s*"([^"]+)"/i
     );
@@ -457,6 +471,7 @@ export function extractGta5ModsDetails(
     category,
     tags: unique(tags),
     features,
+    knownBugs,
     requirements,
     credits,
     fileSize,

@@ -1,3 +1,8 @@
+
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import {
   extractGta5ModsDetails,
 } from "../lib/connectors/gta5ModsDetails";
@@ -5,55 +10,44 @@ import {
 const projectUrl =
   "https://www.gta5-mods.com/vehicles/pontiac-gto-convertible-1966-animated-roof-add-on-fivem-template";
 
-async function main() {
-  console.log("Fetching GTA5-Mods project...");
+const html = readFileSync(
+  join(process.cwd(), "gta5mods-sample.html"),
+  "utf8"
+);
 
-  const response = await fetch(projectUrl, {
-    headers: {
-      "User-Agent": "ModVault Creator Connector",
-    },
-  });
+const details = extractGta5ModsDetails(html, projectUrl);
 
-  if (!response.ok) {
-    throw new Error(
-      `GTA5-Mods returned HTTP ${response.status}`
-    );
-  }
+assert.equal(
+  details.title,
+  "Pontiac GTO Convertible 1966 (Animated Roof) [Add-On / FiveM | Template]"
+);
 
-  const html = await response.text();
+assert.equal(details.category, "vehicles");
+assert.equal(details.version, "1.1");
+assert.equal(details.knownBugs, "NONE");
 
-  console.log("Extracting metadata...\n");
+assert.ok(details.description);
+assert.ok(details.description.includes("Known Bugs"));
+assert.ok(details.description.includes("Credits"));
 
-  const details = extractGta5ModsDetails(
-    html,
-    projectUrl
-  );
+assert.ok(details.features);
+assert.ok(details.features.includes("HQ Exterior"));
 
-  console.log(
-    JSON.stringify(
-      {
-        ...details,
-        description:
-          details.description?.slice(0, 500),
-      },
-      null,
-      2
-    )
-  );
+assert.ok(details.credits);
+assert.ok(details.credits.includes("CG"));
+assert.ok(details.credits.includes("Asyr0n"));
+assert.ok(!details.credits.includes("INSTALL IN README"));
+assert.ok(!details.credits.includes("Patreon Exclusives"));
 
-  console.log("\n--- Validation ---");
+assert.equal(details.fileSize, "50.4 MB");
+assert.equal(details.downloads, 7582);
+assert.equal(details.lastUpdated, "June 06, 2023");
 
-  console.log("Title found:", Boolean(details.title));
-  console.log("Cover image found:", Boolean(details.image));
-  console.log("Description found:", Boolean(details.description));
-  console.log("Gallery images:", details.images.length);
-  console.log("Version:", details.version ?? "Not detected");
-  console.log("Features found:", Boolean(details.features));
-  console.log("Credits found:", Boolean(details.credits));
-  console.log("Downloads:", details.downloads ?? "Not detected");
-}
+assert.ok(details.image, "Expected a cover image");
+assert.ok(details.images.length > 0, "Expected gallery images");
+assert.ok(
+  !details.images.includes(details.image),
+  "Gallery must not duplicate the cover image"
+);
 
-main().catch((error) => {
-  console.error("Extractor test failed:", error);
-  process.exitCode = 1;
-});
+console.log("GTA5-Mods parser fixture checks passed.");
