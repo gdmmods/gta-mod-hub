@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { Gta5ModsDetails } from "@/lib/connectors/gta5ModsDetails";
 
-interface PreviewMetadata {
+interface DiscoveryMetadata {
   title: string | null;
   description: string | null;
   author: string | null;
@@ -12,10 +13,14 @@ interface PreviewMetadata {
   projectUrl: string;
 }
 
+interface PreviewMetadata extends DiscoveryMetadata {
+  parsedDetails: Gta5ModsDetails | null;
+}
+
 interface DiscoveryProjectPreviewProps {
   project: any;
   onClose: () => void;
-  onMetadataLoaded: (metadata: PreviewMetadata) => void;
+  onMetadataLoaded: (metadata: DiscoveryMetadata) => void;
 }
 
 export default function DiscoveryProjectPreview({
@@ -60,8 +65,17 @@ export default function DiscoveryProjectPreview({
           );
         }
 
-        setMetadata(result.metadata);
-        onMetadataLoaded(result.metadata);
+        const loadedMetadata = result.metadata as PreviewMetadata;
+        setMetadata(loadedMetadata);
+        onMetadataLoaded({
+          title: loadedMetadata.title,
+          description: loadedMetadata.description,
+          author: loadedMetadata.author,
+          category: loadedMetadata.category,
+          imageUrl: loadedMetadata.imageUrl,
+          screenshots: loadedMetadata.screenshots,
+          projectUrl: loadedMetadata.projectUrl,
+        });
       } catch (err) {
         if (
           err instanceof Error &&
@@ -100,6 +114,15 @@ export default function DiscoveryProjectPreview({
       )
     ),
   ];
+
+  const parsedSections = [
+    ["Features", metadata?.parsedDetails?.features],
+    ["Known Bugs", metadata?.parsedDetails?.knownBugs],
+    ["Requirements", metadata?.parsedDetails?.requirements],
+    ["Credits", metadata?.parsedDetails?.credits],
+  ].filter((section): section is [string, string] =>
+    typeof section[1] === "string" && section[1].trim().length > 0
+  );
 
   return (
     <div className="mt-4 rounded-2xl border border-zinc-800 bg-black p-5">
@@ -185,9 +208,9 @@ export default function DiscoveryProjectPreview({
           Description
         </p>
 
-        {metadata?.description ? (
+        {metadata?.parsedDetails?.description ?? metadata?.description ? (
           <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-300">
-            {metadata.description}
+            {metadata.parsedDetails?.description ?? metadata.description}
           </p>
         ) : (
           <p className="text-sm text-zinc-500">
@@ -197,6 +220,17 @@ export default function DiscoveryProjectPreview({
           </p>
         )}
       </div>
+
+      {parsedSections.map(([label, value]) => (
+        <div key={label} className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+          <p className="mb-2 text-xs uppercase tracking-wider text-zinc-600">
+            {label}
+          </p>
+          <p className="whitespace-pre-wrap text-sm leading-6 text-zinc-300">
+            {value}
+          </p>
+        </div>
+      ))}
 
       {screenshots.length > 0 && (
         <div className="mt-4">
