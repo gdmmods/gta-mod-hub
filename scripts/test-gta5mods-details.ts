@@ -29,6 +29,8 @@ assert.equal(details.knownBugs, "NONE");
 assert.ok(details.description);
 assert.ok(details.description.includes("Known Bugs"));
 assert.ok(details.description.includes("Credits"));
+assert.ok(details.description.includes("Install and Enjoy"));
+assert.ok(details.description.includes("Patreon Exclusives"));
 
 assert.ok(details.features);
 assert.ok(details.features.includes("HQ Exterior"));
