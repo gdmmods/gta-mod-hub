@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { extractGta5ModsDetails } from "@/lib/connectors/gta5ModsDetails";
 
 const ALLOWED_HOSTS = new Set([
   "gta5-mods.com",
@@ -315,6 +316,7 @@ export async function POST(request: Request) {
     const description = extractDescription(html);
     const author = extractAuthor(html);
     const screenshots = extractScreenshots(html, url);
+    const parsedDetails = extractGta5ModsDetails(html, url.href);
 
     return NextResponse.json({
       metadata: {
@@ -325,6 +327,7 @@ export async function POST(request: Request) {
         imageUrl: screenshots[0] ?? null,
         screenshots,
         projectUrl: url.href,
+        parsedDetails,
       },
     });
   } catch (error) {
