@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { Gta5ModsDetails } from "@/lib/connectors/gta5ModsDetails";
+import { getGta5ModsPreviewDescription } from "@/lib/connectors/gta5ModsDescriptionPreview";
+import type { DiscoveryResultProject } from "./types";
 
 interface DiscoveryMetadata {
   title: string | null;
@@ -11,6 +13,7 @@ interface DiscoveryMetadata {
   imageUrl: string | null;
   screenshots: string[];
   projectUrl: string;
+  parsedDetails: Gta5ModsDetails | null;
 }
 
 interface PreviewMetadata extends DiscoveryMetadata {
@@ -18,7 +21,7 @@ interface PreviewMetadata extends DiscoveryMetadata {
 }
 
 interface DiscoveryProjectPreviewProps {
-  project: any;
+  project: DiscoveryResultProject;
   onClose: () => void;
   onMetadataLoaded: (metadata: DiscoveryMetadata) => void;
 }
@@ -69,12 +72,13 @@ export default function DiscoveryProjectPreview({
         setMetadata(loadedMetadata);
         onMetadataLoaded({
           title: loadedMetadata.title,
-          description: loadedMetadata.description,
+          description: loadedMetadata.parsedDetails?.description ?? loadedMetadata.description,
           author: loadedMetadata.author,
           category: loadedMetadata.category,
           imageUrl: loadedMetadata.imageUrl,
           screenshots: loadedMetadata.screenshots,
           projectUrl: loadedMetadata.projectUrl,
+          parsedDetails: loadedMetadata.parsedDetails,
         });
       } catch (err) {
         if (
@@ -115,13 +119,20 @@ export default function DiscoveryProjectPreview({
     ),
   ];
 
-  const fullDescription =
-    metadata?.parsedDetails?.description ?? metadata?.description;
+  const fullDescription = metadata?.parsedDetails
+    ? getGta5ModsPreviewDescription(
+        metadata.parsedDetails.description,
+        metadata.parsedDetails
+      )
+    : metadata?.description;
 
   const parsedSections: Array<[string, string | null]> = [
     ["Features", metadata?.parsedDetails?.features ?? null],
-    ["Known Bugs", metadata?.parsedDetails?.knownBugs ?? null],
-    ["Requirements", metadata?.parsedDetails?.requirements ?? null],
+    ["Notes / Known Bugs", metadata?.parsedDetails ? [
+      metadata.parsedDetails.notes ? `Notes:\n${metadata.parsedDetails.notes}` : null,
+      metadata.parsedDetails.knownBugs ? `Known Bugs:\n${metadata.parsedDetails.knownBugs}` : null,
+    ].filter(Boolean).join("\n\n") || "None found in source description" : null],
+    ["Requirements", metadata?.parsedDetails ? metadata.parsedDetails.requirements ?? "None found in source description" : null],
     ["Credits", metadata?.parsedDetails?.credits ?? null],
   ].filter((section): section is [string, string] =>
     typeof section[1] === "string" && section[1].trim().length > 0

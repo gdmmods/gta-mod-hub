@@ -11,6 +11,7 @@ import Navbar from "@/components/layout/Navbar";
 
 import DiscoverPlatforms from "@/components/discover/DiscoverPlatforms";
 import DiscoveryResults from "@/components/discover/DiscoveryResults";
+import type { Comparison } from "@/components/discover/DiscoveryUpdateComparison";
 
 type Identity = {
   id: string;
@@ -56,6 +57,9 @@ export default function DiscoverModsPage() {
 
   const [projectActions, setProjectActions] =
     useState<Record<string, string>>({});
+
+  const [comparisons, setComparisons] =
+    useState<Record<string, Comparison>>({});
 
   const hasVerifiedIdentity =
     identities.some(
@@ -238,86 +242,78 @@ export default function DiscoverModsPage() {
   return;
 }
 
-  /*
-    Update will be wired separately.
-  */
-
-  if (action === "update") {
-
-  if (!project.existingMod?.id) {
-    console.error(
-      "UPDATE ERROR: Missing existing mod ID."
-    );
-
-    return;
-  }
-
-  const {
-    data: {
-      session,
-    },
-  } = await supabase.auth.getSession();
-
-  if (!session?.access_token) {
-    setMessage(
-      "Your session has expired. Please sign in again."
-    );
-
-    return;
-  }
-
-  const response =
-    await fetch(
-      "/api/update-mod",
-      {
+  if (action === "compare") {
+    setProjectActions((current) => ({ ...current, [key]: "comparing" }));
+    setMessage(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Your session has expired. Please sign in again.");
+      const response = await fetch("/api/update-mod/compare", {
         method: "POST",
-
         headers: {
-          "Content-Type":
-            "application/json",
-
-          Authorization:
-            `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
         },
-
-        body: JSON.stringify({
-          modId:
-            project.existingMod.id,
-
-          project,
-        }),
-      }
-    );
-
-  const result =
-    await response.json();
-
-  if (!response.ok) {
-
-    console.error(
-      "UPDATE ERROR:",
-      {
-        result,
-        status:
-          response.status,
-        statusText:
-          response.statusText,
-      }
-    );
-
+        body: JSON.stringify({ modId: project.existingMod?.id, project }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not compare this mod.");
+      setComparisons((current) => ({ ...current, [key]: result }));
+      setProjectActions((current) => {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      });
+    } catch (error) {
+      setProjectActions((current) => {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      });
+      setMessage(error instanceof Error ? error.message : "Could not compare this mod.");
+    }
     return;
   }
 
-  setProjectActions(
-    current => ({
-      ...current,
-      [`${project.platform}-${project.externalId}`]:
-        "update",
-    })
-  );
-
-  return;
-}
+  if (action === "apply-update") {
+    setProjectActions((current) => ({ ...current, [key]: "applying" }));
+    setMessage(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Your session has expired. Please sign in again.");
+      const response = await fetch("/api/update-mod", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          modId: project.existingMod?.id,
+          project,
+          acceptedFields: project.acceptedFields,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not update this mod.");
+      setProjectActions((current) => ({ ...current, [key]: "update" }));
+      setMessage(result.updatedFields?.length
+        ? `Updated ${result.updatedFields.length} selected field${result.updatedFields.length === 1 ? "" : "s"}.`
+        : "The selected fields already match the saved values.");
+      setComparisons((current) => {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      });
+    } catch (error) {
+      setProjectActions((current) => {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      });
+      setMessage(error instanceof Error ? error.message : "Could not update this mod.");
+    }
+    return;
+  }
 
   /*
     Add = explicit creator-authorized import.
@@ -722,8 +718,8 @@ if (!response.ok) {
           <DiscoveryResults
             projects={projects}
             projectActions={projectActions}
-            creatorId={currentCreatorId}
             onProjectAction={handleProjectAction}
+            comparisons={comparisons}
           />
 
         </div>

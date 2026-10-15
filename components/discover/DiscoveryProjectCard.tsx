@@ -1,141 +1,71 @@
 "use client";
 
 import { useState } from "react";
-
 import DiscoveryProjectPreview from "./DiscoveryProjectPreview";
+import DiscoveryUpdateComparison, { type Comparison } from "./DiscoveryUpdateComparison";
+import type { DiscoveryPreviewMetadata, DiscoveryResultProject } from "./types";
 
 interface DiscoveryProjectCardProps {
-  project: any;
+  project: DiscoveryResultProject;
   action: string | undefined;
-  creatorId: string | null;
-  onAction: (project: any, action: string) => void;
+  comparison: Comparison | null;
+  onAction: (project: DiscoveryResultProject, action: string) => void;
 }
 
 export default function DiscoveryProjectCard({
   project,
   action,
-  creatorId,
+  comparison,
   onAction,
 }: DiscoveryProjectCardProps) {
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewMetadata, setPreviewMetadata] = useState<DiscoveryPreviewMetadata | null>(null);
+  const [compareRequested, setCompareRequested] = useState(false);
+  const isExisting = project.matchStatus === "existing";
 
-  const [previewOpen, setPreviewOpen] =
-    useState(false);
+  function withPreviewMetadata() {
+    return { ...project, ...previewMetadata, title: previewMetadata?.title ?? project.title };
+  }
 
-  const isExisting =
-    project.matchStatus === "existing";
-
-    const [previewMetadata, setPreviewMetadata] =
-  useState<any>(null);
+  function beginComparison() {
+    setPreviewOpen(true);
+    if (previewMetadata) {
+      onAction(withPreviewMetadata(), "compare");
+    } else {
+      setCompareRequested(true);
+    }
+  }
 
   return (
-    <div
-      className="
-        p-5
-        border-b
-        border-zinc-800
-        last:border-b-0
-      "
-    >
-      <div
-        className="
-          grid
-          grid-cols-1
-          gap-2
-        "
-      >
-
+    <div className="border-b border-zinc-800 p-5 last:border-b-0">
+      <div className="grid grid-cols-1 gap-2">
         <div>
-
-          <h3
-            className="
-              text-lg
-              font-semibold
-            "
-          >
-            {project.title}
-          </h3>
-
-          <p
-            className="
-              text-sm
-              text-zinc-500
-              mt-1
-            "
-          >
-            {project.platform}
-          </p>
-
+          <h3 className="text-lg font-semibold">{project.title}</h3>
+          <p className="mt-1 text-sm text-zinc-500">{project.platform}</p>
           {isExisting ? (
-            <p className="text-sm text-zinc-400">
-              Already in ModVault
-            </p>
+            <p className="text-sm text-zinc-400">Already in ModVault</p>
           ) : (
-            <p className="text-sm text-emerald-400">
-              New project
-            </p>
+            <p className="text-sm text-emerald-400">New project</p>
           )}
-
-          {action === "add" && (
-            <p className="text-sm text-emerald-400 mt-1">
-              Queued to be added
-            </p>
-          )}
-
-          {action === "update" && (
-            <p className="text-sm text-emerald-400 mt-1">
-              Queued for update
-            </p>
-          )}
-
-          {action === "ignore" && (
-            <p className="text-sm text-red-400 mt-1">
-              Ignored
-            </p>
-          )}
-
+          {action === "add" && <p className="mt-1 text-sm text-emerald-400">Added ✓</p>}
+          {action === "update" && <p className="mt-1 text-sm text-emerald-400">Updated ✓</p>}
+          {action === "ignore" && <p className="mt-1 text-sm text-red-400">Ignored</p>}
         </div>
 
-        <div
-          className="
-            flex
-            items-center
-            justify-end
-            gap-2
-            shrink-0
-          "
-        >
-
+        <div className="flex shrink-0 items-center justify-end gap-2">
           <div className="flex items-center gap-2">
-
             {isExisting ? (
-
               <button
                 type="button"
-                onClick={() =>
-                    onAction(
-                    project,
-                    "update"
-                    )
-                }
-                className={`
-                    px-3
-                    py-2
-                    rounded-lg
-                    text-sm
-                    ${
-                    action === "update"
-                        ? "bg-emerald-600 hover:bg-emerald-500"
-                        : "bg-purple-600 hover:bg-purple-500"
-                    }
-                `}
-                >
-                {action === "update"
-                    ? "Updated ✓"
-                    : "Update"}
-                </button>
-
+                onClick={beginComparison}
+                disabled={action === "comparing" || action === "applying" || action === "update"}
+                className={`rounded-lg px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60 ${
+                  action === "update" ? "bg-emerald-600" : "bg-purple-600 hover:bg-purple-500"
+                }`}
+              >
+                {action === "update" ? "Updated ✓" : action === "comparing" ? "Comparing…" : action === "applying" ? "Applying…" : "Compare & Update"}
+              </button>
             ) : (
-
               <button
                 type="button"
                 onClick={() => {
@@ -143,123 +73,60 @@ export default function DiscoveryProjectCard({
                     setPreviewOpen(true);
                     return;
                   }
-
-                  onAction(
-                    {
-                      ...project,
-                      title: previewMetadata.title ?? project.title,
-                      description: previewMetadata.description,
-                      author: previewMetadata.author,
-                      category: previewMetadata.category,
-                      imageUrl: previewMetadata.imageUrl,
-                      screenshots: previewMetadata.screenshots,
-                    },
-                    "add"
-                  );
+                  onAction(withPreviewMetadata(), "add");
                 }}
-                className={`
-                  px-3
-                  py-2
-                  rounded-lg
-                  text-sm
-                  ${
-                    action === "add"
-                      ? "bg-emerald-600 hover:bg-emerald-500"
-                      : "bg-purple-600 hover:bg-purple-500"
-                  }
-                `}
+                className={`rounded-lg px-3 py-2 text-sm ${action === "add" ? "bg-emerald-600" : "bg-purple-600 hover:bg-purple-500"}`}
               >
-                {action === "add"
-                  ? "Added ✓"
-                  : previewMetadata
-                    ? "Add"
-                    : "Preview to Add"}
+                {action === "add" ? "Added ✓" : previewMetadata ? "Add" : "Preview to Add"}
               </button>
-
             )}
 
             <button
               type="button"
-              onClick={() =>
-                setPreviewOpen(
-                  (current) => !current
-                )
-              }
-              className={`
-                px-3
-                py-2
-                rounded-lg
-                text-sm
-                border
-                ${
-                  previewOpen
-                    ? "border-purple-500 bg-purple-900/30 text-purple-300"
-                    : "border-zinc-700 hover:bg-zinc-800"
-                }
-              `}
+              onClick={() => setPreviewOpen((current) => !current)}
+              className={`rounded-lg border px-3 py-2 text-sm ${previewOpen ? "border-purple-500 bg-purple-900/30 text-purple-300" : "border-zinc-700 hover:bg-zinc-800"}`}
             >
-              {previewOpen
-                ? "Hide Preview"
-                : "Preview"}
+              {previewOpen ? "Hide Preview" : "Preview"}
             </button>
 
             <button
               type="button"
-              onClick={() =>
-                onAction(
-                  project,
-                  "ignore"
-                )
-              }
-              className={`
-                px-3
-                py-2
-                rounded-lg
-                text-sm
-                border
-                ${
-                  action === "ignore"
-                    ? "border-red-500 bg-red-900/30 text-red-400 hover:bg-red-900/50"
-                    : "border-zinc-700 hover:bg-zinc-800"
-                }
-              `}
+              onClick={() => onAction(project, "ignore")}
+              className={`rounded-lg border px-3 py-2 text-sm ${action === "ignore" ? "border-red-500 bg-red-900/30 text-red-400" : "border-zinc-700 hover:bg-zinc-800"}`}
             >
-              {action === "ignore"
-                ? "Ignored"
-                : "Ignore"}
+              {action === "ignore" ? "Ignored" : "Ignore"}
             </button>
-
           </div>
 
-          <a
-            href={project.projectUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="
-              text-purple-400
-              hover:text-purple-300
-              text-sm
-              shrink-0
-              ml-4
-            "
-          >
+          <a href={project.projectUrl} target="_blank" rel="noreferrer" className="ml-4 shrink-0 text-sm text-purple-400 hover:text-purple-300">
             View Project →
           </a>
-
         </div>
-
       </div>
 
       {previewOpen && (
-  <DiscoveryProjectPreview
-    project={project}
-    onClose={() => setPreviewOpen(false)}
-    onMetadataLoaded={(metadata) => {
-      setPreviewMetadata(metadata);
-    }}
-  />
-)}
+        <DiscoveryProjectPreview
+          project={project}
+          onClose={() => setPreviewOpen(false)}
+          onMetadataLoaded={(metadata) => {
+            setPreviewMetadata(metadata);
+            if (compareRequested) {
+              setCompareRequested(false);
+              onAction({ ...project, ...metadata, title: metadata.title ?? project.title }, "compare");
+            }
+          }}
+        />
+      )}
 
+      {comparison && action !== "update" && (
+        <DiscoveryUpdateComparison
+          comparison={comparison}
+          applying={action === "applying"}
+          onApply={(acceptedFields) =>
+            onAction({ ...withPreviewMetadata(), acceptedFields }, "apply-update")
+          }
+        />
+      )}
     </div>
   );
 }

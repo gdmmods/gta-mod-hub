@@ -8,7 +8,9 @@ export type Gta5ModsDetails = {
   tags: string[];
   features: string | null;
   requirements: string | null;
+  notes: string | null;
   credits: string | null;
+  downloadUrl: string | null;
   fileSize: string | null;
   downloads: number | null;
   lastUpdated: string | null;
@@ -266,6 +268,27 @@ export function extractGta5ModsDetails(
   const image =
     getMetaContent(html, "property", "og:image");
 
+  const downloadAnchor = html.match(
+    /<a\b(?=[^>]*\bclass\s*=\s*(["'])[^"']*\bbtn-download\b[^"']*\1)[^>]*>/i
+  )?.[0];
+  let downloadUrl: string | null = null;
+  const downloadHref = downloadAnchor ? getAttribute(downloadAnchor, "href") : null;
+  if (downloadHref) {
+    try {
+      const candidate = new URL(downloadHref, projectUrl);
+      const source = new URL(projectUrl);
+      if (
+        candidate.protocol === "https:" &&
+        candidate.hostname === source.hostname &&
+        /\/download\/\d+(?:\/|$)/i.test(candidate.pathname)
+      ) {
+        downloadUrl = candidate.href;
+      }
+    } catch {
+      // Ignore malformed or unrelated download links.
+    }
+  }
+
   /* DESCRIPTION */
 
   const descriptionHtml = extractDescriptionHtml(html);
@@ -280,6 +303,7 @@ export function extractGta5ModsDetails(
     descriptionHtml,
     "Features",
     [
+      /<(?:b|strong)\b[^>]*>\s*(?:Requirements|Notes(?:\s*\/\s*Known Bugs)?)\s*:?\s*<\/(?:b|strong)>/i,
       /<(?:b|strong)\b[^>]*>\s*Known Bugs\s*:?\s*<\/(?:b|strong)>/i,
       /<(?:b|strong)\b[^>]*>\s*Credits\s*:?\s*<\/(?:b|strong)>/i,
     ]
@@ -292,6 +316,7 @@ export function extractGta5ModsDetails(
     descriptionHtml,
     "Known Bugs",
     [
+      /<(?:b|strong)\b[^>]*>\s*(?:Requirements|Notes(?:\s*\/\s*Known Bugs)?|Features)\s*:?\s*<\/(?:b|strong)>/i,
       /<(?:b|strong)\b[^>]*>\s*Credits\s*:?\s*<\/(?:b|strong)>/i,
       /<(?:b|strong)\b[^>]*>[^<]*INSTALL IN README[^<]*<\/(?:b|strong)>/i,
       /Install and Enjoy\s*;?\s*\)?/i,
@@ -307,7 +332,34 @@ export function extractGta5ModsDetails(
    * installation instructions. Populate this only
    * when a dedicated source section is identified.
    */
-  const requirements: string | null = null;
+  const requirements = extractDescriptionSection(
+    descriptionHtml,
+    "Requirements",
+    [
+      /<(?:b|strong)\b[^>]*>\s*(?:Features|Notes|Known Bugs|Credits)\s*:?\s*<\/(?:b|strong)>/i,
+    ]
+  );
+
+  const explicitNotes = extractDescriptionSection(
+    descriptionHtml,
+    "Notes",
+    [
+      /<(?:b|strong)\b[^>]*>\s*(?:Features|Requirements|Known Bugs|Credits)\s*:?\s*<\/(?:b|strong)>/i,
+    ]
+  );
+  const notes = explicitNotes ?? extractDescriptionSection(
+    descriptionHtml,
+    "Notes / Known Bugs",
+    [
+      /<(?:b|strong)\b[^>]*>\s*(?:Features|Requirements|Known Bugs|Credits)\s*:?\s*<\/(?:b|strong)>/i,
+    ]
+  ) ?? extractDescriptionSection(
+    descriptionHtml,
+    "Notes/Known Bugs",
+    [
+      /<(?:b|strong)\b[^>]*>\s*(?:Features|Requirements|Known Bugs|Credits)\s*:?\s*<\/(?:b|strong)>/i,
+    ]
+  );
 
   /* CREDITS */
 
@@ -473,7 +525,9 @@ export function extractGta5ModsDetails(
     features,
     knownBugs,
     requirements,
+    notes,
     credits,
+    downloadUrl,
     fileSize,
     downloads,
     lastUpdated,

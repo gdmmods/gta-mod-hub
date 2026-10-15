@@ -1,13 +1,15 @@
 "use client";
 
 import DiscoveryProjectCard from "./DiscoveryProjectCard";
+import type { Comparison } from "./DiscoveryUpdateComparison";
+import type { DiscoveryResultProject } from "./types";
 
 interface DiscoveryResultsProps {
-  projects: any[];
+  projects: DiscoveryResultProject[];
   projectActions: Record<string, string>;
-  creatorId: string | null;
+  comparisons: Record<string, Comparison>;
   onProjectAction: (
-    project: any,
+    project: DiscoveryResultProject,
     action: string
   ) => void;
 }
@@ -15,7 +17,7 @@ interface DiscoveryResultsProps {
 export default function DiscoveryResults({
   projects,
   projectActions,
-  creatorId,
+  comparisons,
   onProjectAction,
 }: DiscoveryResultsProps) {
   if (projects.length === 0) {
@@ -85,7 +87,7 @@ export default function DiscoveryResults({
                 key={`${key}-${index}`}
                 project={project}
                 action={projectActions[key]}
-                creatorId={creatorId}
+                comparison={comparisons[key] ?? null}
                 onAction={onProjectAction}
                 />
             );
