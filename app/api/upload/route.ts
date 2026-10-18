@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createClient }
 from "@supabase/supabase-js";
+import { parseCreatorBackupUrl } from "@/lib/server/creatorBackupUrl";
 
 export async function POST(
   req: Request
@@ -33,6 +34,14 @@ export async function POST(
 
     const body =
       await req.json();
+
+    const creatorBackup = parseCreatorBackupUrl(body.creator_backup_url);
+    if (!creatorBackup.valid) {
+      return NextResponse.json(
+        { error: "Creator Backup must be a valid HTTPS URL." },
+        { status: 400 }
+      );
+    }
 
     const supabase =
       createClient(
@@ -86,12 +95,19 @@ export async function POST(
     } =
       await supabase
         .from("creators")
-        .select("name")
+        .select("name, owner_id")
         .eq(
           "id",
           body.creator_id
         )
         .single();
+
+    if (!creatorData || creatorData.owner_id !== user.id) {
+      return NextResponse.json(
+        { error: "You must own this creator profile to upload a mod." },
+        { status: 403 }
+      );
+    }
 
     /* -----------------------------
        CREATE MOD
@@ -130,6 +146,9 @@ export async function POST(
 
           download_url:
             body.download_url,
+
+          creator_backup_url:
+            creatorBackup.url,
 
           features:
             body.features,

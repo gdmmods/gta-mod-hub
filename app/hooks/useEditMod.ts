@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
 import { defaultModForm }from "@/lib/forms/defaultModForm";
+import { parseCreatorBackupUrl } from "@/lib/server/creatorBackupUrl";
 
 export default function useEditMod(modId: string | string[]) {
   const [loading, setLoading] =
@@ -164,6 +165,12 @@ export default function useEditMod(modId: string | string[]) {
   ) {
     e.preventDefault();
 
+    const backup = parseCreatorBackupUrl(form.creator_backup_url);
+    if (!backup.valid) {
+      alert("Creator Backup must be a valid HTTPS URL.");
+      return;
+    }
+
     setLoading(true);
 
     const { error } =
@@ -193,6 +200,9 @@ export default function useEditMod(modId: string | string[]) {
 
           download_url:
             form.download_url,
+
+          creator_backup_url:
+            backup.url,
 
           features:
             form.features,

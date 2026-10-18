@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import { createPortal } from "react-dom";
+import { buildOutboundClickUrl } from "@/lib/server/click-analytics";
 
 type Props = {
   url: string;
@@ -30,36 +31,19 @@ export default function DownloadButton({
     setMounted(true);
   }, []);
 
-  const handleDownload =
-    async () => {
+  const handleDownload = () => {
 
       setLoading(true);
-
-      try {
-
-        await fetch("/api/download", {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            id,
-          }),
-        });
-
-      } catch (err) {
-
-        console.error(
-          "Download tracking failed",
-          err
-        );
-
-      }
-
       window.open(
-        url,
-        "_blank"
+        buildOutboundClickUrl({
+          origin: window.location.origin,
+          modId: id,
+          action: "download",
+          targetUrl: url,
+          eventId: window.crypto.randomUUID(),
+        }),
+        "_blank",
+        "noopener,noreferrer"
       );
 
       setLoading(false);

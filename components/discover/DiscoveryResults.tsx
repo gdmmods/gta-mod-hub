@@ -35,6 +35,7 @@ interface DiscoveryResultsProps {
   onProjectAction: (project: DiscoveryResultProject, action: string) => void;
   onBulkAdd: () => void;
   canAdd: boolean;
+  currentCreatorId?: string | null;
   onBulkUpdate: () => void;
   bulkStatus: BulkActionStatus | null;
   bulkCandidates: BulkUpdateCandidate[];
@@ -48,6 +49,7 @@ export default function DiscoveryResults({
   projects, projectActions, comparisons, onProjectAction,
   onBulkAdd, onBulkUpdate, bulkStatus, bulkCandidates, selectedBulkFields,
   canAdd,
+  currentCreatorId = null,
   onToggleBulkField, onConfirmBulkUpdate, onCancelBulkUpdate,
 }: DiscoveryResultsProps) {
   if (projects.length === 0) return null;
@@ -55,7 +57,7 @@ export default function DiscoveryResults({
   const busy = bulkStatus?.phase === "working" || bulkStatus?.phase === "review";
   const eligibleAdd = projects.filter((project) => {
     const key = `${project.platform}-${project.externalId}`;
-    return project.matchStatus !== "existing" && !["ignore", "add", "adding", "comparing", "applying"].includes(projectActions[key]);
+    return project.matchStatus !== "existing" && project.matchSource !== "review" && project.allowSeparateAfterReview !== true && !["ignore", "add", "adding", "comparing", "applying"].includes(projectActions[key]);
   }).length;
   const eligibleUpdate = projects.filter((project) => {
     const key = `${project.platform}-${project.externalId}`;
@@ -123,7 +125,7 @@ export default function DiscoveryResults({
       <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900">
         {projects.map((project, index) => {
           const key = `${project.platform}-${project.externalId}`;
-          return <DiscoveryProjectCard key={`${key}-${index}`} project={project} action={projectActions[key]} comparison={comparisons[key] ?? null} onAction={onProjectAction} actionsDisabled={busy} />;
+          return <DiscoveryProjectCard key={`${key}-${index}`} project={project} action={projectActions[key]} comparison={comparisons[key] ?? null} onAction={onProjectAction} actionsDisabled={busy} currentCreatorId={currentCreatorId} />;
         })}
       </div>
     </section>

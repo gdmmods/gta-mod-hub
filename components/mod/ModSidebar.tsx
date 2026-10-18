@@ -4,12 +4,16 @@ import LikeButton from "@/components/LikeButton";
 import FavoriteModButton from "@/components/FavoriteModButton";
 import ReleaseStatusBadge from "@/components/mod/ReleaseStatusBadge";
 import DownloadButton from "@/components/DownloadButton";
-import CreatorBackupButton from "@/components/mod/CreatorBackupButton";
+import ModSourceButtons, { type ModAdditionalSource } from "@/components/mod/ModSourceButtons";
 
 export default function ModSidebar({
   mod,
   creators,
   favoritesCount,
+  sources,
+  totalExternalDownloads,
+  canEdit = false,
+  clicks,
 }: any) {
 
   return (
@@ -63,6 +67,7 @@ export default function ModSidebar({
 
             </div>
 
+            <div className="flex flex-wrap items-start justify-between gap-3">
             <h1
               className="
   text-[25px]
@@ -76,8 +81,16 @@ export default function ModSidebar({
             >
               {mod.title}
             </h1>
-
-            
+            {canEdit && (
+              <Link
+                href={`/dashboard/mods/${mod.id}/edit`}
+                className="shrink-0 rounded-xl border border-purple-500/30 bg-purple-500/10 px-3 py-2 text-xs font-semibold text-purple-200 transition hover:border-purple-400/50 hover:bg-purple-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+                aria-label={`Edit ${mod.title}`}
+              >
+                Edit
+              </Link>
+            )}
+            </div>
 
           </div>
 
@@ -180,7 +193,7 @@ export default function ModSidebar({
                 text-zinc-500
               "
             >
-              Downloads
+              Clicks
             </p>
 
             <p
@@ -190,7 +203,7 @@ export default function ModSidebar({
                 mt-2
               "
             >
-              {mod.downloads ?? 0}
+              {clicks ?? mod.downloads ?? 0}
             </p>
 
           </div>
@@ -260,6 +273,16 @@ export default function ModSidebar({
 
         </div>
 
+        <div className="mt-3 rounded-2xl border border-purple-900/50 bg-purple-950/20 px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-zinc-400">Total External Downloads</p>
+            <p className="text-xl font-bold text-purple-200">
+              {typeof totalExternalDownloads === "number" ? totalExternalDownloads.toLocaleString() : "—"}
+            </p>
+          </div>
+          <p className="mt-1 text-[11px] text-zinc-600">Combined counts from connected source pages</p>
+        </div>
+
       </div>
 
       {/* DOWNLOAD */}
@@ -268,7 +291,7 @@ export default function ModSidebar({
   mod.visibility === "public" ||
   mod.visibility === "early_access"
 ) && (
-  <div className="space-y-3">
+  <div className="mt-4 space-y-3">
 
     {mod.download_url && (
       <DownloadButton
@@ -277,24 +300,7 @@ export default function ModSidebar({
       />
     )}
 
-    {mod.creator_backup_url && (
-      <CreatorBackupButton
-        url={mod.creator_backup_url}
-      />
-    )}
-
   </div>
-)}
-
-{(
-  mod.visibility === "public" ||
-  mod.visibility === "early_access"
-) && mod.download_url && (
-
-  <CreatorBackupButton
-    url={mod.download_url}
-  />
-
 )}
 
       {/* COMMUNITY ACTIONS */}
@@ -321,27 +327,14 @@ export default function ModSidebar({
 
         </div>
 
-        <a
-          href={mod.source_url}
-          target="_blank"
-          className="
-            w-full
-            flex
-            justify-center
-            items-center
-            rounded-2xl
-            border
-            border-zinc-800
-            bg-zinc-900
-            hover:bg-zinc-800
-            transition
-            py-3
-            text-sm
-            text-zinc-300
-          "
-        >
-          Visit Source
-        </a>
+        {(mod.visibility === "public" || mod.visibility === "early_access") && (
+          <ModSourceButtons
+            modId={mod.id}
+            primarySourceUrl={mod.source_url}
+            creatorBackupUrl={mod.creator_backup_url}
+            sources={sources as ModAdditionalSource[]}
+          />
+        )}
 
       </div>
 

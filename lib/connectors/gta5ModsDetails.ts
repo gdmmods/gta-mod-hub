@@ -186,7 +186,7 @@ function parseCount(value: string | null): number | null {
  * Known Bugs:
  * None
  */
-function extractDescriptionSection(
+export function extractDescriptionSection(
   descriptionHtml: string,
   heading: string,
   stopPatterns: RegExp[] = []

@@ -1,7 +1,10 @@
+import type { ExternalDownloadSummary } from "@/lib/server/external-download-counts-core";
+
 interface CreatorStatsProps {
   modsCount: number;
   totalLikes: number;
   totalDownloads: number;
+  externalDownloadSummary: ExternalDownloadSummary;
   location?: string | null;
 }
 
@@ -9,6 +12,7 @@ export default function CreatorStats({
   modsCount,
   totalLikes,
   totalDownloads,
+  externalDownloadSummary,
   location,
 }: CreatorStatsProps) {
 
@@ -34,10 +38,19 @@ export default function CreatorStats({
 
   };
 
-  const stats = [
+  const stats: Array<[string, string | number, string?]> = [
     ["Mods", modsCount],
     ["Likes", totalLikes],
-    ["Downloads", totalDownloads],
+    ["Clicks", totalDownloads],
+    [
+      "Total External Downloads",
+      typeof externalDownloadSummary.total === "number"
+        ? externalDownloadSummary.total.toLocaleString()
+        : "—",
+      externalDownloadSummary.totalSources > 0 && externalDownloadSummary.availableSources < externalDownloadSummary.totalSources
+        ? `Counts available for ${externalDownloadSummary.availableSources} of ${externalDownloadSummary.totalSources} connected listings`
+        : undefined,
+    ],
     [
       "Location",
       `${getFlagEmoji(location)} ${location || "Unknown"}`
@@ -54,7 +67,7 @@ export default function CreatorStats({
       "
     >
 
-      {stats.map(([label, value]) => (
+      {stats.map(([label, value, note]) => (
 
         <div
           key={String(label)}
@@ -118,6 +131,10 @@ export default function CreatorStats({
             </p>
 
           </div>
+
+          {note && (
+            <p className="relative mt-2 text-[10px] leading-4 text-zinc-600">{note}</p>
+          )}
 
         </div>
 

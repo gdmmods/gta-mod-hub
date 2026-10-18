@@ -1,11 +1,14 @@
 import type { Gta5ModsDetails } from "../connectors/gta5ModsDetails";
 import { getGta5ModsPreviewDescription } from "../connectors/gta5ModsDescriptionPreview";
+import { getGtaInsidePreviewDescription } from "../connectors/gtaInsideDescriptionPreview";
+import type { GtaInsideDetails } from "../connectors/gtaInsideDetails";
 
 const SOURCE_FIELDS = ["title", "description", "category", "creator", "image", "images", "features", "requirements", "notes", "credits", "download_url"] as const;
 export const SOURCE_DESCRIPTION_PLACEHOLDER = "None found in source description";
 export type UpdateField = (typeof SOURCE_FIELDS)[number];
 export type UpdateValues = Partial<Record<UpdateField, string>>;
 export type SourceProject = {
+  platform?: unknown;
   title?: unknown;
   description?: unknown;
   category?: unknown;
@@ -58,7 +61,9 @@ export function getSourceUpdateValues(project: SourceProject): UpdateValues {
 
   if (title) values.title = title;
   const cleanedDescription = description && Object.keys(details).length
-    ? getGta5ModsPreviewDescription(description, details as unknown as Pick<Gta5ModsDetails, "features" | "requirements" | "notes" | "knownBugs" | "credits">)
+    ? project.platform === "gtainside"
+      ? getGtaInsidePreviewDescription(description, details as unknown as GtaInsideDetails)
+      : getGta5ModsPreviewDescription(description, details as unknown as Pick<Gta5ModsDetails, "features" | "requirements" | "notes" | "knownBugs" | "credits">)
     : description;
   if (cleanedDescription) values.description = cleanedDescription;
   if (category) values.category = category;

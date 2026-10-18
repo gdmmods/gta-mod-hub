@@ -11,6 +11,7 @@ export const defaultModForm = {
 
   source_url: "",
   download_url: "",
+  creator_backup_url: "",
 
   features: "",
   requirements: "",

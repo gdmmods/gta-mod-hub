@@ -7,6 +7,11 @@ import RelatedMods from "@/components/mod/RelatedMods";
 import ModMetaGrid from "@/components/mod/ModMetaGrid";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
+import { getExternalDownloadTotal } from "@/lib/server/external-download-counts";
+import { normalizeGtaInsideProjectUrl } from "@/lib/connectors/gtainside";
+import { normalizeGta5ModsProjectUrl } from "@/lib/connectors/sourceProjectUrl";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isAuthorizedModEditor } from "@/lib/server/mod-edit-authorization";
 
 export const dynamic = "force-dynamic";
 
@@ -60,11 +65,64 @@ if (
     );
   }
 
+  let canEdit = false;
+  const authClient = await createSupabaseServerClient();
+  const { data: { user } } = await authClient.auth.getUser();
+  if (user && mod.creator_id) {
+    const { data: linkedCreator } = await authClient
+      .from("creators")
+      .select("id, owner_id")
+      .eq("id", mod.creator_id)
+      .maybeSingle();
+    canEdit = isAuthorizedModEditor({
+      userId: user.id,
+      modCreatorId: mod.creator_id,
+      linkedCreatorId: linkedCreator?.id,
+      creatorOwnerId: linkedCreator?.owner_id,
+    });
+  }
+
   /* ---------------------------------
      FAVORITES
   --------------------------------- */
   const favoritesCount =
     mod.favorites?.[0]?.count || 0;
+
+  const { data: sourceRows, error: sourceError } = await supabase
+    .from("mod_sources")
+    .select("canonical_url, platform_id")
+    .eq("mod_id", id);
+  if (sourceError) console.error("MOD SOURCES LOAD ERROR:", sourceError);
+
+  const sourcePlatformIds = [...new Set((sourceRows ?? []).map((source) => source.platform_id))];
+  const { data: sourcePlatforms, error: platformError } = sourcePlatformIds.length
+    ? await supabase.from("platforms").select("id, slug, name").in("id", sourcePlatformIds)
+    : { data: [], error: null };
+  if (platformError) console.error("MOD SOURCE PLATFORMS LOAD ERROR:", platformError);
+
+  const sourcePlatformById = new Map((sourcePlatforms ?? []).map((platform) => [platform.id, platform]));
+  const sourceLinks = (sourceRows ?? []).flatMap((source) => {
+    const platform = sourcePlatformById.get(source.platform_id);
+    return platform ? [{ canonical_url: source.canonical_url, platform }] : [];
+  });
+  const primarySourcePlatform = mod.origin === "gtainside" || mod.origin === "gta5mods"
+    ? mod.origin
+    : normalizeGtaInsideProjectUrl(mod.source_url) ? "gtainside"
+      : normalizeGta5ModsProjectUrl(mod.source_url) ? "gta5mods" : null;
+  const externalDownloadSources = [
+    primarySourcePlatform
+      ? { platform: primarySourcePlatform, url: mod.source_url }
+      : null,
+    ...sourceLinks.map((source) => ({ platform: source.platform.slug, url: source.canonical_url })),
+  ].filter((source): source is { platform: string; url: string } => !!source?.url);
+  const totalExternalDownloads = await getExternalDownloadTotal(externalDownloadSources);
+  const { data: clickTotalRows } = await supabase
+    .from("mod_click_totals")
+    .select("click_count")
+    .eq("mod_id", id);
+  const clickCount = clickTotalRows?.length
+    ? clickTotalRows.reduce((total, row) => total + row.click_count, 0)
+    : mod.downloads ?? 0;
 
   /* ---------------------------------
      FETCH CREATORS
@@ -332,6 +390,10 @@ if (
               mod={mod}
               creators={creators}
               favoritesCount={favoritesCount}
+              sources={sourceLinks}
+              totalExternalDownloads={totalExternalDownloads}
+              clicks={clickCount}
+              canEdit={canEdit}
             />
 
           </div>

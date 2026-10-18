@@ -6,6 +6,7 @@ import CreatorBio from "./CreatorBio";
 import CreatorHeader from "./CreatorHeader";
 import CreatorSocialLinks from "./CreatorSocialLinks";
 import CreatorStats from "./CreatorStats";
+import type { ExternalDownloadSummary } from "@/lib/server/external-download-counts-core";
 
 interface CreatorHeroProps {
   creator: any;
@@ -17,6 +18,7 @@ interface CreatorHeroProps {
   modsCount: number;
   totalLikes: number;
   totalDownloads: number;
+  externalDownloadSummary: ExternalDownloadSummary;
   isManaged: boolean;
   creatorGames: any[];
 }
@@ -28,6 +30,7 @@ export default function CreatorHero({
   modsCount,
   totalLikes,
   totalDownloads,
+  externalDownloadSummary,
   isManaged,
   creatorGames,
 }: CreatorHeroProps) {
@@ -255,6 +258,7 @@ const supportUrl =
                   modsCount={modsCount}
                   totalLikes={totalLikes}
                   totalDownloads={totalDownloads}
+                  externalDownloadSummary={externalDownloadSummary}
                   location={creator.location}
                 />
 

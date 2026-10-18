@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getGta5ModsPreviewDescription } from "@/lib/connectors/gta5ModsDescriptionPreview";
+import { getGtaInsidePreviewDescription } from "@/lib/connectors/gtaInsideDescriptionPreview";
 import { mergeDiscoveryPreview } from "./mergeDiscoveryPreview";
 import type { DiscoveryPreviewMetadata, DiscoveryResultProject } from "./types";
 
@@ -96,10 +97,9 @@ export default function DiscoveryProjectPreview({
   ];
 
   const fullDescription = metadata?.parsedDetails
-    ? getGta5ModsPreviewDescription(
-        metadata.parsedDetails.description,
-        metadata.parsedDetails
-      )
+    ? project.platform === "gtainside"
+      ? getGtaInsidePreviewDescription(metadata.parsedDetails.description, metadata.parsedDetails)
+      : getGta5ModsPreviewDescription(metadata.parsedDetails.description, metadata.parsedDetails)
     : metadata?.description;
 
   const parsedSections: Array<[string, string | null]> = [

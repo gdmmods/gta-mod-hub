@@ -1,43 +1,9 @@
 import { NextResponse } from "next/server";
 import { extractGta5ModsDetails } from "@/lib/connectors/gta5ModsDetails";
 import { normalizeGta5ModsImageUrl } from "@/lib/connectors/gta5ModsImageUrl";
-
-const ALLOWED_HOSTS = new Set([
-  "gta5-mods.com",
-  "www.gta5-mods.com",
-]);
-
-function isValidProjectUrl(value: unknown): value is string {
-  if (typeof value !== "string") {
-    return false;
-  }
-
-  try {
-    const url = new URL(value);
-
-    if (
-      url.protocol !== "https:" ||
-      !ALLOWED_HOSTS.has(url.hostname.toLowerCase()) ||
-      url.username ||
-      url.password
-    ) {
-      return false;
-    }
-
-    const segments = url.pathname
-      .split("/")
-      .filter(Boolean);
-
-    // GTA5-Mods project URLs use /category/project-slug.
-    return (
-      segments.length === 2 &&
-      segments.every((segment) => segment.length > 0) &&
-      !url.pathname.toLowerCase().startsWith("/users/")
-    );
-  } catch {
-    return false;
-  }
-}
+import { extractGtaInsideAuthor, extractGtaInsideDetails } from "@/lib/connectors/gtaInsideDetails";
+import { normalizeGtaInsideProjectUrl } from "@/lib/connectors/gtainside";
+import { isValidGta5ModsProjectUrl } from "@/lib/connectors/sourceProjectUrl";
 
 function decodeEntities(value: string): string {
   return value
@@ -258,14 +224,12 @@ export async function POST(request: Request) {
 
   const projectUrl = body?.projectUrl;
 
-    if (!isValidProjectUrl(projectUrl)) {
-      return NextResponse.json(
-        { error: "Invalid GTA5-Mods project URL." },
-        { status: 400 }
-      );
+    const gtaInsideUrl = normalizeGtaInsideProjectUrl(projectUrl);
+    if (!gtaInsideUrl && !isValidGta5ModsProjectUrl(projectUrl)) {
+      return NextResponse.json({ error: "Invalid supported source project URL." }, { status: 400 });
     }
 
-    const url = new URL(projectUrl);
+    const url = new URL(gtaInsideUrl ?? (projectUrl as string));
 
     // Canonicalize the URL before fetching it.
     url.search = "";
@@ -313,6 +277,23 @@ export async function POST(request: Request) {
     }
 
     const html = await response.text();
+
+    if (gtaInsideUrl) {
+      const details = extractGtaInsideDetails(html, url.href);
+      const screenshots = [...new Set([details.image, ...details.images].filter((image): image is string => !!image))];
+      return NextResponse.json({
+        metadata: {
+          title: details.title,
+          description: details.description,
+          author: extractGtaInsideAuthor(html),
+          category: details.category,
+          imageUrl: details.image,
+          screenshots,
+          projectUrl: url.href,
+          parsedDetails: details,
+        },
+      });
+    }
 
     const title =
       getMetaContent(html, "og:title") ??

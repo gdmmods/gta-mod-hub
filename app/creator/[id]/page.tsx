@@ -11,6 +11,9 @@ import CreatorActivity from "@/components/creator/profile/CreatorActivity";
 import CreatorFeaturedMod from "@/components/creator/profile/CreatorFeaturedMod";
 import CreatorModsSection from "@/components/creator/profile/CreatorModsSection";
 import CreatorSidebar from "@/components/creator/profile/CreatorSidebar";
+import { getCreatorExternalDownloadSummary, type CreatorExternalDownloadSource } from "@/lib/server/external-download-counts";
+import { normalizeGtaInsideProjectUrl } from "@/lib/connectors/gtainside";
+import { normalizeGta5ModsProjectUrl } from "@/lib/connectors/sourceProjectUrl";
 
 export default async function CreatorPage({
   params,
@@ -296,6 +299,40 @@ export default async function CreatorPage({
       0
     );
 
+  const publishedModsForExternalCounts = modIds.length
+    ? await supabase.from("mods")
+      .select("id, origin, source_url")
+      .in("id", modIds)
+      .eq("status", "published")
+      .in("visibility", ["public", "early_access"])
+    : { data: [], error: null };
+  if (publishedModsForExternalCounts.error) console.error("CREATOR EXTERNAL COUNT MOD LOAD ERROR:", publishedModsForExternalCounts.error);
+  const publishedExternalMods = publishedModsForExternalCounts.data ?? [];
+  const publishedExternalModIds = publishedExternalMods.map((mod) => mod.id);
+  const linkedSourcesQuery = publishedExternalModIds.length
+    ? await supabase.from("mod_sources").select("mod_id, canonical_url, platform_id").in("mod_id", publishedExternalModIds)
+    : { data: [], error: null };
+  if (linkedSourcesQuery.error) console.error("CREATOR EXTERNAL SOURCE LOAD ERROR:", linkedSourcesQuery.error);
+  const linkedPlatformIds = [...new Set((linkedSourcesQuery.data ?? []).map((source) => source.platform_id))];
+  const linkedPlatformsQuery = linkedPlatformIds.length
+    ? await supabase.from("platforms").select("id, slug").in("id", linkedPlatformIds)
+    : { data: [], error: null };
+  if (linkedPlatformsQuery.error) console.error("CREATOR EXTERNAL PLATFORM LOAD ERROR:", linkedPlatformsQuery.error);
+  const externalSourcesByMod: CreatorExternalDownloadSource[] = [];
+  for (const mod of publishedExternalMods) {
+    const primaryPlatform = mod.origin === "gtainside" || mod.origin === "gta5mods"
+      ? mod.origin
+      : normalizeGtaInsideProjectUrl(mod.source_url) ? "gtainside"
+        : normalizeGta5ModsProjectUrl(mod.source_url) ? "gta5mods" : null;
+    if (primaryPlatform && mod.source_url) externalSourcesByMod.push({ modId: mod.id, platform: primaryPlatform, url: mod.source_url });
+  }
+  const platformSlugById = new Map((linkedPlatformsQuery.data ?? []).map((platform) => [platform.id, platform.slug]));
+  for (const source of linkedSourcesQuery.data ?? []) {
+    const platform = platformSlugById.get(source.platform_id);
+    if (platform && source.canonical_url) externalSourcesByMod.push({ modId: source.mod_id, platform, url: source.canonical_url });
+  }
+  const externalDownloadSummary = await getCreatorExternalDownloadSummary(externalSourcesByMod);
+
   /* -----------------------------
      FEATURED MODS
   ----------------------------- */
@@ -346,6 +383,7 @@ export default async function CreatorPage({
         modsCount={mods.length}
         totalLikes={totalLikes}
         totalDownloads={totalDownloads}
+        externalDownloadSummary={externalDownloadSummary}
         isManaged={isManaged}
         creatorGames={creatorGames}
       />

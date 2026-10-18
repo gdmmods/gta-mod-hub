@@ -122,6 +122,27 @@ export default function UploadLinksSection({
 
         </div>
 
+        {/* CREATOR-PROVIDED BACKUP URL */}
+        <div>
+          <label className="block text-sm font-medium mb-2" htmlFor="creator_backup_url">
+            Creator Backup URL
+          </label>
+          <input
+            id="creator_backup_url"
+            name="creator_backup_url"
+            type="url"
+            inputMode="url"
+            maxLength={2048}
+            placeholder="https://drive.google.com/..."
+            value={form.creator_backup_url ?? ""}
+            onChange={handleChange}
+            className="w-full p-4 bg-black border border-zinc-800 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/30 transition"
+          />
+          <p className="mt-2 text-xs text-gray-500">
+            An optional backup link you provide. This is never filled from a scraped source.
+          </p>
+        </div>
+
       </div>
 
     </div>
