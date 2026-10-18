@@ -5,6 +5,7 @@ import {
   SOURCE_DESCRIPTION_PLACEHOLDER,
   validateAcceptedUpdateValues,
 } from "../lib/server/discovery-update-values";
+import { normalizeGta5ModsImageUrl } from "../lib/connectors/gta5ModsImageUrl";
 
 const longDescription = `Opening paragraph.\n${"Full source description. ".repeat(2_000)}`;
 const project = {
@@ -46,7 +47,10 @@ const addSourceValues = getSourceUpdateValues({
   category: "vehicles",
   author: "External artist",
   imageUrl: null,
-  screenshots: ["https://cdn.example.test/gallery-1.jpg", "https://cdn.example.test/gallery-2.jpg"],
+  screenshots: [
+    normalizeGta5ModsImageUrl("https://img.gta5-mods.com/q75-w350-h233-cfill/images/sample/gallery-1.jpg"),
+    normalizeGta5ModsImageUrl("https://img.gta5-mods.com/q75-w500-h333-cfill/images/sample/gallery-2.jpg"),
+  ],
   parsedDetails: {
     features: "Openable doors",
     requirements: "Game build 3095",
@@ -61,14 +65,28 @@ assert.deepEqual(addSourceValues, {
   description: "Description intro.",
   category: "vehicles",
   creator: "External artist",
-  image: "https://cdn.example.test/gallery-1.jpg",
-  images: JSON.stringify(["https://cdn.example.test/gallery-1.jpg", "https://cdn.example.test/gallery-2.jpg"]),
+  image: "https://img.gta5-mods.com/q95/images/sample/gallery-1.jpg",
+  images: JSON.stringify(["https://img.gta5-mods.com/q95/images/sample/gallery-1.jpg", "https://img.gta5-mods.com/q95/images/sample/gallery-2.jpg"]),
   features: "Openable doors",
   requirements: "Game build 3095",
   notes: "Notes:\nBack up files\n\nKnown Bugs:\nMinor texture issue",
   credits: "Artist",
   download_url: "https://www.gta5-mods.com/vehicles/sample/download/12345",
 });
+
+const updateSourceValues = getSourceUpdateValues({
+  title: "Updated vehicle",
+  imageUrl: "https://img.gta5-mods.com/q75/images/sample/cover.jpg",
+  screenshots: [
+    normalizeGta5ModsImageUrl("https://img.gta5-mods.com/q75-w350-h233-cfill/images/sample/gallery-3.jpg"),
+  ],
+});
+assert.equal(updateSourceValues.image, "https://img.gta5-mods.com/q75/images/sample/cover.jpg");
+assert.equal(
+  updateSourceValues.images,
+  JSON.stringify(["https://img.gta5-mods.com/q95/images/sample/gallery-3.jpg"]),
+  "UPDATE mapping keeps normalized full-quality gallery URLs"
+);
 
 assert.deepEqual(validateAcceptedUpdateValues({
   description: longDescription,

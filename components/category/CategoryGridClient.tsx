@@ -95,7 +95,7 @@ export default function CategoryGridClient({
   ]);
 
   return (
-    <div className="max-w-[1600px] mx-auto px-6 py-12">
+    <div className="max-w-[1600px] mx-auto px-6 pt-8 pb-12">
 
       {/* TOP BAR */}
       <div className="mb-8 flex flex-col gap-5">

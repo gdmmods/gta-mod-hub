@@ -27,7 +27,7 @@ export const foundation: RoadmapSection = {
         { title: "Supabase backend & RLS", status: "complete" },
         { title: "Authentication", status: "complete" },
         { title: "User profiles", status: "complete" },
-        { title: "Dashboard architecture", status: "complete" },
+        { title: "Dashboard architecture", status: "progress" },
         { title: "Creator context & switching", status: "complete" },
         { title: "Database architecture", status: "complete" },
       ],
@@ -86,7 +86,7 @@ export const foundation: RoadmapSection = {
         { title: "Public creator profiles", status: "complete" },
         { title: "Default creator context", status: "complete" },
         { title: "Unclaimed creator profiles", status: "progress" },
-        { title: "Verification", status: "planned" },
+        { title: "Verification", status: "progress" },
         { title: "Identity provenance", status: "planned" },
       ],
 
@@ -105,14 +105,14 @@ export const foundation: RoadmapSection = {
 
       state: "development",
 
-      progress: 60,
+      progress: 40,
 
       capabilities: [
         { title: "Attribution foundation", status: "complete" },
         { title: "Rich attribution", status: "progress" },
         { title: "Ownership history", status: "planned" },
         { title: "Evidence framework", status: "planned" },
-        { title: "Creator claims", status: "planned" },
+        { title: "Creator claims", status: "progress" },
         { title: "Dispute resolution", status: "planned" },
       ],
 
@@ -141,65 +141,12 @@ export const foundation: RoadmapSection = {
         { title: "Secure team deletion", status: "complete" },
         { title: "Invitations", status: "progress" },
         { title: "Permissions", status: "planned" },
-        { title: "Recruitment", status: "planned" },
+        { title: "Recruitment", status: "progress" },
       ],
 
       currentFocus:
         "Completing the collaborative creator workflow.",
     },
-
-    {
-      id: 5,
-      phase: "Phase 5",
-
-      title: "Activity Hub",
-
-      summary:
-        "Building a creator-centric activity system that provides awareness without demanding constant attention.",
-
-      state: "development",
-
-      progress: 40,
-
-      capabilities: [
-        { title: "Activity event foundation", status: "complete" },
-        { title: "Creator events", status: "progress" },
-        { title: "Team events", status: "progress" },
-        { title: "Activity Hub", status: "planned" },
-        { title: "Journal", status: "planned" },
-        { title: "Creator timelines", status: "planned" },
-        { title: "Historical continuity", status: "planned" },
-      ],
-
-      currentFocus:
-        "Transforming the activity engine into a complete ecosystem awareness experience.",
-    },
-
-    {
-      id: 6,
-      phase: "Phase 6",
-
-      title: "Discovery & Community",
-
-      summary:
-        "Helping creators and projects become discoverable through meaningful contributions rather than popularity.",
-
-      state: "research",
-
-      progress: 10,
-
-      capabilities: [
-        { title: "Creator discovery", status: "planned" },
-        { title: "Project discovery", status: "planned" },
-        { title: "Advanced search", status: "planned" },
-        { title: "Collections", status: "planned" },
-        { title: "Following creators", status: "planned" },
-        { title: "Following projects", status: "planned" },
-        { title: "Community recommendations", status: "planned" },
-      ],
-
-      currentFocus:
-        "Planning a discovery system centered around creators and meaningful contributions.",
-    },
+    
   ],
 };

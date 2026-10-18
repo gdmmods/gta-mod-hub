@@ -153,7 +153,7 @@ export default function Hero() {
                               >
                                 To build the most trusted,
                                 immersive and future-proof
-                                creator ecosystem in the GTA
+                                creator ecosystem in the Games
                                 modding space.
                               </p>
             

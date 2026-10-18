@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { extractGta5ModsDetails } from "@/lib/connectors/gta5ModsDetails";
+import { normalizeGta5ModsImageUrl } from "@/lib/connectors/gta5ModsImageUrl";
 
 const ALLOWED_HOSTS = new Set([
   "gta5-mods.com",
@@ -174,7 +175,7 @@ function extractScreenshots(html: string, pageUrl: URL): string[] {
         return;
       }
 
-      results.add(imageUrl.href);
+      results.add(normalizeGta5ModsImageUrl(imageUrl.href));
     } catch {
       // Ignore malformed image URLs.
     }
@@ -183,6 +184,15 @@ function extractScreenshots(html: string, pageUrl: URL): string[] {
   // Extract images from the page's actual HTML.
   const imageRegex = /<img\b[^>]*>/gi;
   const projectImages: string[] = [];
+
+  // The gallery anchors expose full-size originals; prefer those over the
+  // responsive thumbnail sources collected below.
+  const galleryAnchorRegex = /<a\b[^>]*class=["'][^"']*\bmfp-image\b[^"']*["'][^>]*>/gi;
+  let galleryAnchor: RegExpExecArray | null;
+  while ((galleryAnchor = galleryAnchorRegex.exec(html)) !== null) {
+    const href = galleryAnchor[0].match(/\bhref=["']([^"']+)["']/i)?.[1];
+    addImage(href);
+  }
 
   let match: RegExpExecArray | null;
 
@@ -209,7 +219,7 @@ function extractScreenshots(html: string, pageUrl: URL): string[] {
         /\.(jpg|jpeg|png|webp)(?:$|[?#])/i.test(imageUrl.href) &&
         imageUrl.pathname.toLowerCase().includes(projectSlug.toLowerCase())
       ) {
-        projectImages.push(imageUrl.href);
+        projectImages.push(normalizeGta5ModsImageUrl(imageUrl.href));
       }
     } catch {
       // Ignore malformed image URLs.

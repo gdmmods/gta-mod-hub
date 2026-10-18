@@ -1,3 +1,5 @@
+import { normalizeGta5ModsImageUrl } from "./gta5ModsImageUrl";
+
 export type Gta5ModsDetails = {
   title: string | null;
   description: string | null;
@@ -197,7 +199,30 @@ function extractDescriptionSection(
   const headingMatch = headingRegex.exec(descriptionHtml);
 
   if (!headingMatch) {
-    return null;
+    // Some source pages render section labels as plain text or block headings
+    // instead of bold tags. Parse only a label that occupies its own line so
+    // ordinary prose containing words like "Features" is never treated as a section.
+    const plainText = cleanText(descriptionHtml.replace(/<(?:p|div|li|h[1-6])\b[^>]*>/gi, "\n"));
+    const plainHeadingRegex = new RegExp(
+      `(^|\\n)[\\t ]*${escapeRegex(heading)}[\\t ]*:?[\\t ]*(?:\\r?\\n|$)`,
+      "i"
+    );
+    const plainHeadingMatch = plainHeadingRegex.exec(plainText);
+    if (!plainHeadingMatch) return null;
+
+    const start = plainHeadingMatch.index + plainHeadingMatch[0].length;
+    const remaining = plainText.slice(start);
+    const nextHeading = /(?:^|\n)[\t ]*(?:Features|Requirements|Notes(?:\s*\/\s*Known Bugs)?|Notes\s*\/\s*Known Bugs|Known Bugs|Credits)[\t ]*:?\s*(?:\r?\n|$)/ig;
+    const nextHeadingMatch = nextHeading.exec(remaining);
+    let end = nextHeadingMatch?.index ?? remaining.length;
+    const sourceEnding = heading.toLowerCase() === "known bugs"
+      ? /(?:^|\n)[\t ]*(?:Install and Enjoy\s*;?\s*\)?|See Ya Soon Peeps\.?|\**\s*INSTALL IN README\s*\**)/i
+      : heading.toLowerCase() === "credits"
+        ? /(?:^|\n)[\t ]*\**\s*INSTALL IN README\s*\**/i
+        : null;
+    const endingMatch = sourceEnding?.exec(remaining);
+    if (endingMatch && endingMatch.index < end) end = endingMatch.index;
+    return remaining.slice(0, end).trim() || null;
   }
 
   const start = headingMatch.index + headingMatch[0].length;
@@ -225,21 +250,33 @@ function extractDescriptionSection(
  * exists, otherwise use the description-body block.
  */
 function extractDescriptionHtml(html: string): string {
-  const preferredPatterns = [
-    /<div\b[^>]*class=["'][^"']*\bfile-description\b[^"']*["'][^>]*>[\s\S]*?<div\b[^>]*class=["'][^"']*\bdescription-body\b[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
-    /<div\b[^>]*class=["'][^"']*\bdescription-body\b[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
-    /<[^>]*class=["'][^"']*\bdescription-body\b[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div)>/i,
-  ];
+  const openingTag = /<([a-z][\w:-]*)\b[^>]*\bclass\s*=\s*(["'])[^"']*\bdescription-body\b[^"']*\2[^>]*>/gi;
+  let match: RegExpExecArray | null;
+  let bestDescription = "";
 
-  for (const pattern of preferredPatterns) {
-    const match = html.match(pattern);
+  while ((match = openingTag.exec(html)) !== null) {
+    const tagName = match[1];
+    const closingTokens = new RegExp(`<\\/?${escapeRegex(tagName)}\\b[^>]*>`, "gi");
+    closingTokens.lastIndex = openingTag.lastIndex;
+    let depth = 1;
+    let token: RegExpExecArray | null;
 
-    if (match?.[1]) {
-      return match[1];
+    while ((token = closingTokens.exec(html)) !== null) {
+      if (/^<\//.test(token[0])) {
+        depth -= 1;
+      } else if (!/\/\s*>$/.test(token[0])) {
+        depth += 1;
+      }
+
+      if (depth === 0) {
+        const candidate = html.slice(openingTag.lastIndex, token.index);
+        if (candidate.length > bestDescription.length) bestDescription = candidate;
+        break;
+      }
     }
   }
 
-  return "";
+  return bestDescription;
 }
 
 /* ----------------------------------------
@@ -399,7 +436,7 @@ export function extractGta5ModsDetails(
         absoluteUrl.protocol === "https:" ||
         absoluteUrl.protocol === "http:"
       ) {
-        gallery.push(absoluteUrl.href);
+        gallery.push(normalizeGta5ModsImageUrl(absoluteUrl.href));
       }
     } catch {
       // Ignore malformed gallery URLs.

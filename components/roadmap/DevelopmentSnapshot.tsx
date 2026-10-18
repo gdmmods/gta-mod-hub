@@ -135,7 +135,7 @@ export default function DevelopmentSnapshot() {
                       <div className="mt-5 space-y-4 text-sm">
             
                         {[
-                          "Activity Hub",
+                          "Advanced Activity Hub",
                           "Creator Activity Infrastructure",
                           "Following & Feeds",
                           "Reputation & Recognition",

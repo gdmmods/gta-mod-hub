@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const categories = [
+export const categories = [
   {
     name: "Vehicles",
     slug: "vehicles",
@@ -51,7 +51,45 @@ const categories = [
   },
 ];
 
-export default function CategoryHub() {
+export default function CategoryHub({
+  variant = "full",
+  activeSlug,
+}: {
+  variant?: "full" | "compact";
+  activeSlug?: string;
+}) {
+  if (variant === "compact") {
+    return (
+      <nav
+        aria-label="Browse categories"
+        className="-mx-6 mt-6 overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <ul className="flex w-max min-w-full gap-2 pb-1">
+          {categories.map((category) => {
+            const isActive = category.slug === activeSlug;
+
+            return (
+              <li key={category.slug}>
+                <Link
+                  href={`/category/${category.slug}`}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "border-purple-500/70 bg-purple-500/15 text-purple-200 shadow-[0_0_18px_rgba(168,85,247,0.12)]"
+                      : "border-zinc-800 bg-zinc-900/70 text-zinc-400 hover:border-zinc-700 hover:text-white"
+                  }`}
+                >
+                  <span aria-hidden="true">{category.icon}</span>
+                  {category.name}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    );
+  }
+
   return (
     <section className="max-w-6xl mx-auto px-6 mt-14">
 

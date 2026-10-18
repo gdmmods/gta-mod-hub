@@ -13,7 +13,7 @@ export default function LaunchMilestone() {
             backgroundImage: "url('/images/launch-bg.png')",
             backgroundRepeat: "no-repeat",
             backgroundPosition: "112% center",
-            backgroundSize: "72%",
+            backgroundSize: "74%",
           }}
         />
 
@@ -81,7 +81,7 @@ export default function LaunchMilestone() {
                   <div className="text-right">
 
                     <div className="text-5xl font-bold text-white">
-                      72%
+                      74%
                     </div>
 
                     <div className="text-zinc-400">
@@ -101,7 +101,7 @@ export default function LaunchMilestone() {
                 <div className="mt-8 grid grid-cols-2 gap-x-10 gap-y-5 text-lg">
 
                   <div>✅ Core Platform</div>
-                  <div>🟡 Activity Hub</div>
+                  <div>🟡 Basic Activity Hub</div>
 
                   <div>✅ Creator identities</div>
                   <div>🟡 Attribution & ownership</div>

@@ -115,18 +115,7 @@ export default async function Home(props: {
   /* -----------------------------
      FEATURED
   ----------------------------- */
-  const featured = mods[0];
-
-  const featuredCreators =
-    featured?.mod_creators?.length
-      ? featured.mod_creators
-          .map(
-            (mc: any) =>
-              mc.creators?.name
-          )
-          .filter(Boolean)
-          .join(" • ")
-      : "Unknown";
+  const featured = mods.slice(0, 2);
 
   return (
     <main
@@ -149,7 +138,6 @@ export default async function Home(props: {
       {/* FEATURED */}
       <FeaturedMods
         featured={featured}
-        featuredCreators={featuredCreators}
       />
 
       {/* SORT */}

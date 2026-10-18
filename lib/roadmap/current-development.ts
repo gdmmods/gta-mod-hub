@@ -12,7 +12,7 @@ export const currentDevelopment = {
     currentFocus:
         "Building creator identity and ownership.",
 
-    progress: 72,
+    progress: 74,
 
     recentProgress: [
 
@@ -27,12 +27,12 @@ export const currentDevelopment = {
     ],
 
     upNext: [
-        
-        "Historical ownership",
-
+                
         "Team Management",
 
         "Team permissions",
+
+        "Basic Activity Hub",
 
     ],
 

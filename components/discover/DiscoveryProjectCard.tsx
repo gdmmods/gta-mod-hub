@@ -3,13 +3,14 @@
 import { useState } from "react";
 import DiscoveryProjectPreview from "./DiscoveryProjectPreview";
 import DiscoveryUpdateComparison, { type Comparison } from "./DiscoveryUpdateComparison";
-import type { DiscoveryPreviewMetadata, DiscoveryResultProject } from "./types";
+import type { DiscoveryResultProject } from "./types";
 
 interface DiscoveryProjectCardProps {
   project: DiscoveryResultProject;
   action: string | undefined;
   comparison: Comparison | null;
   onAction: (project: DiscoveryResultProject, action: string) => void;
+  actionsDisabled?: boolean;
 }
 
 export default function DiscoveryProjectCard({
@@ -17,14 +18,15 @@ export default function DiscoveryProjectCard({
   action,
   comparison,
   onAction,
+  actionsDisabled = false,
 }: DiscoveryProjectCardProps) {
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewMetadata, setPreviewMetadata] = useState<DiscoveryPreviewMetadata | null>(null);
+  const [previewMetadata, setPreviewMetadata] = useState<DiscoveryResultProject | null>(null);
   const [compareRequested, setCompareRequested] = useState(false);
   const isExisting = project.matchStatus === "existing";
 
   function withPreviewMetadata() {
-    return { ...project, ...previewMetadata, title: previewMetadata?.title ?? project.title };
+    return previewMetadata ?? project;
   }
 
   function beginComparison() {
@@ -58,7 +60,7 @@ export default function DiscoveryProjectCard({
               <button
                 type="button"
                 onClick={beginComparison}
-                disabled={action === "comparing" || action === "applying" || action === "update"}
+                disabled={actionsDisabled || action === "comparing" || action === "applying" || action === "update"}
                 className={`rounded-lg px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60 ${
                   action === "update" ? "bg-emerald-600" : "bg-purple-600 hover:bg-purple-500"
                 }`}
@@ -68,6 +70,7 @@ export default function DiscoveryProjectCard({
             ) : (
               <button
                 type="button"
+                disabled={actionsDisabled || action === "adding"}
                 onClick={() => {
                   if (!previewMetadata) {
                     setPreviewOpen(true);
@@ -83,6 +86,7 @@ export default function DiscoveryProjectCard({
 
             <button
               type="button"
+              disabled={actionsDisabled}
               onClick={() => setPreviewOpen((current) => !current)}
               className={`rounded-lg border px-3 py-2 text-sm ${previewOpen ? "border-purple-500 bg-purple-900/30 text-purple-300" : "border-zinc-700 hover:bg-zinc-800"}`}
             >
@@ -91,6 +95,7 @@ export default function DiscoveryProjectCard({
 
             <button
               type="button"
+              disabled={actionsDisabled}
               onClick={() => onAction(project, "ignore")}
               className={`rounded-lg border px-3 py-2 text-sm ${action === "ignore" ? "border-red-500 bg-red-900/30 text-red-400" : "border-zinc-700 hover:bg-zinc-800"}`}
             >
@@ -112,7 +117,7 @@ export default function DiscoveryProjectCard({
             setPreviewMetadata(metadata);
             if (compareRequested) {
               setCompareRequested(false);
-              onAction({ ...project, ...metadata, title: metadata.title ?? project.title }, "compare");
+              onAction(metadata, "compare");
             }
           }}
         />

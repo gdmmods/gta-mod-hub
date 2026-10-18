@@ -46,11 +46,11 @@ export const creatorEcosystem: RoadmapSection = {
 
       state: "design",
 
-      progress: 15,
+      progress: 20,
 
       capabilities: [
         { title: "Preservation states", status: "progress" },
-        { title: "Archived records", status: "planned" },
+        { title: "Archived records", status: "progress" },
         { title: "Historical snapshots", status: "planned" },
         { title: "Removal history", status: "planned" },
         { title: "Legal takedowns", status: "planned" },
@@ -70,14 +70,14 @@ export const creatorEcosystem: RoadmapSection = {
       summary:
         "Building trust through attribution and verification.",
 
-      state: "design",
+      state: "development",
 
-      progress: 10,
+      progress: 20,
 
       capabilities: [
-        { title: "Verification", status: "planned" },
+        { title: "Verification", status: "progress" },
         { title: "Evidence records", status: "planned" },
-        { title: "Creator claims", status: "planned" },
+        { title: "Creator claims", status: "progress" },
         { title: "Attribution claims", status: "planned" },
         { title: "Dispute resolution", status: "planned" },
         { title: "Appeals", status: "planned" },
@@ -96,14 +96,14 @@ export const creatorEcosystem: RoadmapSection = {
       summary:
         "Helping creators and projects get discovered.",
 
-      state: "research",
+      state: "development",
 
-      progress: 10,
+      progress: 35,
 
       capabilities: [
         { title: "Creator discovery", status: "progress" },
         { title: "Mod discovery", status: "progress" },
-        { title: "Advanced search", status: "planned" },
+        { title: "Advanced search", status: "progress" },
         { title: "Collections", status: "planned" },
         { title: "Following", status: "planned" },
         { title: "Community recommendations", status: "planned" },
@@ -215,6 +215,60 @@ export const creatorEcosystem: RoadmapSection = {
 
       currentFocus:
         "Building a creator-friendly funding model.",
+    },
+
+    {
+      id: 16,
+      phase: "Phase 16",
+
+      title: "Interactive Activity Hub",
+
+      summary:
+        "Building a creator-centric activity system that provides awareness without demanding constant attention.",
+
+      state: "development",
+
+      progress: 40,
+
+      capabilities: [
+        { title: "Activity event foundation", status: "complete" },
+        { title: "Creator events", status: "progress" },
+        { title: "Team events", status: "progress" },
+        { title: "Advanced Activity Hub", status: "planned" },
+        { title: "Journal", status: "planned" },
+        { title: "Creator timelines", status: "planned" },
+        { title: "Historical continuity", status: "planned" },
+      ],
+
+      currentFocus:
+        "Transforming the activity engine into a complete ecosystem awareness experience.",
+    },
+
+    {
+      id: 17,
+      phase: "Phase 17",
+
+      title: "Discovery & Community",
+
+      summary:
+        "Helping creators and projects become discoverable through meaningful contributions rather than popularity.",
+
+      state: "research",
+
+      progress: 10,
+
+      capabilities: [
+        { title: "Creator discovery", status: "planned" },
+        { title: "Project discovery", status: "planned" },
+        { title: "Advanced search", status: "planned" },
+        { title: "Collections", status: "planned" },
+        { title: "Following creators", status: "planned" },
+        { title: "Following projects", status: "planned" },
+        { title: "Community recommendations", status: "planned" },
+      ],
+
+      currentFocus:
+        "Planning a discovery system centered around creators and meaningful contributions.",
     },
   ],
 };

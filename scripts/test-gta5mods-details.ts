@@ -7,6 +7,8 @@ import {
   extractGta5ModsDetails,
 } from "../lib/connectors/gta5ModsDetails";
 import { getGta5ModsPreviewDescription } from "../lib/connectors/gta5ModsDescriptionPreview";
+import { mergeDiscoveryPreview } from "../components/discover/mergeDiscoveryPreview";
+import { normalizeGta5ModsImageUrl } from "../lib/connectors/gta5ModsImageUrl";
 
 const projectUrl =
   "https://www.gta5-mods.com/vehicles/pontiac-gto-convertible-1966-animated-roof-add-on-fivem-template";
@@ -116,6 +118,27 @@ assert.equal(
   "Do not remove a section when the extracted value does not match its full contents"
 );
 
+const blockHeadingHtml = `<section class="description-body"><div><p>Intro that stays.</p><h3>Features</h3><p>Openable doors</p><p>Working lights</p><h3>Requirements</h3><p>Game build 3095</p><h3>Notes / Known Bugs</h3><p>Minor texture issue</p><h3>Credits</h3><p>Artist name</p><p><strong>INSTALL IN README</strong></p><p>Unrelated ending text stays.</p></div></section>`;
+const blockHeading = extractGta5ModsDetails(blockHeadingHtml, projectUrl);
+assert.equal(blockHeading.features, "Openable doors\n\nWorking lights");
+assert.equal(blockHeading.requirements, "Game build 3095");
+assert.equal(blockHeading.notes, "Minor texture issue");
+assert.equal(blockHeading.credits, "Artist name");
+assert.equal(
+  getGta5ModsPreviewDescription(blockHeading.description, blockHeading),
+  "Intro that stays.\n\nINSTALL IN README\nUnrelated ending text stays."
+);
+
+const mergedPreview = mergeDiscoveryPreview({
+  platform: "gta5mods", externalId: "sample", title: "Discovery title", projectUrl,
+}, {
+  title: "Source title", description: "Short meta description", author: "Artist",
+  category: "vehicles", imageUrl: null, screenshots: [], projectUrl, parsedDetails: blockHeading,
+});
+assert.equal(mergedPreview.title, "Source title");
+assert.equal(mergedPreview.description, blockHeading.description);
+assert.equal(mergedPreview.parsedDetails, blockHeading);
+
 assert.equal(details.fileSize, "50.4 MB");
 assert.equal(details.downloads, 7582);
 assert.equal(details.lastUpdated, "June 06, 2023");
@@ -126,5 +149,19 @@ assert.ok(
   !details.images.includes(details.image),
   "Gallery must not duplicate the cover image"
 );
+assert.equal(
+  normalizeGta5ModsImageUrl("https://img.gta5-mods.com/q75-w350-h233-cfill/images/audi-abt-xgt-2024-v1-0-sp/8d9df8-Screenshot_3.jpg"),
+  "https://img.gta5-mods.com/q95/images/audi-abt-xgt-2024-v1-0-sp/8d9df8-Screenshot_3.jpg"
+);
+assert.equal(
+  normalizeGta5ModsImageUrl("https://img.gta5-mods.com/q80-w800/images/example/shot.webp"),
+  "https://img.gta5-mods.com/q95/images/example/shot.webp"
+);
+const fullQualityImage = "https://img.gta5-mods.com/q95/images/example/shot.jpg";
+assert.equal(normalizeGta5ModsImageUrl(fullQualityImage), fullQualityImage);
+const externalImage = "https://cdn.example.test/q75-w350-h233-cfill/images/example/shot.jpg";
+assert.equal(normalizeGta5ModsImageUrl(externalImage), externalImage);
+assert.equal(details.image, "https://img.gta5-mods.com/q75/images/pontiac-gto-convertible-1966-animated-roof-add-on-fivem-template/aa9bc8-Screenshot_61.jpg", "Primary image behavior remains unchanged");
+assert.ok(details.images.includes("https://img.gta5-mods.com/q95/images/pontiac-gto-convertible-1966-animated-roof-add-on-fivem-template/aa9bc8-Screenshot_62.jpg"), "Gallery uses the full-resolution link from source markup");
 
 console.log("GTA5-Mods parser fixture checks passed.");

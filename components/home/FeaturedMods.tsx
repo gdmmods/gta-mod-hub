@@ -3,16 +3,25 @@ import PageContainer from "@/components/layout/PageContainer";
 import Section from "@/components/layout/Section";
 import SectionTitle from "@/components/ui/SectionTitle";
 
+type FeaturedMod = {
+  id: string;
+  title: string;
+  image: string;
+  likes: number;
+  downloads: number;
+  mod_creators?: Array<{
+    creators?: { name?: string | null } | null;
+  }>;
+};
+
 type FeaturedModsProps = {
-  featured: any;
-  featuredCreators: string;
+  featured: FeaturedMod[];
 };
 
 export default function FeaturedMods({
   featured,
-  featuredCreators,
 }: FeaturedModsProps) {
-  if (!featured) return null;
+  if (featured.length === 0) return null;
 
   return (
     <Section className="pt-4">
@@ -21,146 +30,53 @@ export default function FeaturedMods({
 
         <SectionTitle
           eyebrow="FEATURED"
-          title="Trending Right Now"
+          title="Featured Creations"
           description="
             Discover standout creations from the ModVault ecosystem.
           "
         />
 
-        <div className="mt-10">
+        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+          {featured.map((mod) => {
+            const creators = mod.mod_creators
+              ?.map((relation) => relation.creators?.name)
+              .filter(Boolean)
+              .join(" • ");
 
-          <Link
-            href={`/mods/${featured.id}`}
-            className="group block"
-          >
-
-            <div
-              className="
-                relative
-                overflow-hidden
-                rounded-[32px]
-                border
-                border-zinc-800
-              "
-            >
-
-              {/* IMAGE */}
-              <img
-                src={featured.image}
-                alt={featured.title}
-                className="
-                  h-[420px]
-                  w-full
-                  object-cover
-                  transition
-                  duration-700
-                  group-hover:scale-[1.03]
-                "
-              />
-
-              {/* OVERLAY */}
-              <div
-                className="
-                  absolute
-                  inset-0
-                  bg-gradient-to-t
-                  from-black
-                  via-black/30
-                  to-transparent
-                "
-              />
-
-              {/* GLOW */}
-              <div
-                className="
-                  absolute
-                  right-0
-                  top-0
-                  h-[240px]
-                  w-[240px]
-                  bg-purple-500/20
-                  blur-[120px]
-                "
-              />
-
-              {/* CONTENT */}
-              <div
-                className="
-                  absolute
-                  bottom-0
-                  left-0
-                  z-10
-                  p-8
-                "
+            return (
+              <Link
+                key={mod.id}
+                href={`/mods/${mod.id}`}
+                className="group block"
               >
-
-                <p
-                  className="
-                    text-sm
-                    uppercase
-                    tracking-[0.18em]
-                    text-purple-400
-                  "
-                >
-                  Featured Mod
-                </p>
-
-                <h2
-                  className="
-                    mt-3
-                    text-4xl
-                    font-black
-                    tracking-tight
-                  "
-                >
-                  {featured.title}
-                </h2>
-
-                <p
-                  className="
-                    mt-3
-                    text-zinc-300
-                  "
-                >
-                  by {featuredCreators}
-                </p>
-
-                {featured.description && (
-                  <p
-                    className="
-                      mt-5
-                      max-w-2xl
-                      text-zinc-400
-                      leading-relaxed
-                    "
-                  >
-                    {featured.description}
-                  </p>
-                )}
-
-                {/* STATS */}
-                <div className="mt-6 flex gap-6 text-sm">
-
-                  <div className="text-zinc-300">
-                    ❤ {featured.likes}
+                <article className="relative h-[340px] overflow-hidden rounded-[34px] border border-zinc-800">
+                  <img
+                    src={mod.image || "/placeholder.jpg"}
+                    alt={mod.title}
+                    className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10" />
+                  <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8">
+                    <p className="mb-3 text-sm uppercase tracking-[0.2em] text-purple-300">
+                      Featured Creation
+                    </p>
+                    <h2 className="line-clamp-2 text-2xl font-black leading-tight sm:text-3xl">
+                      {mod.title}
+                    </h2>
+                    {creators && (
+                      <p className="mt-2 line-clamp-1 text-sm text-zinc-300">
+                        by {creators}
+                      </p>
+                    )}
+                    <div className="mt-4 flex items-center gap-5 text-sm text-zinc-300">
+                      <span>❤️ {mod.likes ?? 0}</span>
+                      <span>⬇ {mod.downloads ?? 0}</span>
+                    </div>
                   </div>
-
-                  <div className="text-zinc-300">
-                    ↓ {featured.downloads}
-                  </div>
-
-                  <div className="text-zinc-300">
-                    ★ {featured.favorites}
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </Link>
-
+                </article>
+              </Link>
+            );
+          })}
         </div>
 
       </PageContainer>

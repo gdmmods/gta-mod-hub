@@ -1,5 +1,9 @@
 import { supabase } from "@/lib/supabase/client";
 
+import Navbar from "@/components/layout/Navbar";
+
+import CategoryHub from "@/components/CategoryHub";
+
 import CategoryGridClient from "@/components/category/CategoryGridClient";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +24,7 @@ export default async function CategoryPage({
       .from("mods")
       .select("*")
       .eq("category", slug)
+      .eq("status", "published")
       .order("likes", {
         ascending: false,
       });
@@ -35,6 +40,9 @@ export default async function CategoryPage({
   return (
     <main className="min-h-screen bg-black text-white">
 
+      {/* NAVBAR */}
+            <Navbar />
+
       {/* HERO */}
       <div
         className="
@@ -46,7 +54,7 @@ export default async function CategoryPage({
         "
       >
 
-        <div className="max-w-[1600px] mx-auto px-6 py-16">
+        <div className="max-w-[1600px] mx-auto px-6 pt-16 pb-10">
 
           <p className="text-purple-400 text-sm tracking-[0.25em] uppercase">
             Category
@@ -101,7 +109,11 @@ export default async function CategoryPage({
               </p>
             </div>
 
+
           </div>
+
+          {/* CATEGORY HUB */}
+          <CategoryHub variant="compact" activeSlug={slug} />
 
         </div>
 

@@ -3,6 +3,7 @@
 import {
   useEffect,
   useState,
+  useRef,
 } from "react";
 
 import { supabase } from "@/lib/supabase/client";
@@ -10,8 +11,10 @@ import { supabase } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 
 import DiscoverPlatforms from "@/components/discover/DiscoverPlatforms";
-import DiscoveryResults from "@/components/discover/DiscoveryResults";
+import DiscoveryResults, { type BulkActionStatus, type BulkUpdateCandidate } from "@/components/discover/DiscoveryResults";
 import type { Comparison } from "@/components/discover/DiscoveryUpdateComparison";
+import type { DiscoveryResultProject } from "@/components/discover/types";
+import { mergeDiscoveryPreview } from "@/components/discover/mergeDiscoveryPreview";
 
 type Identity = {
   id: string;
@@ -60,6 +63,11 @@ export default function DiscoverModsPage() {
 
   const [comparisons, setComparisons] =
     useState<Record<string, Comparison>>({});
+
+  const [bulkStatus, setBulkStatus] = useState<BulkActionStatus | null>(null);
+  const [bulkCandidates, setBulkCandidates] = useState<BulkUpdateCandidate[]>([]);
+  const [selectedBulkFields, setSelectedBulkFields] = useState<string[]>([]);
+  const bulkRunning = useRef(false);
 
   const hasVerifiedIdentity =
     identities.some(
@@ -456,6 +464,183 @@ if (!response.ok) {
   }
 }
 
+  const getProjectKey = (project: DiscoveryResultProject) => `${project.platform}-${project.externalId}`;
+
+  async function getBulkToken() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) throw new Error("Your session has expired. Please sign in again.");
+    return session.access_token;
+  }
+
+  async function loadBulkSource(project: DiscoveryResultProject): Promise<DiscoveryResultProject> {
+    const response = await fetch("/api/discover-platform/preview", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projectUrl: project.projectUrl }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Could not load source metadata.");
+    return mergeDiscoveryPreview(project, result.metadata);
+  }
+
+  async function handleBulkAdd() {
+    if (bulkRunning.current || !currentCreatorId) return;
+    bulkRunning.current = true;
+    const eligible = projects.filter((project) => project.matchStatus !== "existing" &&
+      !["ignore", "add", "adding", "comparing", "applying"].includes(projectActions[getProjectKey(project)]));
+    const failures: string[] = [];
+    const skipped = projects.length - eligible.length;
+    let success = 0;
+    let failed = 0;
+    setBulkCandidates([]);
+    setBulkStatus({ action: "add", phase: "working", current: 0, total: eligible.length, success, skipped, failed, failures });
+    try {
+      const token = await getBulkToken();
+      for (let index = 0; index < eligible.length; index += 1) {
+        const project = eligible[index];
+        const key = getProjectKey(project);
+        setProjectActions((current) => ({ ...current, [key]: "adding" }));
+        setBulkStatus((current) => current ? { ...current, current: index + 1 } : current);
+        try {
+          const sourceProject = await loadBulkSource(project);
+          const response = await fetch("/api/import-mod", { method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ creatorId: currentCreatorId, project: sourceProject }) });
+          const result = await response.json();
+          if (!response.ok) {
+            if (result.partial && result.mod) {
+              setProjects((current) => current.map((item) => getProjectKey(item) === key
+                ? { ...item, matchStatus: "existing", existingMod: result.mod } : item));
+            }
+            throw new Error(result.error || `Import failed (${response.status}).`);
+          }
+          success += 1;
+          setProjectActions((current) => ({ ...current, [key]: "add" }));
+          setProjects((current) => current.map((item) => getProjectKey(item) === key
+            ? { ...item, matchStatus: "existing", existingMod: result.mod } : item));
+        } catch (error) {
+          failed += 1;
+          failures.push(`${project.title}: ${error instanceof Error ? error.message : "Import failed."}`);
+          setProjectActions((current) => { const next = { ...current }; delete next[key]; return next; });
+        }
+        setBulkStatus((current) => current ? { ...current, success, failed, failures: [...failures] } : current);
+      }
+    } catch (error) {
+      failed += eligible.length || 1;
+      failures.push(error instanceof Error ? error.message : "Bulk import could not start.");
+    } finally {
+      setBulkStatus((current) => current ? { ...current, phase: "done", success, failed, failures: [...failures] } : current);
+      bulkRunning.current = false;
+    }
+  }
+
+  async function handleBulkUpdate() {
+    if (bulkRunning.current) return;
+    bulkRunning.current = true;
+    const eligible = projects.filter((project) => project.matchStatus === "existing" &&
+      !["ignore", "update", "comparing", "applying"].includes(projectActions[getProjectKey(project)]));
+    const failures: string[] = [];
+    const skipped = projects.filter((project) => project.matchStatus === "existing").length - eligible.length;
+    const candidates: BulkUpdateCandidate[] = [];
+    let failed = 0;
+    setBulkCandidates([]);
+    setSelectedBulkFields([]);
+    setBulkStatus({ action: "update", stage: "compare", phase: "working", current: 0, total: eligible.length, success: 0, skipped, failed, failures });
+    try {
+      const token = await getBulkToken();
+      for (let index = 0; index < eligible.length; index += 1) {
+        const project = eligible[index];
+        const key = getProjectKey(project);
+        setProjectActions((current) => ({ ...current, [key]: "comparing" }));
+        setBulkStatus((current) => current ? { ...current, current: index + 1 } : current);
+        try {
+          const sourceProject = await loadBulkSource(project);
+          const response = await fetch("/api/update-mod/compare", { method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ modId: project.existingMod?.id, project: sourceProject }) });
+          const comparison = await response.json();
+          if (!response.ok) throw new Error(comparison.error || "Could not compare this mod.");
+          candidates.push({ project: sourceProject, comparison });
+          setComparisons((current) => ({ ...current, [key]: comparison }));
+          setProjectActions((current) => { const next = { ...current }; delete next[key]; return next; });
+        } catch (error) {
+          failed += 1;
+          failures.push(`${project.title}: ${error instanceof Error ? error.message : "Comparison failed."}`);
+          setProjectActions((current) => { const next = { ...current }; delete next[key]; return next; });
+        }
+        setBulkStatus((current) => current ? { ...current, failed, failures: [...failures] } : current);
+      }
+      setBulkCandidates(candidates);
+      const hasChanges = candidates.some(({ comparison }) =>
+        Object.entries(comparison.proposed).some(([field, value]) =>
+          comparison.current[field as keyof Comparison["current"]] !== value));
+      if (candidates.length && !hasChanges) {
+        setBulkCandidates([]);
+        setBulkStatus((current) => current ? {
+          ...current, phase: "done", skipped: current.skipped + candidates.length, failed, failures: [...failures],
+        } : current);
+      } else {
+        setBulkStatus((current) => current ? { ...current, phase: candidates.length ? "review" : "done", failed, failures: [...failures] } : current);
+      }
+    } catch (error) {
+      failed += eligible.length || 1;
+      failures.push(error instanceof Error ? error.message : "Bulk comparison could not start.");
+      setBulkStatus((current) => current ? { ...current, phase: "done", failed, failures: [...failures] } : current);
+    } finally {
+      bulkRunning.current = false;
+    }
+  }
+
+  async function confirmBulkUpdate() {
+    if (bulkRunning.current || selectedBulkFields.length === 0) return;
+    bulkRunning.current = true;
+    const failures = [...(bulkStatus?.failures ?? [])];
+    let success = 0;
+    let failed = bulkStatus?.failed ?? 0;
+    let skipped = bulkStatus?.skipped ?? 0;
+    const work = bulkCandidates.map(({ project, comparison }) => ({ project,
+      acceptedFields: Object.fromEntries(selectedBulkFields.filter((field) => {
+        const key = field as keyof Comparison["proposed"];
+        return comparison.proposed[key] !== undefined && comparison.proposed[key] !== comparison.current[key];
+      }).map((field) => [field, comparison.proposed[field as keyof Comparison["proposed"]]])) }));
+    const eligible = work.filter(({ acceptedFields }) => Object.keys(acceptedFields).length > 0);
+    skipped += work.length - eligible.length;
+    setBulkStatus({ action: "update", stage: "apply", phase: "working", current: 0, total: eligible.length, success, skipped, failed, failures });
+    try {
+      const token = await getBulkToken();
+      for (let index = 0; index < eligible.length; index += 1) {
+        const { project, acceptedFields } = eligible[index];
+        const key = getProjectKey(project);
+        setProjectActions((current) => ({ ...current, [key]: "applying" }));
+        setBulkStatus((current) => current ? { ...current, current: index + 1 } : current);
+        try {
+          const response = await fetch("/api/update-mod", { method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ modId: project.existingMod?.id, project, acceptedFields }) });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Could not update this mod.");
+          success += 1;
+          setProjectActions((current) => ({ ...current, [key]: "update" }));
+          setComparisons((current) => { const next = { ...current }; delete next[key]; return next; });
+          setProjects((current) => current.map((item) => getProjectKey(item) === key
+            ? { ...item, existingMod: { ...item.existingMod, ...result.mod } } : item));
+        } catch (error) {
+          failed += 1;
+          failures.push(`${project.title}: ${error instanceof Error ? error.message : "Update failed."}`);
+          setProjectActions((current) => { const next = { ...current }; delete next[key]; return next; });
+        }
+        setBulkStatus((current) => current ? { ...current, success, failed, skipped, failures: [...failures] } : current);
+      }
+    } catch (error) {
+      failed += eligible.length || 1;
+      failures.push(error instanceof Error ? error.message : "Bulk update could not start.");
+    } finally {
+      setBulkCandidates([]);
+      setSelectedBulkFields([]);
+      setBulkStatus((current) => current ? { ...current, phase: "done", success, failed, skipped, failures: [...failures] } : current);
+      bulkRunning.current = false;
+    }
+  }
+
   async function handleDiscovery() {
 
     if (identities.length === 0) {
@@ -720,6 +905,21 @@ if (!response.ok) {
             projectActions={projectActions}
             onProjectAction={handleProjectAction}
             comparisons={comparisons}
+            onBulkAdd={handleBulkAdd}
+            canAdd={Boolean(currentCreatorId)}
+            onBulkUpdate={handleBulkUpdate}
+            bulkStatus={bulkStatus}
+            bulkCandidates={bulkCandidates}
+            selectedBulkFields={selectedBulkFields}
+            onToggleBulkField={(field) => setSelectedBulkFields((current) => current.includes(field)
+              ? current.filter((item) => item !== field) : [...current, field])}
+            onConfirmBulkUpdate={confirmBulkUpdate}
+            onCancelBulkUpdate={() => {
+              setBulkCandidates([]);
+              setBulkStatus((current) => current ? {
+                ...current, phase: "done", skipped: current.skipped + bulkCandidates.length,
+              } : current);
+            }}
           />
 
         </div>

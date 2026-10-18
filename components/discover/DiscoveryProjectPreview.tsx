@@ -1,29 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Gta5ModsDetails } from "@/lib/connectors/gta5ModsDetails";
 import { getGta5ModsPreviewDescription } from "@/lib/connectors/gta5ModsDescriptionPreview";
-import type { DiscoveryResultProject } from "./types";
-
-interface DiscoveryMetadata {
-  title: string | null;
-  description: string | null;
-  author: string | null;
-  category: string | null;
-  imageUrl: string | null;
-  screenshots: string[];
-  projectUrl: string;
-  parsedDetails: Gta5ModsDetails | null;
-}
-
-interface PreviewMetadata extends DiscoveryMetadata {
-  parsedDetails: Gta5ModsDetails | null;
-}
+import { mergeDiscoveryPreview } from "./mergeDiscoveryPreview";
+import type { DiscoveryPreviewMetadata, DiscoveryResultProject } from "./types";
 
 interface DiscoveryProjectPreviewProps {
   project: DiscoveryResultProject;
   onClose: () => void;
-  onMetadataLoaded: (metadata: DiscoveryMetadata) => void;
+  onMetadataLoaded: (project: DiscoveryResultProject) => void;
 }
 
 export default function DiscoveryProjectPreview({
@@ -32,7 +17,7 @@ export default function DiscoveryProjectPreview({
   onMetadataLoaded,
 }: DiscoveryProjectPreviewProps) {
   const [metadata, setMetadata] =
-    useState<PreviewMetadata | null>(null);
+    useState<DiscoveryPreviewMetadata | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,18 +53,9 @@ export default function DiscoveryProjectPreview({
           );
         }
 
-        const loadedMetadata = result.metadata as PreviewMetadata;
+        const loadedMetadata = result.metadata as DiscoveryPreviewMetadata;
         setMetadata(loadedMetadata);
-        onMetadataLoaded({
-          title: loadedMetadata.title,
-          description: loadedMetadata.parsedDetails?.description ?? loadedMetadata.description,
-          author: loadedMetadata.author,
-          category: loadedMetadata.category,
-          imageUrl: loadedMetadata.imageUrl,
-          screenshots: loadedMetadata.screenshots,
-          projectUrl: loadedMetadata.projectUrl,
-          parsedDetails: loadedMetadata.parsedDetails,
-        });
+        onMetadataLoaded(mergeDiscoveryPreview(project, loadedMetadata));
       } catch (err) {
         if (
           err instanceof Error &&
