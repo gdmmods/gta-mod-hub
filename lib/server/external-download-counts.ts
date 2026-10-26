@@ -18,6 +18,11 @@ export type ExternalDownloadSource = {
 
 export type CreatorExternalDownloadSource = ExternalDownloadSource & { modId: string };
 
+export type ExternalDownloadDataByMod = {
+  totalsByMod: Map<string, number | null>;
+  summary: ExternalDownloadSummary;
+};
+
 async function fetchSourceDownloadCount(source: ExternalDownloadSource): Promise<ExternalDownloadCount> {
   const normalizedUrl = source.platform === "gtainside"
     ? normalizeGtaInsideProjectUrl(source.url)
@@ -60,6 +65,54 @@ export async function getExternalDownloadTotal(sources: ExternalDownloadSource[]
   if (!unique.size) return null;
   const counts = await Promise.all([...unique.values()].map(fetchSourceDownloadCount));
   return aggregateExternalDownloadCounts(counts);
+}
+
+export async function getExternalDownloadTotalsByMod(
+  sources: CreatorExternalDownloadSource[]
+): Promise<Map<string, number | null>> {
+  return (await getExternalDownloadDataByMod(sources)).totalsByMod;
+}
+
+/** Fetch each distinct external listing once and derive both per-mod totals and a deduplicated creator/team summary. */
+export async function getExternalDownloadDataByMod(
+  sources: CreatorExternalDownloadSource[]
+): Promise<ExternalDownloadDataByMod> {
+  const normalizedSources = sources.flatMap((source) => {
+    const url = source.platform === "gtainside"
+      ? normalizeGtaInsideProjectUrl(source.url)
+      : source.platform === "gta5mods" ? normalizeGta5ModsProjectUrl(source.url) : null;
+    return url ? [{ modId: source.modId, platform: source.platform, url }] : [];
+  });
+
+  const unique = new Map<string, ExternalDownloadSource>();
+  for (const source of normalizedSources) {
+    unique.set(`${source.platform}:${source.url}`, { platform: source.platform, url: source.url });
+  }
+
+  const fetched = new Map<string, ExternalDownloadCount>();
+  await Promise.all([...unique.entries()].map(async ([key, source]) => {
+    fetched.set(key, await fetchSourceDownloadCount(source));
+  }));
+
+  const byMod = new Map<string, ExternalDownloadCount[]>();
+  for (const source of normalizedSources) {
+    const key = `${source.platform}:${source.url}`;
+    const count = fetched.get(key);
+    if (!count) continue;
+    let modCounts = byMod.get(source.modId);
+    if (!modCounts) {
+      modCounts = [];
+      byMod.set(source.modId, modCounts);
+    }
+    modCounts.push(count);
+  }
+
+  const totalsByMod = new Map([...byMod].map(([modId, counts]) => [modId, aggregateExternalDownloadCounts(counts)]));
+  const summary = aggregateCreatorExternalDownloadCounts(normalizedSources.map((source) => ({
+    ...fetched.get(`${source.platform}:${source.url}`)!,
+    modId: source.modId,
+  })));
+  return { totalsByMod, summary };
 }
 
 export async function getCreatorExternalDownloadSummary(

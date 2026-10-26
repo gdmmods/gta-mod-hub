@@ -4,18 +4,23 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 
+type CreatorListing = { id: string; name: string; owner_type: string | null };
+type ModSummary = { id: string; image: string | null; likes: number | null; downloads: number | null };
+
 export default async function CreatorsPage() {
   /* -----------------------------
      FETCH ALL CREATORS
   ----------------------------- */
-  const { data: creators, error } = await supabase
+  const { data: creatorData, error } = await supabase
     .from("creators")
-    .select("id, name");
+    .select("id, name, owner_type");
 
-  if (error || !creators) {
+  if (error || !creatorData) {
     console.error("CREATORS ERROR:", error);
     return <div className="text-white p-10">Error loading creators</div>;
   }
+
+  const creators = creatorData as CreatorListing[];
 
   const creatorIds = creators.map((c) => c.id);
 
@@ -40,7 +45,7 @@ export default async function CreatorsPage() {
   /* -----------------------------
      BUILD MOD MAP
   ----------------------------- */
-  const modMap: Record<string, any> = {};
+  const modMap: Record<string, ModSummary> = {};
   mods?.forEach((m) => {
     if (m?.id) modMap[m.id] = m;
   });
@@ -53,7 +58,7 @@ export default async function CreatorsPage() {
     { mods: number; likes: number; downloads: number }
   > = {};
 
-  const topModMap: Record<string, any> = {};
+  const topModMap: Record<string, ModSummary> = {};
 
   relations?.forEach((r) => {
     if (!r?.creator_id || !r?.mod_id) return;
@@ -136,7 +141,12 @@ export default async function CreatorsPage() {
 
               {/* CONTENT */}
               <div className="p-5">
-                <div className="text-lg font-semibold">{c.name}</div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-lg font-semibold">{c.name}</span>
+                  <span className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-wider ${c.owner_type === "team" ? "border-purple-500/40 bg-purple-500/10 text-purple-200" : "border-zinc-700 bg-zinc-800/80 text-zinc-300"}`}>
+                    {c.owner_type === "team" ? "TEAM" : "CREATOR"}
+                  </span>
+                </div>
 
                 <div className="text-sm text-gray-400 mt-2 flex gap-4">
                   <span>{c.stats.mods} mods</span>

@@ -1,4 +1,4 @@
-export default function DashboardHero() {
+export default function DashboardHero({ profileType }: { profileType: "creator" | "team" }) {
 
   return (
 
@@ -12,7 +12,7 @@ export default function DashboardHero() {
           mb-3
         "
       >
-        CREATOR DASHBOARD
+        {profileType === "team" ? "TEAM DASHBOARD" : "CREATOR DASHBOARD"}
       </p>
 
       <h1
@@ -21,7 +21,7 @@ export default function DashboardHero() {
           font-bold
         "
       >
-        Manage your uploads.
+        {profileType === "team" ? "Manage your team." : "Manage your uploads."}
       </h1>
 
     </div>

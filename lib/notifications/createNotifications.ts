@@ -1,15 +1,39 @@
-import { supabase } from "@/lib/supabase/client";
 import { createNotification } from "./createNotification";
 
-export async function createNotificationsForEvent(event: any) {
-  switch (event.event_type) {
+type ActivityEvent = {
+  id: string;
+  event_type: string;
+  metadata?: Record<string, unknown> | null;
+};
 
+export async function createNotificationsForEvent(
+  event: ActivityEvent
+) {
+  switch (event.event_type) {
     case "team_created":
       return;
 
     case "team_member_invited": {
-    // We'll implement this once invites exist.
-    return;
+      const recipientProfileId =
+        event.metadata?.recipientProfileId;
+
+      if (
+        typeof recipientProfileId !== "string" ||
+        !recipientProfileId
+      ) {
+        console.error(
+          "Cannot create invitation notification: recipient profile is missing.",
+          event.id
+        );
+        return;
+      }
+
+      await createNotification({
+        recipientProfileId,
+        activityEventId: event.id,
+      });
+
+      return;
     }
 
     case "team_member_joined":

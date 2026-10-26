@@ -8,6 +8,8 @@ import {
 import { supabase }
 from "@/lib/supabase/client";
 
+type CreatorSummary = { id: string; name: string; owner_type: string | null; team_id: string | null };
+
 export default function useCurrentCreatorData(
   refreshKey: number
 ) {
@@ -20,7 +22,8 @@ export default function useCurrentCreatorData(
   const [
     creator,
     setCreator,
-  ] = useState<any>(null);
+  ] = useState<CreatorSummary | null>(null);
+  const [isTeamOwner, setIsTeamOwner] = useState(false);
 
   const [
     modCount,
@@ -31,12 +34,6 @@ export default function useCurrentCreatorData(
   hasConnectedPlatform,
   setHasConnectedPlatform,
 ] = useState(false);
-
-  useEffect(() => {
-
-    loadData();
-
-  }, [refreshKey]);
 
   async function loadData() {
 
@@ -96,6 +93,12 @@ export default function useCurrentCreatorData(
       creator
     );
 
+    setIsTeamOwner(false);
+    if (creator?.owner_type === "team" && creator.team_id) {
+      const ownerCheck = await fetch(`/api/team-memberships?teamId=${encodeURIComponent(creator.team_id)}`, { cache: "no-store" });
+      setIsTeamOwner(ownerCheck.ok);
+    }
+
     const {
       count,
     } = await supabase
@@ -140,11 +143,17 @@ export default function useCurrentCreatorData(
 
   }
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void loadData(); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [refreshKey]);
+
   return {
 
   loading,
 
   creator,
+  isTeamOwner,
 
   modCount,
 

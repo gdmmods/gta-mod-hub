@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 
 import {
   supabase,
@@ -12,6 +13,22 @@ import {
 import {
   useRouter,
 } from "next/navigation";
+
+type CreatorSettingsValues = {
+  name: string;
+  tagline: string;
+  bio: string;
+  status: string;
+  owner_id: string;
+  team_id: string;
+  owner_type: string;
+  avatar: string;
+  banner: string;
+  specialization: string[];
+  location: string;
+  aliases: string[];
+  socials: Record<string, string>;
+};
 
 export default function useCreatorSettings(
   creatorId: string
@@ -30,8 +47,11 @@ export default function useCreatorSettings(
     setLoaded,
   ] = useState(false);
 
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [savedOwnerType, setSavedOwnerType] = useState("user");
+
   const [form, setForm] =
-    useState({
+    useState<CreatorSettingsValues>({
 
       name: "",
 
@@ -226,6 +246,8 @@ export default function useCreatorSettings(
 
       });
 
+      setSavedOwnerType(creator.owner_type || "user");
+
       setLoaded(true);
 
     }
@@ -243,7 +265,7 @@ export default function useCreatorSettings(
   -------------------------------- */
 
   function handleChange(
-    e: any
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
 
     const name =
@@ -265,7 +287,7 @@ export default function useCreatorSettings(
           ""
         );
 
-      setForm((prev: any) => ({
+      setForm((prev) => ({
 
         ...prev,
 
@@ -285,7 +307,7 @@ export default function useCreatorSettings(
     }
 
     /* NORMAL FIELDS */
-    setForm((prev: any) => ({
+    setForm((prev) => ({
 
       ...prev,
 
@@ -301,334 +323,70 @@ export default function useCreatorSettings(
   -------------------------------- */
 
   async function handleSubmit(
-    e: any
+    e: FormEvent<HTMLFormElement>
   ) {
-
     e.preventDefault();
-
     setLoading(true);
-
-    console.log(
-      "FINAL FORM:"
-    );
-
-    console.log(form);
-
-    console.log(
-      "FINAL SOCIALS:"
-    );
-
-    console.log(
-      form.socials
-    );
-
-    console.log("FORM:", form);
-
-    const becomingTeam =
-      form.owner_type === "team" &&
-      !form.team_id;
-
-      let teamId =
-      form.team_id || null;
-
-    const teamSlug =
-      form.name
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, "-");
-
-      if (becomingTeam) {
-
-        const {
-          data: newTeam,
-          error: teamError,
-        } = await supabase
-          .from("teams")
-          .insert({
-
-              name: form.name,
-
-              slug:
-                teamSlug,
-
-              owner_id:
-                creatorId,
-
-            })
-          .select()
-          .single();
-
-        if (teamError) {
-
-          console.error(
-            teamError
-          );
-
-          setLoading(false);
-
-          return;
-        }
-
-        teamId =
-          newTeam.id;
-
+    setSaveError(null);
+    try {
+      if (form.owner_type !== savedOwnerType) {
+        throw new Error("Profile type cannot be changed here. Use the Create Team flow to create a Team profile.");
+      }
+      if (savedOwnerType === "team" && !form.team_id) {
+        throw new Error("This Team profile is missing its team link. Contact support before saving.");
       }
 
-    const {
-      data,
-      error,
-    } = await supabase
-      .from("creators")
-      .update({
+      const { data: updatedCreator, error: updateError } = await supabase
+        .from("creators")
+        .update({
+          name: form.name,
+          tagline: form.tagline,
+          bio: form.bio,
+          status: form.status,
+          ...(savedOwnerType === "team" ? { owner_id: form.team_id } : {}),
+          avatar: form.avatar,
+          banner: form.banner,
+          specialization: form.specialization,
+          location: form.location,
+          socials: form.socials,
+        })
+        .eq("id", creatorId)
+        .select("id")
+        .maybeSingle();
 
-        name:
-          form.name,
+      if (updateError) throw new Error(updateError.message);
+      if (!updatedCreator) {
+        throw new Error("No profile was updated. Check that you still own this creator profile and try again.");
+      }
 
-        tagline:
-          form.tagline,
+      const { error: aliasesDeleteError } = await supabase
+        .from("creator_aliases")
+        .delete()
+        .eq("creator_id", creatorId);
+      if (aliasesDeleteError) {
+        throw new Error(`Profile details were saved, but aliases could not be updated: ${aliasesDeleteError.message}`);
+      }
 
-        bio:
-          form.bio,
-
-        status:
-          form.status,
-
-          team_id:
-            teamId,
-
-        owner_type:
-          form.owner_type,
-
-        avatar:
-          form.avatar,
-
-        banner:
-          form.banner,
-
-        specialization:
-          form.specialization,
-
-        location:
-          form.location,
-
-        socials:
-          form.socials,
-
-      })
-      .eq(
-        "id",
-        creatorId
-      )
-      .select();
-
-      if (!error) {
-
-        await supabase
+      const uniqueAliases = [...new Set(
+        form.aliases.map((alias: string) => alias.trim()).filter((alias: string) => alias !== ""),
+      )];
+      if (uniqueAliases.length > 0) {
+        const { error: aliasesInsertError } = await supabase
           .from("creator_aliases")
-          .delete()
-          .eq(
-            "creator_id",
-            creatorId
-          );
-
-        const uniqueAliases =
-          [...new Set(
-            form.aliases
-              .map((a) => a.trim())
-              .filter((a) => a !== "")
-          )];
-
-        const aliasesToInsert =
-          uniqueAliases.map(
-            (alias) => ({
-              creator_id:
-                creatorId,
-              alias,
-            })
-          );
-        
-
-        if (
-          aliasesToInsert.length > 0
-        ) {
-
-          const {
-            error:
-              aliasesError,
-          } = await supabase
-            .from(
-              "creator_aliases"
-            )
-            .insert(
-              aliasesToInsert
-            );
-
-          if (aliasesError) {
-
-            console.error(
-              "ALIASES SAVE ERROR:",
-              aliasesError
-            );
-
-            alert(
-              "Failed to save aliases."
-            );
-
-}
-
+          .insert(uniqueAliases.map((alias: string) => ({ creator_id: creatorId, alias })));
+        if (aliasesInsertError) {
+          throw new Error(`Profile details were saved, but aliases could not be updated: ${aliasesInsertError.message}`);
         }
-
       }
 
-    console.log(
-      "UPDATE RESULT:"
-    );
-
-    console.log(data);
-
-    console.log(
-      "UPDATE ERROR:"
-    );
-
-    console.log(error);
-
-    if (!error) {
-
-console.log(
-  "BECOMING TEAM:",
-  becomingTeam
-);
-
-console.log(
-  "TEAM ID:",
-  teamId
-);
-
-console.log(
-  "FORM TEAM ID:",
-  form.team_id
-);
-const {
-  data: founderCreator,
-  error: founderError,
-} = await supabase
-  .from("creators")
-  .select("id")
-  .eq("owner_id", form.owner_id)
-  .eq("owner_type", "user")
-  .single();
-
-console.log(
-  "FOUNDER CREATOR:",
-  founderCreator
-);
-
-console.log(
-  "FOUNDER ERROR:",
-  founderError
-);
-
-if (!founderCreator) {
-
-  console.error(
-    "Could not locate founder creator."
-  );
-
-  setLoading(false);
-
-  return;
-
-}
-
-if (teamId) {
-
-  console.log(
-    "TEAM ID:",
-    teamId
-  );
-
-  const {
-    data: existingMember,
-    error: existingError,
-  } = await supabase
-    .from("team_members")
-    .select("id")
-    .eq("team_id", teamId)
-    .eq(
-  "creator_id",
-  founderCreator.id
-)
-    .maybeSingle();
-
-  console.log(
-    "EXISTING MEMBER:",
-    existingMember
-  );
-
-  console.log(
-    "EXISTING MEMBER ERROR:",
-    existingError
-  );
-
-  if (!existingMember) {
-
-    console.log(
-      "INSERTING OWNER MEMBER"
-    );
-
-    const {
-      data: memberData,
-      error: memberError,
-    } = await supabase
-      .from("team_members")
-      .insert({
-
-        team_id:
-          teamId,
-
-        creator_id:
-          founderCreator.id,
-
-        role:
-          "owner",
-
-        membership_status:
-          "active",
-
-        can_upload:
-          true,
-
-        can_manage_members:
-          true,
-
-        can_manage_team:
-          true,
-
-      })
-      .select();
-
-    console.log(
-      "TEAM MEMBER DATA:",
-      memberData
-    );
-
-    console.log(
-      "TEAM MEMBER ERROR:",
-      memberError
-    );
-
-  }
-
-}
-
-  router.push(
-    `/creator/${creatorId}`
-  );
-
-}
-
-    setLoading(false);
-
+      router.push(`/creator/${creatorId}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "An unexpected error occurred while saving.";
+      console.warn("CREATOR SETTINGS SAVE ERROR:", message);
+      setSaveError(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
     return {
@@ -638,6 +396,8 @@ if (teamId) {
     setForm,
 
     loading,
+
+    saveError,
 
     loaded,
 

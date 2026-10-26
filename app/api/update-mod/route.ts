@@ -10,6 +10,7 @@ import {
 } from "@/lib/server/discovery-update-values";
 import { isGtaInsideSourceRecord } from "@/lib/connectors/gtainside";
 import { isValidGta5ModsProjectUrl } from "@/lib/connectors/sourceProjectUrl";
+import { normalizeModCategory } from "@/lib/vehicle-subcategories";
 
 export async function POST(request: Request) {
   try {
@@ -71,7 +72,8 @@ export async function POST(request: Request) {
     };
     const changes: Record<string, string> = {};
     for (const [field, value] of Object.entries(accepted)) {
-      if (current[field] !== value) changes[field] = value;
+      const safeValue = field === "category" ? normalizeModCategory(value).category : value;
+      if (current[field] !== safeValue) changes[field] = safeValue;
     }
     if (!Object.keys(changes).length) {
       return NextResponse.json({ success: true, mod, updatedFields: [] });

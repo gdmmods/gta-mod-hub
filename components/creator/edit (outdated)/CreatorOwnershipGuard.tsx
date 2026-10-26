@@ -54,45 +54,28 @@ export default function CreatorOwnershipGuard({
 
       }
 
-      /* -----------------------------
-         CREATOR MEMBERSHIP CHECK
-      ----------------------------- */
-
-      const {
-        data: membership,
-        error,
-      } = await supabase
-        .from("creator_members")
-        .select(`
-          id,
-          role,
-          status
-        `)
-        .eq(
-          "creator_id",
-          creatorId
-        )
-        .eq(
-          "profile_id",
-          user.id
-        )
-        .eq(
-          "status",
-          "approved"
-        )
-        .maybeSingle();
-
-      if (
-        error ||
-        !membership
-      ) {
-
-        router.replace(
-          "/creators"
-        );
-
+      const { data: creator } = await supabase.from("creators")
+        .select("id,owner_id,owner_type,team_id")
+        .eq("id", creatorId).maybeSingle();
+      if (!creator) {
+        router.replace("/creators");
         return;
+      }
 
+      let authorized = creator.owner_type === "user" && creator.owner_id === user.id;
+      if (creator.owner_type === "team" && creator.team_id) {
+        const { data: team } = await supabase.from("teams").select("owner_id").eq("id", creator.team_id).maybeSingle();
+        if (team?.owner_id) {
+          const [{ data: ownerCreator }, { data: ownership }] = await Promise.all([
+            supabase.from("creators").select("id").eq("id", team.owner_id).eq("owner_type", "user").eq("owner_id", user.id).maybeSingle(),
+            supabase.from("creator_members").select("id").eq("creator_id", team.owner_id).eq("profile_id", user.id).eq("role", "owner").eq("status", "approved").maybeSingle(),
+          ]);
+          authorized = Boolean(ownerCreator && ownership);
+        }
+      }
+      if (!authorized) {
+        router.replace("/creators");
+        return;
       }
 
       setAuthorized(true);

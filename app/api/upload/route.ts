@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient }
 from "@supabase/supabase-js";
 import { parseCreatorBackupUrl } from "@/lib/server/creatorBackupUrl";
+import { normalizeModCategory } from "@/lib/vehicle-subcategories";
 
 export async function POST(
   req: Request
@@ -34,6 +35,18 @@ export async function POST(
 
     const body =
       await req.json();
+
+    if (typeof body.category !== "string" || !body.category.trim()) {
+      return NextResponse.json(
+        { error: "Select a valid mod category." },
+        { status: 400 }
+      );
+    }
+    const normalizedCategory = normalizeModCategory(body.category, {
+      title: body.title,
+      description: body.description,
+      tags: body.tags,
+    }).category;
 
     const creatorBackup = parseCreatorBackupUrl(body.creator_backup_url);
     if (!creatorBackup.valid) {
@@ -127,7 +140,7 @@ export async function POST(
             body.title,
 
           category:
-            body.category,
+            normalizedCategory,
 
           description:
             body.description,

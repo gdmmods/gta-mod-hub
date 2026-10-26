@@ -1,6 +1,8 @@
+import type { ChangeEvent } from "react";
+
 type Props = {
-  form: any;
-  handleChange: any;
+  form: { name: string; tagline: string; status: string; location: string; bio: string };
+  handleChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 };
 
 export default function CreatorProfileSection({
@@ -77,6 +79,26 @@ export default function CreatorProfileSection({
           py-4
         "
       />
+
+      <label className="block space-y-2 text-sm text-zinc-400">
+        <span>Location</span>
+        <input
+          name="location"
+          value={form.location}
+          onChange={handleChange}
+          placeholder="e.g. Luxembourg or Europe"
+          className="
+            w-full
+            rounded-2xl
+            bg-zinc-950
+            border
+            border-zinc-800
+            px-5
+            py-4
+            text-white
+          "
+        />
+      </label>
 
       <textarea
         name="bio"

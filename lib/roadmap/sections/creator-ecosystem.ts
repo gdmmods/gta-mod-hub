@@ -28,6 +28,7 @@ export const creatorEcosystem: RoadmapSection = {
         { title: "Creator timeline", status: "planned" },
         { title: "Team timeline", status: "planned" },
         { title: "Project timeline", status: "planned" },
+        { title: "Rich version history", status: "planned" },
         { title: "Historical verification", status: "planned" },
       ],
 

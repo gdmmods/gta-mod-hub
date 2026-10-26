@@ -3,6 +3,7 @@ import NavbarLinks from "@/components/navbar/NavbarLinks";
 import NavbarActions from "@/components/navbar/NavbarActions";
 import NavbarMenu from "@/components/navbar/NavbarMenu";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import CreatorProfileSwitcher from "@/components/navbar/CreatorProfileSwitcher";
 
 export default function Navbar() {
 
@@ -45,11 +46,14 @@ export default function Navbar() {
       </div>
 
         {/* RIGHT */}
-        <NotificationBell unreadCount={5} />
-
-        <NavbarActions />
-
-      </div>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <div className="flex items-center gap-1">
+            <NavbarActions />
+            <CreatorProfileSwitcher />
+          </div>
+        </div>
+    </div>
 
     </header>
 

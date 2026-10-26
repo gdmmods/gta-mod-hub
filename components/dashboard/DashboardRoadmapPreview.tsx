@@ -33,7 +33,7 @@ export default function DashboardRoadmapPreview() {
           font-bold
         "
       >
-        What's Coming Next
+        What's Coming in the Future
       </h2>
 
       <div
@@ -58,8 +58,8 @@ export default function DashboardRoadmapPreview() {
           ✓ Creator Context System
         </div>
 
-        <div className="text-zinc-400">
-          ◌ Team Management
+        <div className="text-green-400">
+          ✓ Basic Team Management
         </div>
 
         <div className="text-zinc-400">

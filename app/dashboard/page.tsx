@@ -11,6 +11,7 @@ import DashboardCreatorOverview from "@/components/dashboard/DashboardCreatorOve
 import PageLoader from "@/components/ui/PageLoader";
 import DashboardRoadmapPreview from "@/components/dashboard/DashboardRoadmapPreview";
 import TeamControls from "@/components/dashboard/TeamControls";
+import TeamMembership from "@/components/dashboard/TeamMembership";
 
 import useDashboardData from "@/app/hooks/useDashboardData";
 import useCurrentCreatorData from "@/app/hooks/useCurrentCreatorData";
@@ -44,6 +45,7 @@ export default function DashboardPage() {
     const {
 
   creator,
+  isTeamOwner,
 
   modCount,
 
@@ -90,7 +92,7 @@ console.log("CURRENT CREATOR", creator);
         "
       >
 
-        <DashboardHero />
+        <DashboardHero profileType={creator?.owner_type === "team" ? "team" : "creator"} />
 
         <DashboardCreatorManager
           onCreatorChanged={() =>
@@ -100,49 +102,22 @@ console.log("CURRENT CREATOR", creator);
           }
         />
 
-        <DashboardCreatorOverview
-          creator={creator}
-          modCount={modCount}
-          hasConnectedPlatform={hasConnectedPlatform}
-        />
-
-      {creator?.owner_type === "team" && (
-  <TeamControls
-    key={creator.id}
-    creator={creator}
-    onTeamDeleted={() =>
-      setRefreshKey(
-        prev => prev + 1
-      )
-    }
-  />
-)}
+        {creator?.owner_type === "team" ? (
+          isTeamOwner ? <TeamControls
+            key={creator.id}
+            creator={{ ...creator, team_id: creator.team_id || "" }}
+            onTeamDeleted={() => setRefreshKey((prev) => prev + 1)}
+          /> : <p role="alert" className="mb-8 rounded-2xl border border-red-900/60 bg-red-950/30 p-4 text-sm text-red-300">This team dashboard is available only to its owner.</p>
+        ) : (
+          <>
+            <DashboardCreatorOverview creator={creator} modCount={modCount} hasConnectedPlatform={hasConnectedPlatform} />
+            {creator?.owner_type === "user" && <TeamMembership creatorId={creator.id} />}
+            <DashboardStats creatorCount={creatorIds.length} modCount={mods.length} />
+            {mods.length === 0 ? <DashboardEmptyState /> : <DashboardModsGrid mods={currentMods} onModChanged={() => setRefreshKey((prev) => prev + 1)} />}
+          </>
+        )}
 
         <DashboardRoadmapPreview />
-
-        <DashboardStats
-          creatorCount={
-            creatorIds.length
-          }
-          modCount={
-            mods.length
-          }
-        />
-
-                {mods.length === 0 ? (
-
-          <DashboardEmptyState />
-
-        ) : (
-
-          <DashboardModsGrid
-            mods={currentMods}
-            onModChanged={() =>
-              setRefreshKey(prev => prev + 1)
-            }
-          />
-
-        )}
 
       </div>
 

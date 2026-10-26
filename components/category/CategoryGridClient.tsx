@@ -3,16 +3,28 @@
 import { useMemo, useState } from "react";
 
 import ModsGridClient from "@/components/ui/ModsGridClient";
+import type { Database } from "@/types/supabase";
+import {
+  matchesVehicleSubcategory,
+  VEHICLE_SUBCATEGORIES,
+  type VehicleSubcategoryFilter,
+} from "@/lib/vehicle-subcategories";
 
 type SortType =
   | "likes"
   | "downloads"
   | "newest";
 
+type CategoryMod = Database["public"]["Tables"]["mods"]["Row"] & {
+  subcategory?: string | null;
+};
+
 export default function CategoryGridClient({
   mods,
+  category,
 }: {
-  mods: any[];
+  mods: CategoryMod[];
+  category?: string;
 }) {
 
   const [search, setSearch] =
@@ -24,13 +36,16 @@ export default function CategoryGridClient({
   const [verifiedOnly, setVerifiedOnly] =
     useState(false);
 
+  const [vehicleSubcategory, setVehicleSubcategory] =
+    useState<VehicleSubcategoryFilter>("All");
+
   /* ---------------- FILTER + SEARCH + SORT ---------------- */
   const filteredMods = useMemo(() => {
 
     const query =
       search.toLowerCase();
 
-    let results =
+    const results =
       mods.filter((mod) => {
 
         const matchesSearch =
@@ -51,9 +66,14 @@ export default function CategoryGridClient({
             ? mod.verified
             : true;
 
+        const matchesSubcategory =
+          category !== "vehicles" ||
+          matchesVehicleSubcategory(mod, vehicleSubcategory);
+
         return (
           matchesSearch &&
-          matchesVerified
+          matchesVerified &&
+          matchesSubcategory
         );
       });
 
@@ -92,6 +112,8 @@ export default function CategoryGridClient({
     search,
     sort,
     verifiedOnly,
+    category,
+    vehicleSubcategory,
   ]);
 
   return (
@@ -99,6 +121,38 @@ export default function CategoryGridClient({
 
       {/* TOP BAR */}
       <div className="mb-8 flex flex-col gap-5">
+
+        {category === "vehicles" && (
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter vehicles by subcategory">
+            <button
+              type="button"
+              aria-pressed={vehicleSubcategory === "All"}
+              onClick={() => setVehicleSubcategory("All")}
+              className={`rounded-xl border px-4 py-2 text-sm transition ${
+                vehicleSubcategory === "All"
+                  ? "border-purple-500 bg-purple-500/15 text-purple-200"
+                  : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white"
+              }`}
+            >
+              All Vehicles
+            </button>
+            {VEHICLE_SUBCATEGORIES.map((subcategory) => (
+              <button
+                key={subcategory}
+                type="button"
+                aria-pressed={vehicleSubcategory === subcategory}
+                onClick={() => setVehicleSubcategory(subcategory)}
+                className={`rounded-xl border px-4 py-2 text-sm transition ${
+                  vehicleSubcategory === subcategory
+                    ? "border-purple-500 bg-purple-500/15 text-purple-200"
+                    : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white"
+                }`}
+              >
+                {subcategory}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* SEARCH */}
         <div
@@ -264,7 +318,10 @@ export default function CategoryGridClient({
       ) : (
 
         <ModsGridClient
-          mods={filteredMods}
+          // Normalize legacy labels for display while filtering against stored values.
+          mods={(category === "vehicles"
+            ? filteredMods.map((mod) => ({ ...mod, category: "vehicles" }))
+            : filteredMods) as unknown as Parameters<typeof ModsGridClient>[0]["mods"]}
           showSearch={false}
         />
 

@@ -11,6 +11,24 @@ type Props = {
 
 };
 
+type DashboardProfile = {
+  id: string;
+  name: string;
+  specialization: string[] | null;
+  team_id: string | null;
+  owner_type: string | null;
+};
+
+type CreatorMembership = {
+  creator_id: string;
+  creators: DashboardProfile | DashboardProfile[] | null;
+};
+
+function getCreatorProfile(membership: CreatorMembership): DashboardProfile | null {
+  const related = membership.creators;
+  return Array.isArray(related) ? related[0] ?? null : related;
+}
+
 export default function
 DashboardCreatorManager({
 
@@ -21,12 +39,12 @@ DashboardCreatorManager({
   const [
     creator,
     setCreator,
-  ] = useState<any>(null);
+  ] = useState<DashboardProfile | null>(null);
 
   const [
     creators,
     setCreators,
-  ] = useState<any[]>([]);
+  ] = useState<CreatorMembership[]>([]);
 
   const [
     loading,
@@ -92,7 +110,8 @@ DashboardCreatorManager({
             id,
             name,
             specialization,
-            team_id
+            team_id,
+            owner_type
           )
         `)
         .eq(
@@ -107,9 +126,7 @@ DashboardCreatorManager({
       const ownedCreators =
         memberships || [];
 
-      setCreators(
-        ownedCreators
-      );
+      setCreators(ownedCreators as CreatorMembership[]);
 
       let creatorId =
         profile.default_creator_id;
@@ -142,17 +159,14 @@ DashboardCreatorManager({
 
       }
 
-      const selectedCreator =
+      const selectedMembership =
         ownedCreators.find(
-          (m: any) =>
+          (m) =>
             m.creator_id ===
             creatorId
         );
 
-      setCreator(
-        selectedCreator?.creators ||
-        null
-      );
+      setCreator(selectedMembership ? getCreatorProfile(selectedMembership) : null);
 
     } catch (error) {
 
@@ -219,7 +233,7 @@ DashboardCreatorManager({
           text-purple-400
         "
       >
-        Creator Management
+        Profile Management
       </p>
 
       <h2
@@ -229,7 +243,7 @@ DashboardCreatorManager({
           font-bold
         "
       >
-        Current Creator
+        Current Profile
       </h2>
 
       {loading ? (
@@ -278,7 +292,7 @@ DashboardCreatorManager({
                   text-purple-400
                 "
               >
-                Default
+                {creator.owner_type === "team" ? "TEAM" : "CREATOR"}
               </span>
 
             </div>
@@ -295,7 +309,7 @@ DashboardCreatorManager({
                 ? creator.specialization.join(
                     " • "
                   )
-                : "Creator Profile"}
+                : creator.owner_type === "team" ? "Team profile" : "Creator Profile"}
             </p>
 
           </div>
@@ -315,10 +329,10 @@ DashboardCreatorManager({
             >
 
               {creators.map(
-                (member: any) => {
+                (member) => {
 
-                  const c =
-                    member.creators;
+                  const c = getCreatorProfile(member);
+                  if (!c) return null;
 
                   const isCurrent =
                     c.id ===
@@ -348,6 +362,10 @@ DashboardCreatorManager({
 
                       <span>
                         {c.name}
+                      </span>
+
+                      <span className="rounded-full border border-zinc-700 px-2 py-1 text-[10px] font-semibold tracking-wider text-zinc-300">
+                        {c.owner_type === "team" ? "TEAM" : "CREATOR"}
                       </span>
 
                       {isCurrent && (
@@ -397,7 +415,7 @@ DashboardCreatorManager({
                 py-3
               "
             >
-              Switch Creator
+              Switch Profile
             </button>
 
             <Link
@@ -410,7 +428,7 @@ DashboardCreatorManager({
                 font-semibold
               "
             >
-              Edit Creator
+              {creator.owner_type === "team" ? "Team Settings" : "Edit Creator"}
             </Link>
 
             <Link
@@ -423,7 +441,7 @@ DashboardCreatorManager({
                 py-3
               "
             >
-              View Creator
+              {creator.owner_type === "team" ? "View Team Page" : "View Creator"}
             </Link>
 
             <Link

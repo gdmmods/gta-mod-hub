@@ -58,23 +58,9 @@ export default function ClaimCreatorPage() {
       );
 
       const {
-  data: memberships,
+  data: managedCreators,
   error: membershipError,
-} = await supabase
-  .from("creator_members")
-  .select(`
-    creator_id,
-    role,
-    status
-  `)
-  .eq(
-    "status",
-    "approved"
-  )
-  .eq(
-    "role",
-    "owner"
-  );
+} = await supabase.rpc("get_public_managed_creator_ids");
 
 if (membershipError) {
 
@@ -90,8 +76,8 @@ if (membershipError) {
       boolean
     > = {};
 
-  memberships?.forEach(
-    (member: any) => {
+  managedCreators?.forEach(
+    (member: { creator_id: string }) => {
 
       map[
         member.creator_id
@@ -105,7 +91,6 @@ if (membershipError) {
   );
 
 }
-
     }
 
     loadCreators();

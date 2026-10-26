@@ -36,6 +36,7 @@ console.log(
 
     loading,
     loaded,
+    saveError,
 
     handleChange,
     handleSubmit,
@@ -98,6 +99,7 @@ console.log(
               handleChange={handleChange}
               handleSubmit={handleSubmit}
               loading={loading}
+              saveError={saveError}
             />
 
           </div>

@@ -45,7 +45,7 @@ export default function CreatorStats({
     [
       "Total External Downloads",
       typeof externalDownloadSummary.total === "number"
-        ? externalDownloadSummary.total.toLocaleString()
+        ? externalDownloadSummary.total.toLocaleString("en-US")
         : "—",
       externalDownloadSummary.totalSources > 0 && externalDownloadSummary.availableSources < externalDownloadSummary.totalSources
         ? `Counts available for ${externalDownloadSummary.availableSources} of ${externalDownloadSummary.totalSources} connected listings`

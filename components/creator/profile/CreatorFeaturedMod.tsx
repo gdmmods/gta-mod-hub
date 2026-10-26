@@ -1,14 +1,38 @@
 import Link from "next/link";
 
+type FeaturedMod = {
+  id: string;
+  title: string;
+  image: string;
+  likes: number | null;
+  downloads: number | null;
+};
+
 interface CreatorFeaturedModProps {
-  mostDownloaded: any;
-  mostLiked: any;
+  mostDownloaded: FeaturedMod | null;
+  mostLiked: FeaturedMod | null;
+  emptyMessage?: string;
 }
 
 export default function CreatorFeaturedMod({
   mostDownloaded,
   mostLiked,
+  emptyMessage,
 }: CreatorFeaturedModProps) {
+
+  if (!mostDownloaded && !mostLiked) {
+    return (
+      <section className="mx-auto mt-8 max-w-[1450px] px-6">
+        <div className="mb-6">
+          <p className="text-sm uppercase tracking-[0.2em] text-purple-400">Highlight</p>
+          <h2 className="mt-2 text-3xl font-bold">Featured Creations</h2>
+        </div>
+        <p className="rounded-3xl border border-zinc-800 bg-zinc-950 p-8 text-center text-sm text-zinc-400">
+          {emptyMessage ?? "No published mods are available to feature yet."}
+        </p>
+      </section>
+    );
+  }
 
   return (
 
@@ -55,6 +79,16 @@ export default function CreatorFeaturedMod({
       >
 
         {/* MOST DOWNLOADED */}
+        {!mostDownloaded ? (
+          <div className="relative h-[340px] overflow-hidden rounded-[34px] border border-zinc-800 bg-zinc-950">
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-zinc-900/40" />
+            <div className="absolute inset-0 flex flex-col justify-end p-8">
+              <p className="mb-4 text-sm uppercase tracking-[0.2em] text-purple-300">Most Downloaded</p>
+              <h3 className="text-2xl font-black leading-tight">External download counts unavailable</h3>
+              <p className="mt-3 text-sm text-zinc-400">No reliable platform count is available to rank this card.</p>
+            </div>
+          </div>
+        ) : (
         <Link
           href={`/mods/${mostDownloaded?.id}`}
         >
@@ -157,6 +191,7 @@ export default function CreatorFeaturedMod({
           </div>
 
         </Link>
+        )}
 
         {/* MOST LIKED */}
         <Link
@@ -250,9 +285,7 @@ export default function CreatorFeaturedMod({
                   ❤️ {mostLiked?.likes}
                 </span>
 
-                <span>
-                  ⬇ {mostLiked?.downloads}
-                </span>
+                {typeof mostLiked?.downloads === "number" ? <span>⬇ {mostLiked.downloads}</span> : <span className="text-xs text-zinc-400">External downloads unavailable</span>}
 
               </div>
 

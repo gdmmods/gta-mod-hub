@@ -25,7 +25,7 @@ export const roadmap = [
       },
 
       {
-        text: "Creator profiles (basic)",
+        text: "Creator / Team profiles (basic)",
         done: true,
       },
 

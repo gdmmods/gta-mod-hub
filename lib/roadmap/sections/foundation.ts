@@ -18,16 +18,16 @@ export const foundation: RoadmapSection = {
       summary:
         "Establishing the technical foundation and architectural principles that power the entire ModVault ecosystem.",
 
-      state: "development",
+      state: "testing",
 
-      progress: 90,
+      progress: 100,
 
       capabilities: [
         { title: "Next.js application architecture", status: "complete" },
         { title: "Supabase backend & RLS", status: "complete" },
         { title: "Authentication", status: "complete" },
         { title: "User profiles", status: "complete" },
-        { title: "Dashboard architecture", status: "progress" },
+        { title: "Dashboard architecture", status: "complete" },
         { title: "Creator context & switching", status: "complete" },
         { title: "Database architecture", status: "complete" },
       ],
@@ -47,7 +47,7 @@ export const foundation: RoadmapSection = {
 
       state: "development",
 
-      progress: 75,
+      progress: 90,
 
       capabilities: [
         { title: "Mod records", status: "complete" },
@@ -55,10 +55,9 @@ export const foundation: RoadmapSection = {
         { title: "Creator-to-mod relationships", status: "complete" },
         { title: "Dashboard integration", status: "complete" },
         { title: "Metadata architecture", status: "progress" },
-        { title: "Rich version history", status: "planned" },
-        { title: "Release channels", status: "planned" },
-        { title: "Dependencies", status: "planned" },
-        { title: "Compatibility information", status: "planned" },
+        { title: "Mod Release channels", status: "complete" },
+        { title: "Dependencies / Mod Attribution", status: "complete" },
+        { title: "Compatibility information", status: "complete" },
       ],
 
       currentFocus:
@@ -79,15 +78,15 @@ export const foundation: RoadmapSection = {
       progress: 85,
 
       capabilities: [
-        { title: "Creator identities", status: "complete" },
+        { title: "Creator identity Profiles", status: "complete" },
         { title: "Multiple creator management", status: "complete" },
         { title: "Creator memberships", status: "complete" },
         { title: "Creator switching", status: "complete" },
         { title: "Public creator profiles", status: "complete" },
         { title: "Default creator context", status: "complete" },
-        { title: "Unclaimed creator profiles", status: "progress" },
-        { title: "Verification", status: "progress" },
-        { title: "Identity provenance", status: "planned" },
+        { title: "Unclaimed creator profiles", status: "complete" },
+        { title: "Profile Claim Verification", status: "progress" },
+        { title: "Identity provenance", status: "progress" },
       ],
 
       currentFocus:
@@ -129,9 +128,9 @@ export const foundation: RoadmapSection = {
       summary:
         "Helping creators collaborate through shared ownership, memberships and team management.",
 
-      state: "development",
+      state: "testing",
 
-      progress: 80,
+      progress: 100,
 
       capabilities: [
         { title: "Team architecture", status: "complete" },
@@ -139,9 +138,8 @@ export const foundation: RoadmapSection = {
         { title: "Team memberships", status: "complete" },
         { title: "Ownership architecture", status: "complete" },
         { title: "Secure team deletion", status: "complete" },
-        { title: "Invitations", status: "progress" },
-        { title: "Permissions", status: "planned" },
-        { title: "Recruitment", status: "progress" },
+        { title: "Invitations", status: "complete" },
+        { title: "Recruitment", status: "complete" },
       ],
 
       currentFocus:

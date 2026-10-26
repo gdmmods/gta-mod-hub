@@ -4,14 +4,16 @@ import CreatorVerificationBadge from "./CreatorVerificationBadge";
 
 interface CreatorHeaderProps {
   name: string;
-  verified?: boolean;
+  profileType: "TEAM" | "CREATOR";
+  verified?: boolean | null;
   status?: string | null;
   isManaged?: boolean;
-  games?: any[];
+  games?: Array<{ id: string; name: string }>;
 }
 
 export default function CreatorHeader({
   name,
+  profileType,
   verified,
   status,
   isManaged,
@@ -52,10 +54,14 @@ export default function CreatorHeader({
           {name}
         </h1>
 
+        <span className={`rounded-full border px-3 py-1.5 text-xs font-bold tracking-wider ${profileType === "TEAM" ? "border-purple-500/50 bg-purple-500/15 text-purple-200" : "border-zinc-700 bg-zinc-900 text-zinc-300"}`}>
+          {profileType}
+        </span>
+
         <div className="flex items-center gap-2">
 
           <CreatorVerificationBadge
-            verified={verified}
+            verified={verified ?? false}
           />
 
           {status && (
@@ -102,7 +108,7 @@ export default function CreatorHeader({
             text-zinc-600
           "
         >
-          ModVault Creator
+          ModVault Profile
         </span>
 
         <div

@@ -81,7 +81,7 @@ export default function LaunchMilestone() {
                   <div className="text-right">
 
                     <div className="text-5xl font-bold text-white">
-                      74%
+                      83%
                     </div>
 
                     <div className="text-zinc-400">

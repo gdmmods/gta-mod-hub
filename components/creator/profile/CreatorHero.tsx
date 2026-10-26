@@ -8,8 +8,22 @@ import CreatorSocialLinks from "./CreatorSocialLinks";
 import CreatorStats from "./CreatorStats";
 import type { ExternalDownloadSummary } from "@/lib/server/external-download-counts-core";
 
+type CreatorHeroProfile = {
+  id: string;
+  name: string;
+  owner_type: string | null;
+  socials: Record<string, string> | null;
+  avatar: string | null;
+  verified: boolean | null;
+  status: string | null;
+  tagline: string | null;
+  specialization: string[] | null;
+  bio: string | null;
+  location: string | null;
+};
+
 interface CreatorHeroProps {
-  creator: any;
+  creator: CreatorHeroProfile;
 
   bannerImage: string;
 
@@ -20,7 +34,7 @@ interface CreatorHeroProps {
   totalDownloads: number;
   externalDownloadSummary: ExternalDownloadSummary;
   isManaged: boolean;
-  creatorGames: any[];
+  creatorGames: Array<{ id: string; name: string; slug: string }>;
 }
 
 export default function CreatorHero({
@@ -219,6 +233,7 @@ const supportUrl =
 
               <CreatorHeader
                 name={creator.name}
+                profileType={creator.owner_type === "team" ? "TEAM" : "CREATOR"}
                 verified={creator.verified}
                 status={creator.status}
                 isManaged={isManaged}

@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import CreatorProfileSection from "@/components/creator-settings/CreatorProfileSection";
 
 import CreatorBrandingSection from "@/components/creator-settings/CreatorBrandingSection";
@@ -23,6 +21,7 @@ type Props = {
   handleSubmit: any;
 
   loading: boolean;
+  saveError: string | null;
 
 };
 
@@ -37,6 +36,7 @@ export default function CreatorSettingsForm({
   handleSubmit,
 
   loading,
+  saveError,
 
 }: Props) {
 
@@ -48,6 +48,12 @@ export default function CreatorSettingsForm({
       onSubmit={handleSubmit}
       className="space-y-10"
     >
+
+      {saveError && (
+        <p role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          {saveError}
+        </p>
+      )}
 
       <CreatorProfileSection
         form={form}
@@ -330,12 +336,13 @@ export default function CreatorSettingsForm({
         field: string,
         value: string
       ) => {
-
-        form.socials = {
-          ...form.socials,
-          [field]: value,
-        };
-
+        setForm((previous: any) => ({
+          ...previous,
+          socials: {
+            ...previous.socials,
+            [field]: value,
+          },
+        }));
       }}
       />
 

@@ -124,7 +124,7 @@ begin
     pg_catalog.hashtextextended(p_event_id::text, 0)
   );
   perform pg_catalog.pg_advisory_xact_lock(
-    pg_catalog.hashtextextended(p_session_hash || p_mod_id::text, 0)
+    pg_catalog.hashtextextended(p_session_hash, 0)
   );
 
   if exists (select 1 from public.mod_click_events as e where e.event_id = p_event_id) then

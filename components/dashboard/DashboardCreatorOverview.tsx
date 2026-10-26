@@ -1,6 +1,6 @@
 type Props = {
 
-  creator: any;
+  creator: { name: string; owner_type?: string | null } | null;
 
   modCount: number;
 
@@ -54,6 +54,10 @@ export default function DashboardCreatorOverview({
       >
         {creator.name}
       </h2>
+
+      <span className={`mt-3 inline-flex rounded-full border px-3 py-1 text-[10px] font-semibold tracking-wider ${creator.owner_type === "team" ? "border-purple-500/40 bg-purple-500/10 text-purple-200" : "border-zinc-700 bg-zinc-800 text-zinc-300"}`}>
+        {creator.owner_type === "team" ? "TEAM" : "CREATOR"}
+      </span>
 
       <div
         className="

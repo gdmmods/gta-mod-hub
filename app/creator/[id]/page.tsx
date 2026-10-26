@@ -11,9 +11,32 @@ import CreatorActivity from "@/components/creator/profile/CreatorActivity";
 import CreatorFeaturedMod from "@/components/creator/profile/CreatorFeaturedMod";
 import CreatorModsSection from "@/components/creator/profile/CreatorModsSection";
 import CreatorSidebar from "@/components/creator/profile/CreatorSidebar";
-import { getCreatorExternalDownloadSummary, type CreatorExternalDownloadSource } from "@/lib/server/external-download-counts";
+import PublicTeamRoster, { type PublicTeamMember, type PublicTeamMod } from "@/components/creator/profile/PublicTeamRoster";
+import { getCreatorExternalDownloadSummary, getExternalDownloadDataByMod, type CreatorExternalDownloadSource } from "@/lib/server/external-download-counts";
+import { calculateTeamProfileStats, isMissingClickTotalsTable, sumLegacyDownloadClicks } from "@/lib/server/team-profile-stats-core.mjs";
+import { selectTeamFeaturedMods } from "@/lib/server/team-featured-mods-core.mjs";
 import { normalizeGtaInsideProjectUrl } from "@/lib/connectors/gtainside";
 import { normalizeGta5ModsProjectUrl } from "@/lib/connectors/sourceProjectUrl";
+
+type CreatorGame = { id: string; name: string; slug: string };
+type CreatorMod = PublicTeamMod & {
+  mod_creators?: Array<{ creators: { id: string; name: string }[] | { id: string; name: string } | null }>;
+};
+type FeaturedCardMod = { id: string; title: string; image: string; likes: number | null; downloads: number | null };
+type TeamFeatureModRow = {
+  id: string;
+  title: string | null;
+  image: string | null;
+  category: string | null;
+  description: string | null;
+  likes: number | null;
+  downloads: number | null;
+  source_url: string | null;
+  tags: string[] | null;
+  visibility: string | null;
+  release_state: string | null;
+  origin: string | null;
+};
 
 export default async function CreatorPage({
   params,
@@ -60,7 +83,9 @@ export default async function CreatorPage({
       socials,
       verified,
       status,
-      games
+      games,
+      owner_type,
+      team_id
     `)
     .eq("id", creatorId)
     .maybeSingle();
@@ -90,7 +115,7 @@ export default async function CreatorPage({
   const creatorGameIds =
     creator.games || [];
 
-  let creatorGames: any[] = [];
+  let creatorGames: CreatorGame[] = [];
 
   if (creatorGameIds.length > 0) {
 
@@ -127,26 +152,68 @@ export default async function CreatorPage({
      CREATOR OWNERSHIP
   ----------------------------- */
 
-  const {
-    data: members,
-  } = await supabase
-    .from("creator_members")
-    .select(`
-      id,
-      role,
-      status
-    `)
-    .eq(
-      "creator_id",
-      creatorId
-    )
-    .eq(
-      "status",
-      "approved"
-    );
+  const { data: managedResult, error: managedError } = await supabase.rpc(
+    "is_creator_managed",
+    { p_creator_id: creatorId },
+  );
+  if (managedError) console.error("CREATOR MANAGEMENT STATUS ERROR:", managedError);
+  const isManaged = managedResult === true;
 
-  const isManaged =
-    (members?.length || 0) > 0;
+  let publicTeamMembers: PublicTeamMember[] = [];
+  const teamModsByCreator: Record<string, PublicTeamMod[]> = {};
+  let teamModRelationships: Array<{ creator_id: string; mod_id: string }> = [];
+  let teamPublishedMods: TeamFeatureModRow[] = [];
+  if (creator.owner_type === "team" && creator.team_id) {
+    const { data: roster, error: rosterError } = await supabase.rpc(
+      "get_public_team_members",
+      { p_team_id: creator.team_id },
+    );
+    if (rosterError) console.error("PUBLIC TEAM ROSTER ERROR:", rosterError);
+    publicTeamMembers = roster ?? [];
+
+    const memberCreatorIds = publicTeamMembers.map((member) => member.creator_id);
+    if (memberCreatorIds.length > 0) {
+      const { data: teamRelations, error: teamRelationsError } = await supabase
+        .from("mod_creators").select("creator_id,mod_id").in("creator_id", memberCreatorIds);
+      if (teamRelationsError) console.error("TEAM MOD RELATION ERROR:", teamRelationsError);
+      const relationRows = teamRelations ?? [];
+      teamModRelationships = relationRows;
+      const teamModIds = [...new Set(relationRows.map((relation) => relation.mod_id))];
+      if (teamModIds.length > 0) {
+        const { data: publishedTeamMods, error: teamModsError } = await supabase
+          .from("mods")
+          .select("id,title,image,category,description,likes,downloads,source_url,tags,visibility,release_state,origin")
+          .in("id", teamModIds)
+          .eq("status", "published")
+          .in("visibility", ["public", "early_access"]);
+        if (teamModsError) console.error("TEAM PUBLISHED MODS ERROR:", teamModsError);
+        teamPublishedMods = (publishedTeamMods ?? []) as TeamFeatureModRow[];
+        const modsById = new Map<string, PublicTeamMod>(teamPublishedMods.map((mod) => [mod.id, {
+          ...mod,
+          title: mod.title ?? "Untitled",
+          image: mod.image ?? "/placeholder.jpg",
+          category: mod.category ?? null,
+          description: mod.description ?? "",
+          likes: mod.likes ?? 0,
+          downloads: mod.downloads ?? 0,
+          source_url: mod.source_url ?? "#",
+          tags: mod.tags ?? [],
+          visibility: mod.visibility ?? "public",
+          release_state: mod.release_state ?? "public",
+        } as PublicTeamMod]));
+        const rosterMemberById = new Map(publicTeamMembers.map((member) => [member.creator_id, member]));
+        for (const relation of relationRows) {
+          const mod = modsById.get(relation.mod_id);
+          const member = rosterMemberById.get(relation.creator_id);
+          if (!mod || !member) continue;
+          (teamModsByCreator[relation.creator_id] ??= []).push({
+            ...mod,
+            mod_creators: [{ creators: { id: member.creator_id, name: member.creator_name } }],
+          });
+        }
+      }
+    }
+  }
 
   /* -----------------------------
      FETCH RELATIONS
@@ -183,7 +250,7 @@ export default async function CreatorPage({
      FETCH MODS
   ----------------------------- */
 
-  let modsData: any[] = [];
+  let modsData: CreatorMod[] = [];
 
   if (modIds.length > 0) {
 
@@ -236,7 +303,7 @@ export default async function CreatorPage({
 
   const mods =
   modsData.map(
-    (m: any) => ({
+    (m) => ({
       id: m.id,
 
       title:
@@ -299,7 +366,8 @@ export default async function CreatorPage({
       0
     );
 
-  const publishedModsForExternalCounts = modIds.length
+  const isTeamProfile = creator.owner_type === "team";
+  const publishedModsForExternalCounts = !isTeamProfile && modIds.length
     ? await supabase.from("mods")
       .select("id, origin, source_url")
       .in("id", modIds)
@@ -309,12 +377,12 @@ export default async function CreatorPage({
   if (publishedModsForExternalCounts.error) console.error("CREATOR EXTERNAL COUNT MOD LOAD ERROR:", publishedModsForExternalCounts.error);
   const publishedExternalMods = publishedModsForExternalCounts.data ?? [];
   const publishedExternalModIds = publishedExternalMods.map((mod) => mod.id);
-  const linkedSourcesQuery = publishedExternalModIds.length
+  const linkedSourcesQuery = !isTeamProfile && publishedExternalModIds.length
     ? await supabase.from("mod_sources").select("mod_id, canonical_url, platform_id").in("mod_id", publishedExternalModIds)
     : { data: [], error: null };
   if (linkedSourcesQuery.error) console.error("CREATOR EXTERNAL SOURCE LOAD ERROR:", linkedSourcesQuery.error);
   const linkedPlatformIds = [...new Set((linkedSourcesQuery.data ?? []).map((source) => source.platform_id))];
-  const linkedPlatformsQuery = linkedPlatformIds.length
+  const linkedPlatformsQuery = !isTeamProfile && linkedPlatformIds.length
     ? await supabase.from("platforms").select("id, slug").in("id", linkedPlatformIds)
     : { data: [], error: null };
   if (linkedPlatformsQuery.error) console.error("CREATOR EXTERNAL PLATFORM LOAD ERROR:", linkedPlatformsQuery.error);
@@ -332,6 +400,13 @@ export default async function CreatorPage({
     if (platform && source.canonical_url) externalSourcesByMod.push({ modId: source.mod_id, platform, url: source.canonical_url });
   }
   const externalDownloadSummary = await getCreatorExternalDownloadSummary(externalSourcesByMod);
+
+  // Creator profiles retain their existing statistics; team profiles override
+  // these values below using the public owner + active-member mod set.
+  let profileModsCount = isTeamProfile ? 0 : mods.length;
+  let profileTotalLikes = isTeamProfile ? 0 : totalLikes;
+  let profileClicks = isTeamProfile ? 0 : totalDownloads;
+  let profileExternalDownloadSummary = externalDownloadSummary;
 
   /* -----------------------------
      FEATURED MODS
@@ -354,6 +429,78 @@ export default async function CreatorPage({
             (a.likes || 0)
         )[0]
       : null;
+
+  let featuredMostDownloaded: FeaturedCardMod | null = mostDownloaded;
+  let featuredMostLiked: FeaturedCardMod | null = mostLiked;
+  let featuredEmptyMessage: string | undefined;
+
+  if (creator.owner_type === "team" && creator.team_id) {
+    const teamCreatorIds = [...new Set(publicTeamMembers.map((member) => member.creator_id))];
+    const eligibleTeamMods = [...new Map(teamPublishedMods.map((mod) => [mod.id, mod])).values()];
+    const teamModIds = eligibleTeamMods.map((mod) => mod.id);
+    const { data: clickRows, error: clickTotalsError } = teamModIds.length
+      ? await supabase.from("mod_click_totals").select("mod_id,action_type,click_count").in("mod_id", teamModIds)
+      : { data: [], error: null };
+    const clickTotalsTableMissing = isMissingClickTotalsTable(clickTotalsError);
+    if (clickTotalsTableMissing) {
+      console.warn("TEAM CLICK TOTALS TABLE IS NOT DEPLOYED; USING LEGACY MOD DOWNLOAD COUNTS.");
+    } else if (clickTotalsError) {
+      console.error(`TEAM CLICK TOTALS LOAD ERROR (${clickTotalsError.code}): ${clickTotalsError.message}`);
+    }
+    const teamStats = calculateTeamProfileStats(eligibleTeamMods, clickRows ?? []);
+    profileModsCount = teamStats.modsCount;
+    profileTotalLikes = teamStats.totalLikes;
+    profileClicks = clickTotalsTableMissing ? sumLegacyDownloadClicks(eligibleTeamMods) : teamStats.totalClicks;
+
+    const { data: sourceRows, error: sourceError } = teamModIds.length
+      ? await supabase.from("mod_sources").select("mod_id,canonical_url,platform_id").in("mod_id", teamModIds)
+      : { data: [], error: null };
+    if (sourceError) console.error("TEAM FEATURE SOURCE LOAD ERROR:", sourceError);
+
+    const sourcePlatformIds = [...new Set((sourceRows ?? []).map((source) => source.platform_id))];
+    const { data: sourcePlatforms, error: platformError } = sourcePlatformIds.length
+      ? await supabase.from("platforms").select("id,slug").in("id", sourcePlatformIds)
+      : { data: [], error: null };
+    if (platformError) console.error("TEAM FEATURE PLATFORM LOAD ERROR:", platformError);
+
+    const platformSlugById = new Map((sourcePlatforms ?? []).map((platform) => [platform.id, platform.slug]));
+    const externalSources: CreatorExternalDownloadSource[] = [];
+    for (const mod of eligibleTeamMods) {
+      const primaryPlatform = mod.origin === "gtainside" || mod.origin === "gta5mods"
+        ? mod.origin
+        : normalizeGtaInsideProjectUrl(mod.source_url) ? "gtainside"
+          : normalizeGta5ModsProjectUrl(mod.source_url) ? "gta5mods" : null;
+      if (primaryPlatform && mod.source_url) externalSources.push({ modId: mod.id, platform: primaryPlatform, url: mod.source_url });
+    }
+    for (const source of sourceRows ?? []) {
+      const platform = platformSlugById.get(source.platform_id);
+      if (platform && source.canonical_url) externalSources.push({ modId: source.mod_id, platform, url: source.canonical_url });
+    }
+
+    const externalDownloadData = await getExternalDownloadDataByMod(externalSources);
+    const externalTotalsByMod = externalDownloadData.totalsByMod;
+    profileExternalDownloadSummary = externalDownloadData.summary;
+    const creatorIdsByMod = new Map<string, string[]>();
+    for (const relation of teamModRelationships) {
+      const creatorIds = creatorIdsByMod.get(relation.mod_id) ?? [];
+      creatorIds.push(relation.creator_id);
+      creatorIdsByMod.set(relation.mod_id, creatorIds);
+    }
+
+    const teamFeatured = selectTeamFeaturedMods(eligibleTeamMods.map((mod) => ({
+      id: mod.id,
+      title: mod.title,
+      image: mod.image,
+      likes: mod.likes,
+      externalDownloads: externalTotalsByMod.get(mod.id) ?? null,
+      status: "published",
+      visibility: mod.visibility ?? "public",
+      creatorIds: creatorIdsByMod.get(mod.id) ?? [],
+    })), teamCreatorIds);
+    featuredMostDownloaded = teamFeatured.mostDownloaded;
+    featuredMostLiked = teamFeatured.mostLiked;
+    featuredEmptyMessage = "No eligible published mods are available for this team yet.";
+  }
 
   const bannerImage =
     creator.banner ||
@@ -380,24 +527,27 @@ export default async function CreatorPage({
         creator={creator}
         bannerImage={bannerImage}
         socials={socials}
-        modsCount={mods.length}
-        totalLikes={totalLikes}
-        totalDownloads={totalDownloads}
-        externalDownloadSummary={externalDownloadSummary}
+        modsCount={profileModsCount}
+        totalLikes={profileTotalLikes}
+        totalDownloads={profileClicks}
+        externalDownloadSummary={profileExternalDownloadSummary}
         isManaged={isManaged}
         creatorGames={creatorGames}
       />
 
       {/* FEATURED CREATIONS */}
       <CreatorFeaturedMod
-        mostDownloaded={mostDownloaded}
-        mostLiked={mostLiked}
+        mostDownloaded={featuredMostDownloaded}
+        mostLiked={featuredMostLiked}
+        emptyMessage={featuredEmptyMessage}
       />
 
       {/* MODS FIRST */}
-      <CreatorModsSection
-        mods={mods}
-      />
+      {creator.owner_type === "team" ? (
+        <PublicTeamRoster members={publicTeamMembers} modsByCreator={teamModsByCreator} />
+      ) : (
+        <CreatorModsSection mods={mods} />
+      )}
 
     
 

@@ -1,8 +1,14 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
+type SearchMod = { id: string; title: string; image: string | null };
+type SearchCreator = { id: string; name: string; avatar: string | null; owner_type: string | null };
+
 type Props = {
-  mods: any[];
-  creators: any[];
+  mods: SearchMod[];
+  creators: SearchCreator[];
   active: string;
 };
 
@@ -11,6 +17,10 @@ export default function SearchResults({
   creators,
   active,
 }: Props) {
+
+  const [profileFilter, setProfileFilter] = useState<"all" | "creator" | "team">("all");
+  const visibleCreators = creators.filter((creator) => profileFilter === "all"
+    || (profileFilter === "team" ? creator.owner_type === "team" : creator.owner_type !== "team"));
 
   return (
 
@@ -59,7 +69,7 @@ export default function SearchResults({
               >
 
                 <img
-                  src={mod.image}
+                  src={mod.image || "/placeholder.jpg"}
                   alt={mod.title}
                   className="
                     w-full
@@ -108,6 +118,16 @@ export default function SearchResults({
             Creators
           </h2>
 
+          <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Filter profile results">
+            {(["all", "creator", "team"] as const).map((filter) => <button
+              key={filter}
+              type="button"
+              aria-pressed={profileFilter === filter}
+              onClick={() => setProfileFilter(filter)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition ${profileFilter === filter ? "border-purple-500/60 bg-purple-500/15 text-purple-200" : "border-zinc-800 text-zinc-400 hover:border-zinc-600"}`}
+            >{filter === "all" ? "All profiles" : filter === "team" ? "Teams" : "Creators"}</button>)}
+          </div>
+
           <div
             className="
               grid
@@ -117,15 +137,12 @@ export default function SearchResults({
             "
           >
 
-            {creators.map((creator) => {
+            {visibleCreators.map((creator) => {
 
               const isTeam =
                 creator.owner_type === "team";
 
-              const label =
-                isTeam
-                  ? "Team"
-                  : "Creator";
+              const label = isTeam ? "TEAM" : "CREATOR";
 
               const initial =
                 creator.name
@@ -219,16 +236,7 @@ export default function SearchResults({
                         {creator.name}
                       </h3>
 
-                      <span
-                        className="
-                          inline-block
-                          mt-1
-                          text-xs
-                          uppercase
-                          tracking-wider
-                          text-zinc-500
-                        "
-                      >
+                      <span className={`mt-1 inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-wider ${isTeam ? "border-purple-500/40 bg-purple-500/10 text-purple-200" : "border-zinc-700 bg-zinc-800/80 text-zinc-300"}`}>
                         {label}
                       </span>
 

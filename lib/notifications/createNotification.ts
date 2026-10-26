@@ -19,4 +19,4 @@ export async function createNotification({
   if (error) {
     console.error("Notification Error:", error);
   }
-}
+}   

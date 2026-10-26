@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase/client";
 
 import { defaultModForm }from "@/lib/forms/defaultModForm";
 import { parseCreatorBackupUrl } from "@/lib/server/creatorBackupUrl";
+import { normalizeModCategory } from "@/lib/vehicle-subcategories";
 
 export default function useEditMod(modId: string | string[]) {
   const [loading, setLoading] =
@@ -55,6 +56,11 @@ export default function useEditMod(modId: string | string[]) {
     setForm({
   ...defaultModForm,
   ...data,
+  category: normalizeModCategory(data.category, {
+    title: data.title,
+    description: data.description,
+    tags: data.tags,
+  }).category,
 });
 
     setLoaded(true);
@@ -187,7 +193,10 @@ export default function useEditMod(modId: string | string[]) {
             form.description,
 
           category:
-            form.category,
+            normalizeModCategory(form.category, {
+              title: form.title,
+              description: form.description,
+            }).category,
 
           image:
             form.image,

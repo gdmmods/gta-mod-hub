@@ -19,15 +19,19 @@ export default async function CategoryPage({
   const { slug } = await params;
 
   /* FETCH MODS */
-  const { data: mods, error } =
-    await supabase
-      .from("mods")
-      .select("*")
-      .eq("category", slug)
-      .eq("status", "published")
-      .order("likes", {
-        ascending: false,
-      });
+  const modsQuery = supabase
+    .from("mods")
+    .select("*")
+    .eq("status", "published");
+
+  // Include legacy vehicle labels until the data backfill is reviewed.
+  const scopedQuery = slug === "vehicles"
+    ? modsQuery.or("category.eq.vehicles,category.eq.vehicle,category.eq.car,category.eq.cars,category.ilike.Cars / %,category.ilike.paintjob%,category.ilike.aircraft%,category.ilike.airplane%,category.ilike.aeroplane%,category.ilike.helicopter%,category.ilike.plane%,category.ilike.boat%,category.ilike.jet ski%,category.ilike.waverunner%,category.ilike.wheel%,category.ilike.rim%,category.ilike.bike%,category.ilike.motorcycle%,category.ilike.livery%")
+    : modsQuery.eq("category", slug);
+
+  const { data: mods, error } = await scopedQuery.order("likes", {
+    ascending: false,
+  });
 
   if (error) {
     console.log(error);
@@ -119,7 +123,7 @@ export default async function CategoryPage({
 
       </div>
 
-      <CategoryGridClient mods={mods || []} />
+      <CategoryGridClient mods={mods || []} category={slug} />
       
     </main>
   );

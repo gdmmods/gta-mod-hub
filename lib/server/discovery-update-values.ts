@@ -2,6 +2,7 @@ import type { Gta5ModsDetails } from "../connectors/gta5ModsDetails";
 import { getGta5ModsPreviewDescription } from "../connectors/gta5ModsDescriptionPreview";
 import { getGtaInsidePreviewDescription } from "../connectors/gtaInsideDescriptionPreview";
 import type { GtaInsideDetails } from "../connectors/gtaInsideDetails";
+import { normalizeModCategory } from "../vehicle-subcategories";
 
 const SOURCE_FIELDS = ["title", "description", "category", "creator", "image", "images", "features", "requirements", "notes", "credits", "download_url"] as const;
 export const SOURCE_DESCRIPTION_PLACEHOLDER = "None found in source description";
@@ -66,7 +67,14 @@ export function getSourceUpdateValues(project: SourceProject): UpdateValues {
       : getGta5ModsPreviewDescription(description, details as unknown as Pick<Gta5ModsDetails, "features" | "requirements" | "notes" | "knownBugs" | "credits">)
     : description;
   if (cleanedDescription) values.description = cleanedDescription;
-  if (category) values.category = category;
+  if (category) {
+    values.category = normalizeModCategory(category, {
+      title,
+      description,
+      tags: details.tags,
+      subcategory: details.subcategory,
+    }).category;
+  }
   if (creator) values.creator = creator;
   if (features) values.features = features;
   if (requirements) values.requirements = requirements;

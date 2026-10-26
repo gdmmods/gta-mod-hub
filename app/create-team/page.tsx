@@ -219,55 +219,6 @@ console.log(
       })
       .eq("id", team.id);
 
-      /* ---------------------------
-         CREATE OWNER MEMBERSHIP
-      ---------------------------- */
-
-      const {
-        error: memberError,
-      } = await supabase
-        .from("team_members")
-        .insert({
-
-          team_id:
-            team.id,
-
-          creator_id:
-            founderCreator.id,
-
-          role:
-            "owner",
-
-          membership_status:
-            "active",
-
-          can_upload:
-            true,
-
-          can_manage_members:
-            true,
-
-          can_manage_team:
-            true,
-
-        });
-
-      if (memberError) {
-
-        console.error(
-          memberError
-        );
-
-        alert(
-          "Failed to create owner membership."
-        );
-
-        setLoading(false);
-
-        return;
-
-      }
-
       const {
   error: creatorMemberError,
 } = await supabase
@@ -285,6 +236,9 @@ console.log(
 
     status:
       "approved",
+
+    verified:
+      true,
 
   });
 
