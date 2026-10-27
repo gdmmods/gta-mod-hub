@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useCreatorContext } from "@/app/contexts/CreatorContext";
 
 import {
   useEffect,
@@ -14,20 +15,14 @@ import {
 
 export default function UserMenu() {
 
+  const { activeCreatorId } = useCreatorContext();
+
   const [open, setOpen] =
     useState(false);
 
   const [session, setSession] =
     useState<any>(null);
-
-  const [
-    creatorId,
-    setCreatorId,
-  ] = useState<string | null>(
-    null
-  );
-
-  const menuRef =
+const menuRef =
     useRef<HTMLDivElement>(null);
 
   /* --------------------------------
@@ -69,110 +64,28 @@ export default function UserMenu() {
 
   }, []);
 
-  /* --------------------------------
-     LOAD SESSION
-  -------------------------------- */
-
-  useEffect(() => {
+    useEffect(() => {
+    let mounted = true;
 
     async function loadSession() {
-
-      const {
-        data: { session },
-      } =
-        await supabase.auth.getSession();
-
-      setSession(session);
-
-      if (!session) {
-
-        setCreatorId(null);
-        return;
-
-      }
-
-      loadCreator(session.user.id);
-
+      const { data: { session } } = await supabase.auth.getSession();
+      if (mounted) setSession(session);
     }
 
-    async function loadCreator(
-        userId: string
-      ) {
-
-        console.log(
-          "USER ID:",
-          userId
-        );
-
-        const {
-          data: profile,
-          error: profileError,
-        } = await supabase
-          .from("profiles")
-          .select(`
-            default_creator_id
-          `)
-          .eq(
-            "id",
-            userId
-          )
-          .single();
-
-        if (profileError) {
-
-          console.error(
-            "USER MENU PROFILE ERROR:",
-            profileError
-          );
-
-          return;
-
-        }
-
-        setCreatorId(
-          profile?.default_creator_id ??
-          null
-        );
-
-      }
-
-    loadSession();
-
-    const {
-      data: listener,
-    } =
-      supabase.auth.onAuthStateChange(
-        (_event, session) => {
-
-          setSession(session);
-
-          if (!session) {
-
-            setCreatorId(null);
-
-          } else {
-
-            loadCreator(
-              session.user.id
-            );
-
-          }
-
-        }
-      );
+    void loadSession();
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
 
     return () => {
-
+      mounted = false;
       listener.subscription.unsubscribe();
-
     };
-
   }, []);
 
   /* --------------------------------
      LOGOUT
   -------------------------------- */
-
   async function handleLogout() {
 
     await supabase.auth.signOut();
@@ -308,10 +221,10 @@ export default function UserMenu() {
 
               {/* MY CREATOR PROFILE */}
 
-              {creatorId && (
+              {activeCreatorId && (
 
                 <Link
-                  href={`/creator/${creatorId}`}
+                  href={`/creator/${activeCreatorId}`}
                   className="
                     flex
                     items-center

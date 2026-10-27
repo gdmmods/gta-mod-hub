@@ -1,5 +1,3 @@
-import { createNotification } from "./createNotification";
-
 type ActivityEvent = {
   id: string;
   event_type: string;
@@ -13,29 +11,8 @@ export async function createNotificationsForEvent(
     case "team_created":
       return;
 
-    case "team_member_invited": {
-      const recipientProfileId =
-        event.metadata?.recipientProfileId;
-
-      if (
-        typeof recipientProfileId !== "string" ||
-        !recipientProfileId
-      ) {
-        console.error(
-          "Cannot create invitation notification: recipient profile is missing.",
-          event.id
-        );
-        return;
-      }
-
-      await createNotification({
-        recipientProfileId,
-        activityEventId: event.id,
-      });
-
-      return;
-    }
-
+    // Invitation RPCs insert their notifications atomically with the activity event.
+    case "team_member_invited":
     case "team_member_joined":
       return;
 

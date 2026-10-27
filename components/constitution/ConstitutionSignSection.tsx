@@ -8,8 +8,11 @@ import {
 import {
   supabase,
 } from "@/lib/supabase/client";
+import { useCreatorContext } from "@/app/contexts/CreatorContext";
 
 export default function ConstitutionSignSection() {
+
+  const { activeCreatorId, loading: creatorContextLoading } = useCreatorContext();
 
   const [
     loading,
@@ -33,84 +36,54 @@ export default function ConstitutionSignSection() {
     setChecked,
   ] = useState(false);
 
-  /* --------------------------------
-     LOAD CREATOR + SIGNATURE STATUS
-  -------------------------------- */
-
   useEffect(() => {
+    let cancelled = false;
+    setChecked(false);
+    setSigned(false);
+    setCreatorId(null);
 
-    async function loadCreator() {
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-
-        setChecked(true);
-        return;
-
-      }
-
-      const {
-        data: membership,
-        error: membershipError,
-      } = await supabase
-        .from("creator_members")
-        .select("creator_id")
-        .eq(
-          "profile_id",
-          user.id
-        )
-        .eq(
-          "role",
-          "owner"
-        )
-        .maybeSingle();
-
-      if (
-        membershipError ||
-        !membership
-      ) {
-
-        setChecked(true);
-        return;
-
-      }
-
-      setCreatorId(
-        membership.creator_id
-      );
-
-      const {
-  data: existingRows,
-} = await supabase
-  .from(
-    "constitution_signatures"
-  )
-  .select("id")
-  .eq(
-    "creator_id",
-    membership.creator_id
-  );
-
-if (
-  existingRows &&
-  existingRows.length > 0
-) {
-
-  setSigned(true);
-
-}
-
+    if (creatorContextLoading) return () => { cancelled = true; };
+    if (!activeCreatorId) {
       setChecked(true);
-
+      return () => { cancelled = true; };
     }
 
-    loadCreator();
+    async function loadCreator() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        if (!cancelled) setChecked(true);
+        return;
+      }
 
-  }, []);
+      const { data: membership, error: membershipError } = await supabase
+        .from("creator_members")
+        .select("creator_id")
+        .eq("profile_id", user.id)
+        .eq("creator_id", activeCreatorId)
+        .eq("role", "owner")
+        .eq("status", "approved")
+        .maybeSingle();
 
+      if (cancelled) return;
+      if (membershipError || !membership) {
+        setChecked(true);
+        return;
+      }
+
+      setCreatorId(activeCreatorId);
+      const { data: existingRows, error: signatureError } = await supabase
+        .from("constitution_signatures")
+        .select("id")
+        .eq("creator_id", activeCreatorId);
+      if (cancelled) return;
+      if (signatureError) console.error("SIGNATURE STATUS ERROR:", signatureError);
+      setSigned((existingRows?.length ?? 0) > 0);
+      setChecked(true);
+    }
+
+    void loadCreator();
+    return () => { cancelled = true; };
+  }, [activeCreatorId, creatorContextLoading]);
   /* --------------------------------
      SIGN CONSTITUTION
   -------------------------------- */

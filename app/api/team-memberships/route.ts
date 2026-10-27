@@ -11,7 +11,7 @@ async function getOwnedCreators(supabase: Awaited<ReturnType<typeof createSupaba
   const { data: creators } = await supabase.from("creators").select("id,name,owner_id,owner_type")
     .in("id", ownedIds).eq("owner_type", "user").eq("owner_id", userId);
   const personalCreators = creators ?? [];
-  const creator = personalCreators.find((item) => item.id === profile?.default_creator_id) ?? personalCreators[0] ?? null;
+  const creator = personalCreators.find((item) => item.id === profile?.default_creator_id) ?? null;
   return { creator, creators: personalCreators, creatorIds: personalCreators.map((item) => item.id) };
 }
 
@@ -21,15 +21,13 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 
   const teamId = new URL(request.url).searchParams.get("teamId");
-  const { creator: defaultCreator, creators, creatorIds } = await getOwnedCreators(supabase, user.id);
-  if (!defaultCreator) return NextResponse.json({ error: "An approved personal creator profile is required." }, { status: 403 });
-
   if (teamId) {
     const { data: members, error } = await supabase.rpc("get_team_members_for_owner", { p_team_id: teamId });
     if (error) return NextResponse.json({ error: error.message || "Could not load team members." }, { status: error.code === "42501" ? 403 : 500 });
     return NextResponse.json({ members: members ?? [] });
   }
 
+  const { creator: defaultCreator, creators, creatorIds } = await getOwnedCreators(supabase, user.id);
   const requestedCreatorId = new URL(request.url).searchParams.get("creatorId");
   const creator = requestedCreatorId
     ? creators.find((item) => item.id === requestedCreatorId)
@@ -66,20 +64,24 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 
-  const { creator, creatorIds } = await getOwnedCreators(supabase, user.id);
-  if (!creator) return NextResponse.json({ error: "An approved personal creator profile is required." }, { status: 403 });
-
   let body: { action?: string; teamId?: string; creatorId?: string };
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid request." }, { status: 400 }); }
   if (!body.teamId || !["join", "leave", "remove"].includes(body.action ?? "")) {
     return NextResponse.json({ error: "Invalid membership action." }, { status: 400 });
   }
-  const requestedCreatorId = body.creatorId ?? creator.id;
-  const targetCreatorId = body.action === "remove" ? body.creatorId : requestedCreatorId;
-  if (!targetCreatorId) return NextResponse.json({ error: "Creator is required." }, { status: 400 });
-  if (body.action !== "remove" && !creatorIds.includes(targetCreatorId)) {
-    return NextResponse.json({ error: "You can only change membership for a creator profile you own." }, { status: 403 });
+
+  let targetCreatorId: string | undefined;
+  if (body.action === "remove") {
+    targetCreatorId = body.creatorId;
+  } else {
+    const { creator: defaultCreator, creatorIds } = await getOwnedCreators(supabase, user.id);
+    targetCreatorId = body.creatorId ?? defaultCreator?.id;
+    if (!targetCreatorId) return NextResponse.json({ error: "An approved personal creator profile is required." }, { status: 403 });
+    if (!creatorIds.includes(targetCreatorId)) {
+      return NextResponse.json({ error: "You can only change membership for a creator profile you own." }, { status: 403 });
+    }
   }
+  if (!targetCreatorId) return NextResponse.json({ error: "Creator is required." }, { status: 400 });
 
   const { data, error } = await supabase.rpc("set_team_membership", {
     p_team_id: body.teamId,

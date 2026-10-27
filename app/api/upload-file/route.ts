@@ -2,12 +2,16 @@ import { NextResponse } from "next/server";
 
 import { createClient }
 from "@supabase/supabase-js";
+import { canUserUploadToCreator } from "@/lib/server/creator-upload-authorization";
 
 export async function POST(
   req: Request
 ) {
 
   try {
+
+    const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const formData =
       await req.formData();
@@ -39,6 +43,11 @@ export async function POST(
         process.env
           .SUPABASE_SERVICE_ROLE_KEY!
       );
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { data: mod, error: modError } = await supabase.from("mods").select("id,creator_id").eq("id", modId).maybeSingle();
+    if (modError || !mod || !(await canUserUploadToCreator(supabase, user.id, mod.creator_id))) return NextResponse.json({ error: "You do not have upload permission for this mod." }, { status: 403 });
 
     const bytes =
       await file.arrayBuffer();

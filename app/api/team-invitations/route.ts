@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { recordActivity } from "@/lib/activity/recordActivity";
 
 export async function GET(request: Request) {
   const supabase = await createSupabaseServerClient();
@@ -39,7 +38,7 @@ export async function POST(request: Request) {
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid request." }, { status: 400 }); }
 
   if (body.action === "invite" && body.teamId && body.creatorId) {
-  const { data: invitation, error } = await supabase.rpc(
+  const { error } = await supabase.rpc(
     "create_team_invitation",
     {
       p_team_id: body.teamId,
@@ -62,47 +61,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { error: activityError } = await recordActivity({
-    eventType: "team_member_invited",
-
-    actor: {
-      type: "creator",
-      id: invitation.sender_creator_id,
-    },
-
-    target: {
-      type: "team",
-      id: invitation.team_id,
-    },
-
-    visibility: "private",
-
-    title: "Team invitation sent",
-    summary: "A creator was invited to join a team.",
-
-    metadata: {
-      invitationId: invitation.id,
-      teamId: invitation.team_id,
-      senderCreatorId: invitation.sender_creator_id,
-      recipientCreatorId: invitation.recipient_creator_id,
-      recipientProfileId: invitation.recipient_profile_id,
-
-      // Associate this activity with the invited creator.
-      creatorProfileId: invitation.recipient_creator_id,
-    },
-  });
-
-  if (activityError) {
-    console.error(
-      "Invitation was created, but activity recording failed:",
-      activityError
-    );
-  }
-
-  return NextResponse.json({
-    sent: true,
-    activityRecorded: !activityError,
-  });
+  return NextResponse.json({ sent: true });
 }
 
   if (body.action === "respond" && body.invitationId && typeof body.accept === "boolean") {

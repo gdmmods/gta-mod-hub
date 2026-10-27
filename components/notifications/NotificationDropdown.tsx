@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Activity,
   ArrowUpRight,
@@ -141,7 +142,10 @@ function getCategory(event: ActivityEvent | null): CategoryId {
   return "all";
 }
 
-function getTitle(event: ActivityEvent | null): string {
+function getTitle(event: ActivityEvent | null, accountId: string | null): string {
+  if (event?.event_type === "team_member_invited") {
+    return event.metadata?.senderProfileId === accountId ? "Team invitation sent" : "Team invitation";
+  }
   if (event?.title) return event.title;
 
   switch (event?.event_type) {
@@ -150,6 +154,9 @@ function getTitle(event: ActivityEvent | null): string {
 
     case "team_member_joined":
       return "New team member";
+
+    case "team_member_left":
+      return "Team member left";
 
     case "team_member_invitation_declined":
       return "Invitation declined";
@@ -168,7 +175,27 @@ function getTitle(event: ActivityEvent | null): string {
   }
 }
 
-function getDescription(event: ActivityEvent | null): string {
+function getNotificationHref(notification: Notification): string {
+  const event = getEvent(notification.activity_events);
+  const metadata = event?.metadata ?? {};
+  if (event?.event_type === "team_member_invited") return "/activity";
+  if (event?.event_type === "team_member_joined" || event?.event_type === "team_member_left") {
+    const teamCreatorId = metadata.teamCreatorId;
+    if (typeof teamCreatorId === "string" && teamCreatorId) return "/creator/" + encodeURIComponent(teamCreatorId);
+  }
+  return "/activity";
+}
+
+function getDescription(event: ActivityEvent | null, accountId: string | null): string {
+  if (event?.event_type === "team_member_invited") {
+    const metadata = event.metadata ?? {};
+    const teamName = typeof metadata.teamName === "string" ? metadata.teamName : "the team";
+    if (metadata.senderProfileId === accountId) {
+      const recipientName = typeof metadata.recipientCreatorName === "string" ? metadata.recipientCreatorName : "a creator";
+      return "You invited " + recipientName + " to join " + teamName + ".";
+    }
+    return "You've been invited to join " + teamName + ".";
+  }
   if (event?.summary) return event.summary;
 
   switch (event?.event_type) {
@@ -177,6 +204,9 @@ function getDescription(event: ActivityEvent | null): string {
 
     case "team_member_joined":
       return "A creator joined a team.";
+
+    case "team_member_left":
+      return "A creator left the team.";
 
     case "comment_created":
       return "Someone commented on a project.";
@@ -230,7 +260,10 @@ export default function NotificationDropdown({
   refreshKey = 0,
   onNotificationsChanged,
 }: NotificationDropdownProps) {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [accountId, setAccountId] = useState<string | null>(null);
+  const [pendingInvitationIds, setPendingInvitationIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -251,17 +284,42 @@ export default function NotificationDropdown({
       if (authError) throw authError;
 
       if (!user) {
+        setAccountId(null);
         setNotifications([]);
+        setPendingInvitationIds(new Set());
         return;
       }
+      setAccountId(user.id);
 
-      const result = await getNotifications(user.id);
-
-      setNotifications(
-        (result as Notification[])
-          .filter((notification) => !notification.archived_at)
-          .slice(0, 50)
-      );
+      const result = (await getNotifications(user.id) as Notification[])
+        .filter((notification) => !notification.archived_at)
+        .slice(0, 50);
+      setNotifications(result);
+      const pendingIds = new Set<string>();
+      const incomingResponse = await fetch("/api/team-invitations", { cache: "no-store" }).catch(() => null);
+      if (incomingResponse?.ok) {
+        const payload = await incomingResponse.json();
+        for (const invitation of payload.invitations ?? []) {
+          if (invitation.status === "pending" && typeof invitation.invitation_id === "string") pendingIds.add(invitation.invitation_id);
+        }
+      }
+      const outgoingTeamIds = [...new Set(result.flatMap((notification) => {
+        const event = getEvent(notification.activity_events);
+        const metadata = event?.metadata ?? {};
+        return event?.event_type === "team_member_invited" && metadata.senderProfileId === user.id && typeof metadata.teamId === "string" ? [metadata.teamId] : [];
+      }))];
+      const outgoingResults = await Promise.all(outgoingTeamIds.map(async (teamId) => {
+        const response = await fetch("/api/team-invitations?teamId=" + encodeURIComponent(teamId), { cache: "no-store" }).catch(() => null);
+        if (!response?.ok) return [];
+        const payload = await response.json();
+        return payload.invitations ?? [];
+      }));
+      for (const invitations of outgoingResults) {
+        for (const invitation of invitations) {
+          if (invitation.status === "pending" && typeof invitation.invitation_id === "string") pendingIds.add(invitation.invitation_id);
+        }
+      }
+      setPendingInvitationIds(pendingIds);
     } catch (cause) {
       console.error("Could not load notifications:", cause);
       setLoadError("Notifications could not be loaded.");
@@ -589,11 +647,6 @@ export default function NotificationDropdown({
                     const event = getEvent(notification.activity_events);
                     const category = getCategory(event);
 
-                    const CategoryIcon =
-                      CATEGORIES.find(
-                        (item) => item.id === category
-                      )?.icon ?? Activity;
-
                     const metadata = event?.metadata ?? {};
 
                     const creatorProfileId =
@@ -607,11 +660,11 @@ export default function NotificationDropdown({
                       <li key={notification.id}>
                         <button
                           type="button"
-                          disabled={
-                            notification.is_read ||
-                            busyId === notification.id
-                          }
-                          onClick={() => void markAsRead(notification)}
+                          disabled={busyId === notification.id}
+                          onClick={() => {
+                            if (!notification.is_read) void markAsRead(notification);
+                            router.push(getNotificationHref(notification));
+                          }}
                           className={`
                             flex w-full items-start gap-3
                             border-b border-zinc-800/70
@@ -653,7 +706,7 @@ export default function NotificationDropdown({
                                   : "font-semibold text-white"
                                 }
                               `}>
-                                {getTitle(event)}
+                                {getTitle(event, accountId)}
                               </span>
 
                               <span className="
@@ -672,7 +725,7 @@ export default function NotificationDropdown({
                               mt-1 block text-xs
                               leading-5 text-zinc-400
                             ">
-                              {getDescription(event)}
+                              {getDescription(event, accountId)}
                             </span>
 
                             <span className="
@@ -688,6 +741,10 @@ export default function NotificationDropdown({
                               ">
                                 {getCategoryLabel(category)}
                               </span>
+
+                              {event?.event_type === "team_member_invited" && typeof metadata.invitationId === "string" && pendingInvitationIds.has(metadata.invitationId) && (
+                                <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-200">Pending</span>
+                              )}
 
                               {creatorProfileId && (
                                 <span className="
@@ -749,3 +806,4 @@ export default function NotificationDropdown({
     </>
   );
 }
+

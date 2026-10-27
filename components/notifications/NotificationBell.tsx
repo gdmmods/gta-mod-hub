@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import NotificationDropdown from "./NotificationDropdown";
 import { supabase } from "@/lib/supabase/client";
@@ -15,6 +16,8 @@ export default function NotificationBell({
   onClick,
 }: NotificationBellProps) {
   const [open, setOpen] = useState(false);
+  const [connected, setConnected] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -25,9 +28,13 @@ export default function NotificationBell({
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      setConnected(false);
+      setAuthChecked(true);
       setUnreadCount(0);
       return;
     }
+    setConnected(true);
+    setAuthChecked(true);
 
     const { count, error } = await supabase
       .from("notifications")
@@ -45,17 +52,40 @@ export default function NotificationBell({
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      void loadUnreadCount();
-    }, 0);
-
-    return () => window.clearTimeout(timer);
+    const timer = window.setTimeout(() => { void loadUnreadCount(); }, 0);
+    const handleNotificationsChanged = () => { void loadUnreadCount(); };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setConnected(Boolean(session?.user));
+      setAuthChecked(true);
+      if (!session?.user) setUnreadCount(0);
+      else window.setTimeout(() => { void loadUnreadCount(); }, 0);
+    });
+    window.addEventListener("modvault:notifications-changed", handleNotificationsChanged);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("modvault:notifications-changed", handleNotificationsChanged);
+      subscription.unsubscribe();
+    };
   }, [loadUnreadCount]);
 
   const handleNotificationChange = useCallback(() => {
     setRefreshKey((previous) => previous + 1);
     void loadUnreadCount();
   }, [loadUnreadCount]);
+
+  if (!authChecked) return null;
+  if (!connected) {
+    return (
+      <Link
+        href="/activity"
+        title="Create a profile to use the Activity Hub"
+        aria-label="Open Activity Hub and create a profile"
+        className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/60 transition-colors hover:bg-zinc-800"
+      >
+        <Image src="/images/icons/notifications.png" alt="" width={250} height={250} className="h-8 w-8 object-contain grayscale brightness-75 opacity-50" />
+      </Link>
+    );
+  }
 
   return (
     <div className="relative">

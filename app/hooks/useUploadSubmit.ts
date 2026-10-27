@@ -136,6 +136,7 @@ export default function useUploadSubmit({
             "/api/upload-file",
             {
               method: "POST",
+              headers: { Authorization: `Bearer ${session.access_token}` },
               body: fileForm,
             }
           );

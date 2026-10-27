@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import Link from "next/link";
+import AuthenticatedUploadLink from "@/components/auth/AuthenticatedUploadLink";
 
 import DashboardModCard from "./DashboardModCard";
 
@@ -195,8 +195,7 @@ export default function DashboardModsGrid({
 
         </div>
 
-        <Link
-          href="/upload"
+        <AuthenticatedUploadLink
           className="
             px-5
             py-3
@@ -209,7 +208,7 @@ export default function DashboardModsGrid({
           "
         >
           Upload Mod
-        </Link>
+        </AuthenticatedUploadLink>
 
       </div>
 

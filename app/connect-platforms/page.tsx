@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { useCreatorContext } from "@/app/contexts/CreatorContext";
 
 import Navbar from "@/components/layout/Navbar";
 import PlatformPicker from "@/components/creator/PlatformPicker";
@@ -30,8 +31,7 @@ export default function ConnectPlatformsPage() {
     const [profileUrl, setProfileUrl] =
     useState("");
 
-    const [currentCreatorId, setCurrentCreatorId] =
-    useState<string | null>(null);
+    const { activeCreatorId: currentCreatorId, loading: creatorLoading } = useCreatorContext();
 
     const [saving, setSaving] =
     useState(false);
@@ -45,148 +45,50 @@ export default function ConnectPlatformsPage() {
     const [connectedPlatformName, setConnectedPlatformName] =
     useState<string | null>(null);
 
-    async function loadConnectedIdentities(
-        creatorId: string
-        ) {
-        const {
-            data,
-            error,
-        } = await supabase
-            .from("external_identities")
-            .select(`
-            id,
-            username,
-            profile_url,
-            verification_status,
-            connected_at,
-            metadata,
-            platform:platforms (
-                id,
-                name,
-                slug
-            )
-            `)
-            .eq(
-            "creator_id",
-            creatorId
-            )
-            .order(
-            "connected_at",
-            {
-                ascending: false,
-            }
-            );
-
-        if (error) {
-
-            console.error(
-            "CONNECTED IDENTITIES ERROR:",
-            error
-            );
-
-            return;
-
-        }
-
-        setIdentities(
-            data || []
-        );
-
-        setIdentitiesLoading(false);
-        }
+  async function loadConnectedIdentities(creatorId: string) {
+    const { data, error } = await supabase.from("external_identities").select(`id,username,profile_url,verification_status,connected_at,metadata,platform:platforms(id,name,slug)`)
+      .eq("creator_id", creatorId).order("connected_at", { ascending: false });
+    if (error) { console.error("CONNECTED IDENTITIES ERROR:", error); return; }
+    setIdentities(data || []);
+  }
+  useEffect(() => {
+    let cancelled = false;
+    async function loadPlatforms() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setLoading(false); setIdentitiesLoading(false); return; }
+      const { data, error } = await supabase.from("platforms").select("id,name,slug,status").eq("status", "active").order("name");
+      if (cancelled) return;
+      if (error) console.error("PLATFORM LOAD ERROR:", error);
+      setPlatforms(data || []);
+      setLoading(false);
+    }
+    void loadPlatforms();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
-
-    async function loadPlatforms() {
-
-
-    const {
-        data: {
-        session,
-        },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-        setLoading(false);
-        return;
+    let cancelled = false;
+    async function loadActiveCreatorIdentities() {
+      setIdentitiesLoading(true);
+      setIdentities([]);
+      if (creatorLoading) return;
+      if (!currentCreatorId) { setIdentitiesLoading(false); return; }
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) { setIdentitiesLoading(false); return; }
+      const { data: membership, error: membershipError } = await supabase.from("creator_members")
+        .select("creator_id").eq("profile_id", user.id).eq("creator_id", currentCreatorId).eq("status", "approved").maybeSingle();
+      if (cancelled) return;
+      if (membershipError || !membership) { setIdentitiesLoading(false); return; }
+      const { data, error } = await supabase.from("external_identities").select(`id,username,profile_url,verification_status,connected_at,metadata,platform:platforms(id,name,slug)`)
+        .eq("creator_id", currentCreatorId).order("connected_at", { ascending: false });
+      if (cancelled) return;
+      if (error) console.error("CONNECTED IDENTITIES ERROR:", error);
+      setIdentities(data || []);
+      setIdentitiesLoading(false);
     }
-
-    const {
-        data: profile,
-        error: profileError,
-    } = await supabase
-        .from("profiles")
-        .select("default_creator_id")
-        .eq("id", session.user.id)
-        .single();
-
-    if (profileError) {
-        console.error(
-        "PROFILE LOAD ERROR:",
-        profileError
-        );
-
-        setLoading(false);
-        return;
-    }
-
-    setCurrentCreatorId(
-        profile?.default_creator_id || null
-    );
-
-    if (profile?.default_creator_id) {
-
-  await loadConnectedIdentities(
-    profile.default_creator_id
-  );
-
-} else {
-
-  setIdentities([]);
-  setIdentitiesLoading(false);
-
-}
-
-    const {
-        data,
-        error,
-    } = await supabase
-            .from("platforms")
-            .select(`
-            id,
-            name,
-            slug,
-            status
-            `)
-            .eq(
-            "status",
-            "active"
-            )
-            .order("name");
-
-        if (error) {
-
-            console.error(
-            "PLATFORM LOAD ERROR:",
-            error
-            );
-
-            setLoading(false);
-
-            return;
-        }
-
-        setPlatforms(
-            data || []
-        );
-
-        setLoading(false);
-        }
-
-        loadPlatforms();
-
-    }, []);
-
+    void loadActiveCreatorIdentities();
+    return () => { cancelled = true; };
+  }, [currentCreatorId, creatorLoading]);
   return (
     <>
       <Navbar />

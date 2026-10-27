@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import { supabase } from "@/lib/supabase/client";
+import { useCreatorContext } from "@/app/contexts/CreatorContext";
 
 import Navbar from "@/components/layout/Navbar";
 
@@ -67,8 +68,7 @@ export default function DiscoverModsPage() {
   const [discoveryError, setDiscoveryError] =
     useState<string | null>(null);
 
-  const [currentCreatorId, setCurrentCreatorId] =
-    useState<string | null>(null);
+  const { activeCreatorId: currentCreatorId, loading: creatorContextLoading } = useCreatorContext();
 
   const [selectedIdentityIds, setSelectedIdentityIds] =
     useState<string[]>([]);
@@ -92,148 +92,30 @@ export default function DiscoverModsPage() {
     );
 
   useEffect(() => {
-
+    let cancelled = false;
     async function loadConnectedPlatforms() {
-
-      const {
-        data: {
-          session,
-        },
-      } =
-        await supabase.auth.getSession();
-
-      if (!session) {
-        setLoading(false);
-        return;
-      }
-
-      const {
-        data: profile,
-        error: profileError,
-      } =
-        await supabase
-          .from("profiles")
-          .select(
-            "default_creator_id"
-          )
-          .eq(
-            "id",
-            session.user.id
-          )
-          .single();
-
-      if (profileError) {
-
-        console.error(
-          "PROFILE LOAD ERROR:",
-          profileError
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      if (!profile?.default_creator_id) {
-
-        setIdentities([]);
-        setLoading(false);
-        return;
-      }
-
-      const { data: ownedCreator, error: ownerCheckError } = await supabase
-        .from("creators")
-        .select("id")
-        .eq("id", profile.default_creator_id)
-        .eq("owner_id", session.user.id)
-        .maybeSingle();
-      if (ownerCheckError || !ownedCreator) {
-        if (ownerCheckError) console.error("DISCOVERY CREATOR OWNERSHIP CHECK ERROR:", ownerCheckError);
-        setIdentities([]);
-        setLoading(false);
-        return;
-      }
-
-      setCurrentCreatorId(
-        profile.default_creator_id
-      );
-
-      const {
-        data,
-        error,
-      } =
-        await supabase
-          .from("external_identities")
-          .select(`
-            id,
-            username,
-            profile_url,
-            verification_status,
-            connected_at,
-            platform:platforms (
-              id,
-              name,
-              slug
-            )
-          `)
-          .eq(
-            "creator_id",
-            profile.default_creator_id
-          )
-          .order(
-            "connected_at",
-            {
-              ascending: false,
-            }
-          );
-
-      if (error) {
-
-        console.error(
-          "IDENTITIES LOAD ERROR:",
-          error
-        );
-
-        setLoading(false);
-        return;
-      }
-
-      const loadedIdentities =
-        (data || []).map(
-          (identity: any) => ({
-            ...identity,
-            platform:
-              Array.isArray(
-                identity.platform
-              )
-                ? identity.platform[0] || null
-                : identity.platform,
-          })
-        ) as Identity[];
-
-      setIdentities(
-        loadedIdentities
-      );
-
-      setSelectedIdentityIds(
-        loadedIdentities
-          .filter(
-            (identity) =>
-              identity.verification_status ===
-              "verified"
-          )
-          .map(
-            (identity) =>
-              identity.id
-          )
-      );
-
+      setLoading(true);
+      setIdentities([]);
+      if (creatorContextLoading) return;
+      if (!currentCreatorId) { setLoading(false); return; }
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) { setLoading(false); return; }
+      const { data: membership, error: membershipError } = await supabase.from("creator_members")
+        .select("creator_id").eq("profile_id", user.id).eq("creator_id", currentCreatorId).eq("status", "approved").maybeSingle();
+      if (cancelled) return;
+      if (membershipError || !membership) { setLoading(false); return; }
+      const { data, error } = await supabase.from("external_identities").select(`id,username,profile_url,verification_status,connected_at,platform:platforms(id,name,slug)`)
+        .eq("creator_id", currentCreatorId).order("connected_at", { ascending: false });
+      if (cancelled) return;
+      if (error) console.error("IDENTITIES LOAD ERROR:", error);
+      const loaded = (data || []).map((identity: any) => ({ ...identity, platform: Array.isArray(identity.platform) ? identity.platform[0] || null : identity.platform })) as Identity[];
+      setIdentities(loaded);
+      setSelectedIdentityIds(loaded.filter((identity) => identity.verification_status === "verified").map((identity) => identity.id));
       setLoading(false);
     }
-
-    loadConnectedPlatforms();
-
-  }, []);
-
+    void loadConnectedPlatforms();
+    return () => { cancelled = true; };
+  }, [currentCreatorId, creatorContextLoading]);
   function handleToggleIdentity(
     identityId: string
   ) {

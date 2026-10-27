@@ -4,6 +4,7 @@ import { createClient }
 from "@supabase/supabase-js";
 import { parseCreatorBackupUrl } from "@/lib/server/creatorBackupUrl";
 import { normalizeModCategory } from "@/lib/vehicle-subcategories";
+import { canUserUploadToCreator } from "@/lib/server/creator-upload-authorization";
 
 export async function POST(
   req: Request
@@ -115,12 +116,7 @@ export async function POST(
         )
         .single();
 
-    if (!creatorData || creatorData.owner_id !== user.id) {
-      return NextResponse.json(
-        { error: "You must own this creator profile to upload a mod." },
-        { status: 403 }
-      );
-    }
+    if (!creatorData || !(await canUserUploadToCreator(supabase, user.id, body.creator_id))) { return NextResponse.json({ error: "You do not have upload permission for this creator profile." }, { status: 403 }); }
 
     /* -----------------------------
        CREATE MOD

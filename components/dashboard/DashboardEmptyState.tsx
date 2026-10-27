@@ -1,4 +1,4 @@
-import Link from "next/link";
+import AuthenticatedUploadLink from "@/components/auth/AuthenticatedUploadLink";
 
 export default function DashboardEmptyState() {
 
@@ -38,8 +38,7 @@ export default function DashboardEmptyState() {
         first mod.
       </p>
 
-      <Link
-        href="/upload"
+      <AuthenticatedUploadLink
         className="
           inline-flex
           items-center
@@ -54,7 +53,7 @@ export default function DashboardEmptyState() {
         "
       >
         Upload Your First Mod
-      </Link>
+      </AuthenticatedUploadLink>
 
     </div>
 

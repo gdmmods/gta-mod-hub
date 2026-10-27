@@ -1,4 +1,4 @@
-import Link from "next/link";
+import AuthenticatedUploadLink from "@/components/auth/AuthenticatedUploadLink";
 
 import NavbarSearch from "@/components/navbar/NavbarSearch";
 
@@ -14,8 +14,7 @@ export default function NavbarActions() {
       <NavbarSearch />
 
       {/* UPLOAD */}
-      <Link
-        href="/upload"
+      <AuthenticatedUploadLink
         className="
           hidden
           md:flex
@@ -39,7 +38,7 @@ export default function NavbarActions() {
         "
       >
         Upload Mod
-      </Link>
+      </AuthenticatedUploadLink>
 
       {/* DESKTOP USER */}
       <div className="hidden lg:block">

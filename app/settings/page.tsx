@@ -4,6 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { useCreatorContext } from "@/app/contexts/CreatorContext";
 import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
@@ -14,7 +15,7 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [bio, setBio] = useState("");
-  const [creatorId, setCreatorId] = useState<string | null>(null);
+  const { activeCreatorId } = useCreatorContext();
 
   useEffect(() => {
     loadProfile();
@@ -29,17 +30,6 @@ export default function SettingsPage() {
       setLoading(false);
       return;
     }
-
-    const { data: creatorMember } = await supabase
-        .from("creator_members")
-        .select("creator_id")
-        .eq("profile_id", user.id)
-        .eq("role", "owner")
-        .single();
-
-        if (creatorMember) {
-        setCreatorId(creatorMember.creator_id);
-        }
 
     const { data, error } = await supabase
       .from("profiles")
@@ -205,10 +195,10 @@ export default function SettingsPage() {
 
             <div className="flex gap-3 flex-wrap">
 
-                {creatorId && (
+                {activeCreatorId && (
                   <button
                     onClick={() =>
-                      router.push(`/creator/${creatorId}`)
+                      router.push(`/creator/${activeCreatorId}`)
                     }
                     className="
                       rounded-xl

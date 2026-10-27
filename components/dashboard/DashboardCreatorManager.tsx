@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { supabase } from "@/lib/supabase/client";
+import { useCreatorContext } from "@/app/contexts/CreatorContext";
 
 type Props = {
 
@@ -36,181 +36,15 @@ DashboardCreatorManager({
 
 }: Props){
 
-  const [
-    creator,
-    setCreator,
-  ] = useState<DashboardProfile | null>(null);
-
-  const [
-    creators,
-    setCreators,
-  ] = useState<CreatorMembership[]>([]);
-
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
-
-  const [
-    showSwitcher,
-    setShowSwitcher,
-  ] = useState(false);
-
-  useEffect(() => {
-
-    loadCreatorData();
-
-  }, []);
-
-  async function loadCreatorData() {
-
-    try {
-
-      const {
-        data: {
-          user,
-        },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-
-        setLoading(false);
-        return;
-
-      }
-
-      const {
-        data: profile,
-      } = await supabase
-        .from("profiles")
-        .select(`
-          id,
-          default_creator_id
-        `)
-        .eq(
-          "id",
-          user.id
-        )
-        .single();
-
-      if (!profile) {
-
-        setLoading(false);
-        return;
-
-      }
-
-      const {
-        data: memberships,
-      } = await supabase
-        .from("creator_members")
-        .select(`
-          creator_id,
-          creators (
-            id,
-            name,
-            specialization,
-            team_id,
-            owner_type
-          )
-        `)
-        .eq(
-          "profile_id",
-          profile.id
-        )
-        .eq(
-          "status",
-          "approved"
-        );
-
-      const ownedCreators =
-        memberships || [];
-
-      setCreators(ownedCreators as CreatorMembership[]);
-
-      let creatorId =
-        profile.default_creator_id;
-
-      if (
-        !creatorId &&
-        ownedCreators.length > 0
-      ) {
-
-        creatorId =
-          ownedCreators[0].creator_id;
-
-        await supabase
-          .from("profiles")
-          .update({
-            default_creator_id:
-              creatorId,
-          })
-          .eq(
-            "id",
-            profile.id
-          );
-
-      }
-
-      if (!creatorId) {
-
-        setLoading(false);
-        return;
-
-      }
-
-      const selectedMembership =
-        ownedCreators.find(
-          (m) =>
-            m.creator_id ===
-            creatorId
-        );
-
-      setCreator(selectedMembership ? getCreatorProfile(selectedMembership) : null);
-
-    } catch (error) {
-
-      console.error(error);
-
-    } finally {
-
-      setLoading(false);
-
+  const { activeCreator: creator, creators: activeCreators, loading, selectActiveCreator } = useCreatorContext();
+  const creators: CreatorMembership[] = activeCreators.map((activeCreator) => ({ creator_id: activeCreator.id, creators: activeCreator }));
+  const [showSwitcher, setShowSwitcher] = useState(false);
+async function setActiveCreator(creatorId: string) {
+    if (await selectActiveCreator(creatorId)) {
+      onCreatorChanged();
+      setShowSwitcher(false);
     }
-
   }
-
-  async function setDefaultCreator(
-  creatorId: string
-) {
-
-  const {
-    data: {
-      user,
-    },
-  } = await supabase.auth.getUser();
-
-  if (!user) return;
-
-  await supabase
-    .from("profiles")
-    .update({
-      default_creator_id:
-        creatorId,
-    })
-    .eq(
-      "id",
-      user.id
-    );
-
-  onCreatorChanged();
-
-  await loadCreatorData();
-
-  setShowSwitcher(false);
-
-}
-
   return (
 
     <div
@@ -343,7 +177,7 @@ DashboardCreatorManager({
                     <button
                       key={c.id}
                       onClick={() =>
-                        setDefaultCreator(
+                        setActiveCreator(
                           c.id
                         )
                       }
@@ -376,7 +210,7 @@ DashboardCreatorManager({
                             text-purple-400
                           "
                         >
-                          Default
+                          Active
                         </span>
 
                       )}

@@ -1,6 +1,7 @@
 import PageContainer from "@/components/layout/PageContainer";
 import Section from "@/components/layout/Section";
 import GradientButton from "@/components/ui/GradientButton";
+import AuthenticatedUploadLink from "@/components/auth/AuthenticatedUploadLink";
 
 export default function CTASection() {
   return (
@@ -98,9 +99,9 @@ export default function CTASection() {
             {/* RIGHT */}
             <div className="flex flex-wrap gap-4">
 
-              <GradientButton href="/upload">
+              <AuthenticatedUploadLink className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-purple-600 to-purple-500 px-6 py-3 text-sm font-medium text-white shadow-[0_0_30px_rgba(168,85,247,0.35)] transition duration-300 hover:scale-[1.03]">
                 Upload Mod
-              </GradientButton>
+              </AuthenticatedUploadLink>
 
               <GradientButton
                 href="/roadmap"

@@ -6,10 +6,12 @@ import { useRouter } from "next/navigation";
 import { recordActivity } from "@/lib/activity/recordActivity";
 
 import { supabase } from "@/lib/supabase/client";
+import { useCreatorContext } from "@/app/contexts/CreatorContext";
 
 export default function CreateTeamPage() {
 
   const router = useRouter();
+  const { activeCreator } = useCreatorContext();
 
   const [loading, setLoading] = useState(false);
 
@@ -53,56 +55,28 @@ export default function CreateTeamPage() {
           .trim()
           .replace(/[^a-z0-9]+/g, "-");
 
-      /* ---------------------------
-         FIND FOUNDER CREATOR
-      ---------------------------- */
-
-      const {
-        data: founderCreator,
-        error: founderError,
-      } = await supabase
-        .from("creators")
-        .select("id")
-        .eq(
-          "owner_id",
-          user.id
-        )
-        .eq(
-          "owner_type",
-          "user"
-        )
-        .single();
-
-      console.log(
-        "FOUNDER CREATOR:",
-        founderCreator
-      );
-
-      console.log(
-        "FOUNDER ERROR:",
-        founderError
-      );
-
-      if (
-        founderError ||
-        !founderCreator
-      ) {
-
-        console.error(
-          founderError
-        );
-
-        alert(
-          "Could not locate your personal creator profile."
-        );
-
+      const founderCreator = activeCreator;
+      if (!founderCreator || founderCreator.owner_type !== "user") {
+        alert("Choose an active personal creator profile to create a team.");
         setLoading(false);
-
         return;
-
       }
 
-      
+      const [{ data: ownership, error: ownershipError }, { data: ownerCreator, error: ownerCreatorError }] = await Promise.all([
+        supabase.from("creator_members").select("id")
+          .eq("creator_id", founderCreator.id).eq("profile_id", user.id)
+          .eq("role", "owner").eq("status", "approved").maybeSingle(),
+        supabase.from("creators").select("id")
+          .eq("id", founderCreator.id).eq("owner_id", user.id)
+          .eq("owner_type", "user").maybeSingle(),
+      ]);
+
+      if (ownershipError || ownerCreatorError || !ownership || !ownerCreator) {
+        alert("The active creator profile is not an approved personal profile you own.");
+        setLoading(false);
+        return;
+      }
+
       /* ---------------------------
          CREATE TEAM
       ---------------------------- */

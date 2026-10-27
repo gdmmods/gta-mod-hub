@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabase/client";
 
 import Navbar from "@/components/layout/Navbar";
 
@@ -28,6 +30,27 @@ import { defaultModForm }
 from "@/lib/forms/defaultModForm";
 
 export default function UploadPage() {
+
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    void supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!mounted) return;
+      setAuthenticated(Boolean(user));
+      setAuthChecked(true);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setAuthenticated(Boolean(session?.user));
+      setAuthChecked(true);
+    });
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   /* --------------------------------
      CREATORS
@@ -114,6 +137,23 @@ export default function UploadPage() {
     collaborators,
 
   });
+
+  if (!authChecked) {
+    return <main className="min-h-screen bg-black text-white"><Navbar /><p className="mx-auto max-w-3xl px-6 py-20 text-zinc-400">Checking your account…</p></main>;
+  }
+
+  if (!authenticated) {
+    return (
+      <main className="min-h-screen bg-black text-white">
+        <Navbar />
+        <section className="mx-auto max-w-3xl px-6 py-24 text-center">
+          <h1 className="text-3xl font-bold">Sign in to upload a mod</h1>
+          <p className="mt-3 text-zinc-400">Connect your ModVault account to publish a mod.</p>
+          <Link href="/login" className="mt-7 inline-flex rounded-xl bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-500">Sign in or create an account</Link>
+        </section>
+      </main>
+    );
+  }
 
   return (
 
