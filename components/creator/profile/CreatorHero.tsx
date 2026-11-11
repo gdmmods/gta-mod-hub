@@ -1,19 +1,19 @@
 "use client";
 
 import CreatorTier from "@/components/ratings/CreatorTier";
-import CreatorActions from "./CreatorActions";
-import CreatorAboutSection from "./CreatorAboutSection";
-import CreatorBio from "./CreatorBio";
-import CreatorHeader from "./CreatorHeader";
-import CreatorSocialLinks from "./CreatorSocialLinks";
-import CreatorStats from "./CreatorStats";
+import RelationshipStats, { type RelationshipCounts } from "@/components/following/RelationshipStats";
+import ProfileHeroFrame from "@/components/profile/ProfileHeroFrame";
+import ProfileDetails from "@/components/profile/ProfileDetails";
+import { publicProfileUrl } from "@/lib/profile/fields";
 import type { ExternalDownloadSummary } from "@/lib/server/external-download-counts-core";
+import CreatorActions from "./CreatorActions";
+import CreatorHeader from "./CreatorHeader";
+import CreatorStats from "./CreatorStats";
 
 type CreatorHeroProfile = {
   id: string;
   name: string;
   owner_type: string | null;
-  socials: Record<string, string> | null;
   avatar: string | null;
   verified: boolean | null;
   status: string | null;
@@ -23,274 +23,42 @@ type CreatorHeroProfile = {
   location: string | null;
 };
 
-interface CreatorHeroProps {
+type CreatorHeroProps = {
   creator: CreatorHeroProfile;
-
   bannerImage: string;
-
+  handle?: string;
   socials: Record<string, string>;
-
   modsCount: number;
   totalLikes: number;
   totalDownloads: number;
   externalDownloadSummary: ExternalDownloadSummary;
   isManaged: boolean;
+  relationships: RelationshipCounts;
   creatorGames: Array<{ id: string; name: string; slug: string }>;
-}
+};
 
 export default function CreatorHero({
-  creator,
-  bannerImage,
-  socials,
-  modsCount,
-  totalLikes,
-  totalDownloads,
-  externalDownloadSummary,
-  isManaged,
-  creatorGames,
+  creator, bannerImage, handle, socials, modsCount, totalLikes, totalDownloads, externalDownloadSummary,
+  isManaged, relationships, creatorGames,
 }: CreatorHeroProps) {
-
-const supportUrl =
-  creator.socials?.patreon ||
-  creator.socials?.kofi ||
-  creator.socials?.store ||
-  creator.socials?.website;
-
-  return (
-
-    <section
-      className="
-        relative
-        max-w-[1450px]
-        mx-auto
-        px-6
-        pt-8
-      "
-    >
-
-      <div
-        className="
-          relative
-          overflow-hidden
-          rounded-[40px]
-          border
-          border-zinc-800
-          bg-black
-          shadow-[0_0_80px_rgba(168,85,247,0.10)]
-        "
-      >
-
-        {/* BANNER */}
-        <div
-          className="
-            relative
-            h-[240px]
-            xl:h-[280px]
-            overflow-hidden
-          "
-        >
-
-          <img
-            src={bannerImage}
-            alt={creator.name}
-            className="
-              w-full
-              h-full
-              object-cover
-              opacity-75
-              scale-[1.02]
-            "
-          />
-
-          {/* DARK OVERLAY */}
-          <div
-            className="
-              absolute
-              inset-0
-              bg-black/35
-            "
-          />
-
-          {/* CINEMATIC GRADIENT */}
-          <div
-            className="
-              absolute
-              inset-0
-              bg-gradient-to-b
-              from-black/10
-              via-black/30
-              to-black
-            "
-          />
-
-          {/* PURPLE ATMOSPHERIC GLOW */}
-          <div
-            className="
-              absolute
-              inset-0
-              bg-[radial-gradient(circle_at_top,rgba(168,85,247,0.18),transparent_45%)]
-            "
-          />
-
-          {/* SIDE VIGNETTE */}
-          <div
-            className="
-              absolute
-              inset-0
-              bg-gradient-to-r
-              from-black/50
-              via-transparent
-              to-black/30
-            "
-          />
-
-        </div>
-
-        {/* CONTENT */}
-        <div
-          className="
-            relative
-            z-10
-            px-8
-            xl:px-12
-            pb-10
-            xl:pb-12
-            pt-2
-            -mt-14
-          "
-        >
-
-          <div
-            className="
-              flex
-              flex-col
-              xl:flex-row
-              gap-10
-            "
-          >
-
-            {/* LEFT */}
-            <div
-              className="
-                flex
-                flex-col
-                items-start
-                shrink-0
-              "
-            >
-
-              {/* AVATAR */}
-              <div
-                className="
-                  relative
-                "
-              >
-
-                <div
-                  className="
-                    absolute
-                    inset-0
-                    rounded-[34px]
-                    bg-purple-500/20
-                    blur-2xl
-                  "
-                />
-
-                <img
-                  src={
-                    creator.avatar ||
-                    "https://placehold.co/200x200?text=👤"
-                  }
-                  alt={creator.name}
-                  className="
-                    relative
-                    w-32
-                    h-32
-                    rounded-[32px]
-                    object-cover
-                    border
-                    border-zinc-700
-                    shadow-[0_0_40px_rgba(168,85,247,0.25)]
-                    bg-black
-                  "
-                />
-
-              </div>
-
-              <div className="mt-6">
-                
-                
-
-                <CreatorActions
-                  creatorId={creator.id}
-                  supportUrl={supportUrl}
-                />
-              </div>
-
-            </div>
-
-            {/* RIGHT */}
-            <div className="flex-1">
-
-              <CreatorHeader
-                name={creator.name}
-                profileType={creator.owner_type === "team" ? "TEAM" : "CREATOR"}
-                verified={creator.verified}
-                status={creator.status}
-                isManaged={isManaged}
-                games={creatorGames}
-              />
-
-              <div className="mt-6">
-
-                <CreatorAboutSection
-                  tagline={creator.tagline}
-                  specialization={
-                    creator.specialization
-                  }
-                />
-
-              </div>
-
-              <div className="mt-6">
-
-                <CreatorBio
-                  bio={creator.bio}
-                />
-
-              </div>
-
-              <div className="mt-7">
-
-                <CreatorSocialLinks
-                  socials={socials}
-                />
-
-              </div>
-
-              <div className="mt-10">
-
-                <CreatorTier creatorId={creator.id} />
-                <CreatorStats
-                  modsCount={modsCount}
-                  totalLikes={totalLikes}
-                  totalDownloads={totalDownloads}
-                  externalDownloadSummary={externalDownloadSummary}
-                  location={creator.location}
-                />
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-  );
-
+  const supportUrl = [socials.patreon, socials.kofi, socials.store, socials.website].map(publicProfileUrl).find(Boolean);
+  return <ProfileHeroFrame name={creator.name} avatar={creator.avatar} banner={bannerImage}
+    actions={<CreatorActions creatorId={creator.id} supportUrl={supportUrl} />}
+    header={<CreatorHeader
+      name={creator.name}
+      handle={handle}
+      profileType={creator.owner_type === "team" ? "TEAM" : "CREATOR"}
+      verified={creator.verified}
+      status={creator.status}
+      isManaged={isManaged}
+      games={creatorGames}
+      relationshipRow={<RelationshipStats base={`/creator/${creator.id}`} counts={relationships} />}
+    />}>
+    <ProfileDetails tagline={creator.tagline} interests={creator.specialization} bio={creator.bio} socials={socials} />
+    <div className="mt-10">
+      <CreatorTier creatorId={creator.id} />
+      <CreatorStats modsCount={modsCount} totalLikes={totalLikes} totalDownloads={totalDownloads}
+        externalDownloadSummary={externalDownloadSummary} location={creator.location} />
+    </div>
+  </ProfileHeroFrame>;
 }

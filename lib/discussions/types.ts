@@ -27,7 +27,7 @@ export function discussionHref(comment: Pick<Discussion, 'target_id' | 'id'>) {
 }
 
 export function discussionEventHref(event: { event_type: string; metadata: Record<string, unknown> | null } | null): string | null {
-  if (!event || !['comment_created', 'comment_reply_created'].includes(event.event_type)) return null;
+  if (!event || !['comment_created', 'comment_reply_created', 'discussion_recognized'].includes(event.event_type)) return null;
   const { modId, discussionCommentId } = event.metadata ?? {};
   const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return typeof modId === 'string' && typeof discussionCommentId === 'string' && uuid.test(modId) && uuid.test(discussionCommentId)

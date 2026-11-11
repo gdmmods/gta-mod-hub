@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import NewHandleField, { checkNewHandle } from "@/components/profile/NewHandleField";
 
 import { supabase } from "@/lib/supabase/client";
 
@@ -14,6 +15,9 @@ export default function LoginPage() {
 
   const [password, setPassword] =
     useState("");
+
+  const [handle, setHandle] = useState("");
+  const [registering, setRegistering] = useState(false);
 
   const [loading, setLoading] =
     useState(false);
@@ -50,31 +54,33 @@ export default function LoginPage() {
 
   }
 
-  async function handleRegister() {
-
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault();
     setLoading(true);
     setError("");
 
-    const {
-      error,
-    } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-
-      setError(error.message);
-      return;
-
+    try {
+      const candidate = handle.trim().toLowerCase();
+      const unavailable = await checkNewHandle(candidate, true);
+      if (unavailable) {
+        setError(unavailable);
+        return;
+      }
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { handle: candidate } },
+      });
+      if (error) {
+        setError((await checkNewHandle(candidate, true)) ?? error.message);
+      } else if (data.session) {
+        router.push("/");
+      } else {
+        alert("Check your email to confirm your account.");
+      }
+    } finally {
+      setLoading(false);
     }
-
-    alert(
-      "Account created. You can now sign in."
-    );
-
   }
 
   return (
@@ -124,13 +130,13 @@ export default function LoginPage() {
               mt-3
             "
           >
-            Login
+            {registering ? "Create Account" : "Login"}
           </h1>
 
         </div>
 
         <form
-          onSubmit={handleLogin}
+          onSubmit={registering ? handleRegister : handleLogin}
           className="space-y-5"
         >
 
@@ -204,6 +210,8 @@ export default function LoginPage() {
 
           </div>
 
+          {registering && <NewHandleField value={handle} onChange={setHandle} />}
+
           {error && (
 
             <div
@@ -234,13 +242,15 @@ export default function LoginPage() {
           >
             {loading
               ? "Loading..."
-              : "Login"}
+              : registering ? "Create Account" : "Login"}
           </button>
 
         </form>
 
         <button
-          onClick={handleRegister}
+          type="button"
+          disabled={loading}
+          onClick={() => { setError(""); setRegistering(!registering); }}
           className="
             mt-5
             w-full
@@ -254,7 +264,7 @@ export default function LoginPage() {
             transition
           "
         >
-          Create Account
+          {registering ? "Back to Login" : "Create Account"}
         </button>
 
       </div>

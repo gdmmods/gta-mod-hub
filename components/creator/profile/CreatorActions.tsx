@@ -1,4 +1,5 @@
 import Link from "next/link";
+import FollowButton, { profileFollowClassName } from "@/components/following/FollowButton";
 
 interface CreatorActionsProps {
   creatorId: string;
@@ -21,23 +22,7 @@ export default function CreatorActions({
     >
 
       {/* FOLLOW */}
-      <button
-        className="
-          w-full
-          rounded-2xl
-          bg-gradient-to-r
-          from-purple-600
-          to-purple-500
-          py-3
-          font-semibold
-          text-white
-          shadow-[0_0_30px_rgba(168,85,247,0.22)]
-          hover:opacity-90
-          transition
-        "
-      >
-        Follow Creator
-      </button>
+      <FollowButton kind="creator" id={creatorId} className={profileFollowClassName} />
 
       {/* SUPPORT */}
       {supportUrl && (

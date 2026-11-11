@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import type { Session } from "@supabase/supabase-js";
+import { HeartHandshake } from "lucide-react";
 import { useCreatorContext } from "@/app/contexts/CreatorContext";
 
 import {
@@ -15,14 +17,15 @@ import {
 
 export default function UserMenu() {
 
-  const { activeCreatorId } = useCreatorContext();
+  const { accountId, activeCreator, loading } = useCreatorContext();
 
   const [open, setOpen] =
     useState(false);
 
   const [session, setSession] =
-    useState<any>(null);
-const menuRef =
+    useState<Session | null>(null);
+  const [personalProfile, setPersonalProfile] = useState<{ id: string; username: string | null } | null>(null);
+  const menuRef =
     useRef<HTMLDivElement>(null);
 
   /* --------------------------------
@@ -82,6 +85,29 @@ const menuRef =
       listener.subscription.unsubscribe();
     };
   }, []);
+
+  const userId = session?.user.id;
+  useEffect(() => {
+    if (!userId) return;
+
+    let current = true;
+    void (async () => {
+      const { data } = await supabase.from("profiles").select("username").eq("id", userId).maybeSingle();
+      if (current) setPersonalProfile({ id: userId, username: data?.username ?? null });
+    })();
+    return () => { current = false; };
+  }, [userId]);
+
+  const creator = userId === accountId ? activeCreator : null;
+  const profileLoaded = personalProfile !== null && personalProfile.id === userId;
+  const username = profileLoaded ? personalProfile.username : null;
+  const profileLabel = creator
+    ? (creator.owner_type === "team" ? "My Team Profile" : "My Creator Profile")
+    : "My User Profile";
+  const profileHref = creator ? `/creator/${creator.id}`
+    : username ? `/profile/${encodeURIComponent(username)}` : "/settings";
+  const profilePending = !creator && (loading || !profileLoaded);
+  const profileClassName = "flex items-center gap-3 px-4 py-3 hover:bg-zinc-800 transition text-sm";
 
   /* --------------------------------
      LOGOUT
@@ -158,6 +184,10 @@ const menuRef =
 
               <Link href="/discussions" onClick={() => setOpen(false)} className="flex px-4 py-3 text-sm transition hover:bg-zinc-800">Discussions</Link>
 
+              <Link href="/following" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm transition hover:bg-zinc-800">
+                <HeartHandshake aria-hidden="true" className="size-4 text-purple-400" /> Following
+              </Link>
+
               {/* FAVORITES */}
 
               <Link
@@ -221,29 +251,14 @@ const menuRef =
                 ⚙️ Profile Settings
               </Link>
 
-              {/* MY CREATOR PROFILE */}
-
-              {activeCreatorId && (
-
-                <Link
-                  href={`/creator/${activeCreatorId}`}
-                  className="
-                    flex
-                    items-center
-                    gap-3
-                    px-4
-                    py-3
-                    hover:bg-zinc-800
-                    transition
-                    text-sm
-                  "
-                  onClick={() =>
-                    setOpen(false)
-                  }
-                >
-                  👤 My Creator Profile
+              {profilePending ? (
+                <span aria-disabled="true" className={profileClassName}>
+                  👤 {profileLabel}
+                </span>
+              ) : (
+                <Link href={profileHref} className={profileClassName} onClick={() => setOpen(false)}>
+                  👤 {profileLabel}
                 </Link>
-
               )}
 
               <div

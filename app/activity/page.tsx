@@ -1,8 +1,10 @@
 "use client";
 
+import { followingEventHref } from "@/lib/notifications/followingPresentation";
 import { discussionPresentation } from "@/lib/notifications/discussionPresentation";
 import { discussionEventHref } from "@/lib/discussions/types";
 import Link from "next/link";
+import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { supabase } from "@/lib/supabase/client";
@@ -65,7 +67,7 @@ function summaryOf(event: ActivityEvent | null, accountId: string | null, pendin
 }
 
 function destinationOf(event: ActivityEvent | null): string {
-  const commentHref = discussionEventHref(event);
+  const commentHref = discussionEventHref(event) ?? followingEventHref(event);
   if (commentHref) return commentHref;
   if (event?.event_type === "team_member_invited") return "/activity";
   if (event?.event_type === "team_member_joined" || event?.event_type === "team_member_left") {
@@ -90,7 +92,7 @@ export default function ActivityPage() {
     setError("");
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
+      if (authError && !isAuthSessionMissingError(authError)) throw authError;
       if (!user) {
         setAccountConnected(false);
         setAccountId(null);

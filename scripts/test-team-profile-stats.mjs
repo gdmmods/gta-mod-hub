@@ -39,7 +39,8 @@ assert.match(page, /select\("mod_id,action_type,click_count"\)\.in\("mod_id", te
 assert.match(page, /clickTotalsTableMissing \? sumLegacyDownloadClicks\(eligibleTeamMods\) : teamStats\.totalClicks/);
 assert.match(page, /getExternalDownloadDataByMod\(externalSources\)/);
 assert.match(page, /profileExternalDownloadSummary = externalDownloadData\.summary/);
-assert.match(page, /modsCount=\{profileModsCount\}/);
+assert.match(page, /modsCount=\{publicModCount\}/);
+assert.match(page, /publishedMods=\{publicModCount\}/);
 assert.match(externalCounts, /aggregateCreatorExternalDownloadCounts\(normalizedSources\.map/);
 
 console.log("Team profile statistics checks passed.");

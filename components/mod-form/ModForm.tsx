@@ -3,7 +3,6 @@ import UploadMediaSection from "@/components/upload/UploadMediaSection";
 import UploadLinksSection from "@/components/upload/UploadLinksSection";
 import UploadDetailsSection from "@/components/upload/UploadDetailsSection";
 import UploadSubmitSection from "@/components/upload/UploadSubmitSection";
-import StatusSelector from "@/components/mod-form/StatusSelector";
 import UploadMonetizationSection from "@/components/upload/UploadMonetizationSection";
 
 import DangerZone from "@/components/mod-form/DangerZone";
@@ -17,8 +16,11 @@ type Props = {
   handleChange: any;
 
   handleSubmit: any;
+  publicationOptions?: React.ReactNode;
+  afterSubmit?: React.ReactNode;
 
   loading: boolean;
+  editing?: boolean;
 
   /* OPTIONAL */
 
@@ -39,8 +41,11 @@ export default function ModForm({
 
   handleChange,
   handleSubmit,
+  publicationOptions,
+  afterSubmit,
 
   loading,
+  editing = false,
 
   collaboratorsSection,
 
@@ -66,8 +71,7 @@ export default function ModForm({
       {/* CREATOR SELECTOR */}
       {creatorSelector}
 
-      {/* STATUS */}
-      <StatusSelector
+      <UploadMonetizationSection
         form={form}
         handleChange={handleChange}
       />
@@ -210,12 +214,6 @@ export default function ModForm({
         }
       />
 
-      {/* MONETIZATION */}
-      <UploadMonetizationSection
-        form={form}
-        handleChange={handleChange}
-      />
-
       {/* DETAILS */}
       <UploadDetailsSection
         form={form}
@@ -235,10 +233,13 @@ export default function ModForm({
 
       )}
 
+      {publicationOptions}
       {/* SUBMIT */}
       <UploadSubmitSection
         loading={loading}
+        status={editing ? form.status : undefined}
       />
+      {afterSubmit}
 
     </form>
 

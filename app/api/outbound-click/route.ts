@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomUUID } from "node:crypto";
+import { isPublicModRelease } from "@/lib/server/public-creator-mods";
 import { NextResponse } from "next/server";
 import { parseCreatorBackupUrl } from "@/lib/server/creatorBackupUrl";
 import {
@@ -19,13 +20,6 @@ function readCookie(header: string | null, name: string): string | null {
   return cookie?.slice(name.length + 1) ?? null;
 }
 
-function isPublishedDestination(mod: {
-  status: string | null;
-  visibility: string | null;
-}): boolean {
-  return mod.status === "published" && (mod.visibility === "public" || mod.visibility === "early_access");
-}
-
 export async function GET(request: Request) {
   let destination: string | null = null;
   try {
@@ -42,10 +36,10 @@ export async function GET(request: Request) {
 
     const { data: mod, error: modError } = await supabaseAdmin
       .from("mods")
-      .select("id, creator_id, status, visibility, download_url, source_url, creator_backup_url")
+      .select("id, creator_id, status, visibility, release_state, download_url, source_url, creator_backup_url")
       .eq("id", modId)
       .maybeSingle();
-    if (modError || !mod || !isPublishedDestination(mod)) {
+    if (modError || !mod || !isPublicModRelease(mod)) {
       return NextResponse.json({ error: "Outbound link unavailable." }, { status: 404 });
     }
 
@@ -114,7 +108,7 @@ export async function GET(request: Request) {
     return response;
   } catch (error) {
     console.error("Outbound click request failed:", error);
-    if (destination) return NextResponse.redirect(destination, 302);
+    if (destination) return NextResponse.redirect(destination, { status: 302, headers: { "Cache-Control": "no-store" } });
     return NextResponse.json({ error: "Outbound link unavailable." }, { status: 500 });
   }
 }

@@ -43,7 +43,7 @@ export default async function Home(props: {
   .eq(
     "status",
     "published"
-  );
+  ).in("visibility", ["public", "early_access"]).in("release_state", ["public", "early_access"]);
 
   /* -----------------------------
      SORTING

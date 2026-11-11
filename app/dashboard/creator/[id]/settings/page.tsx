@@ -4,6 +4,7 @@ import {
   useParams,
 } from "next/navigation";
 
+import IdentityHandleEditor from "@/components/profile/IdentityHandleEditor";
 import Navbar from "@/components/layout/Navbar";
 
 import PageLoader from "@/components/ui/PageLoader";
@@ -12,6 +13,7 @@ import CreatorOwnershipGuard from "@/components/creator/edit (outdated)/CreatorO
 
 import CreatorSettingsHeader from "@/components/creator-settings/CreatorSettingsHeader";
 
+import CollaborationEditor from "@/components/profile/CollaborationEditor";
 import CreatorSettingsForm from "@/components/creator-settings/CreatorSettingsForm";
 
 import useCreatorSettings from "@/app/hooks/useCreatorSettings";
@@ -93,6 +95,8 @@ console.log(
             "
           >
 
+            <div className="mb-8"><IdentityHandleEditor key={creatorId} creatorId={creatorId} /></div>
+            <div className="mb-8"><CollaborationEditor key={creatorId} creatorId={creatorId} /></div>
             <CreatorSettingsForm
               form={form}
               setForm={setForm}

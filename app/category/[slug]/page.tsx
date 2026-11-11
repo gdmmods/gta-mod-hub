@@ -22,7 +22,8 @@ export default async function CategoryPage({
   const modsQuery = supabase
     .from("mods")
     .select("*")
-    .eq("status", "published");
+    .eq("status", "published")
+    .in("visibility", ["public", "early_access"]).in("release_state", ["public", "early_access"]);
 
   // Include legacy vehicle labels until the data backfill is reviewed.
   const scopedQuery = slug === "vehicles"

@@ -56,6 +56,7 @@ vm.runInNewContext(ts.transpileModule(readFileSync(new URL('../lib/discussions/t
 const {discussionEventHref}=linkModule.exports;
 assert.equal(discussionEventHref({event_type:'comment_created',metadata:{modId:target,discussionCommentId:target}}),`/mods/${target}?comment=${target}#comment-${target}`);
 assert.equal(discussionEventHref({event_type:'comment_created',metadata:{modId:'javascript:bad',discussionCommentId:target}}),null);
+assert.equal(discussionEventHref({event_type:'discussion_recognized',metadata:{modId:target,discussionCommentId:target}}),`/mods/${target}?comment=${target}#comment-${target}`);
 assert.equal(discussionEventHref({event_type:'team_member_left',metadata:{modId:target,discussionCommentId:target}}),null);
 rpcResult={data:[],error:null};
 assert.equal((await GET(new Request('http://localhost:3000/api/discussions?mode=references&trigger=%40&query=test'))).status,200);

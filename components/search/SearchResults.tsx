@@ -1,227 +1,66 @@
-"use client";
-
-import ModCard, { type ModCardData } from "@/components/mod/ModCard";
-import { useState } from "react";
+/* eslint-disable @next/next/no-img-element -- Public avatars can use creator-provided hosts. */
 import Link from "next/link";
+import ModCard from "@/components/mod/ModCard";
+import FollowButton from "@/components/following/FollowButton";
+import { collaborationAvailability } from "@/components/profile/CollaborationEditor";
+import { discussionHref } from "@/lib/discussions/types";
+import type { SearchData, SearchPerson } from "@/app/hooks/useSearch";
+import { searchCategories, searchPageSize, type SupportedSearchCategory } from "@/lib/search/navigation";
 
-type SearchMod = ModCardData & { likes: number; downloads: number };
-type SearchCreator = { id: string; name: string; avatar: string | null; owner_type: string | null };
+const kinds = { user: "User", creator: "Creator", team: "Team" };
+const gridClass = "grid gap-6 md:grid-cols-2 xl:grid-cols-3";
+const cardClass = "min-w-0 space-y-3 rounded-3xl border border-zinc-800 bg-zinc-950 p-5 [overflow-wrap:anywhere]";
 
-type Props = {
-  mods: SearchMod[];
-  creators: SearchCreator[];
-  active: string;
-};
-
-export default function SearchResults({
-  mods,
-  creators,
-  active,
-}: Props) {
-
-  const [profileFilter, setProfileFilter] = useState<"all" | "creator" | "team">("all");
-  const visibleCreators = creators.filter((creator) => profileFilter === "all"
-    || (profileFilter === "team" ? creator.owner_type === "team" : creator.owner_type !== "team"));
-
-  return (
-
-    <div className="space-y-14">
-
-      {/* MODS */}
-
-      {(active === "all" ||
-        active === "mods") && (
-
-        <div>
-
-          <h2
-            className="
-              text-2xl
-              font-bold
-              mb-6
-            "
-          >
-            Mods
-          </h2>
-
-          <div
-            className="
-              grid
-              md:grid-cols-2
-              xl:grid-cols-3
-              gap-6
-            "
-          >
-
-            {mods.map((mod) => (
-
-              <ModCard key={mod.id} mod={mod} likes={mod.likes} downloads={mod.downloads} />
-
-            ))}
-
-          </div>
-
-        </div>
-
-      )}
-
-      {/* CREATORS */}
-
-      {(active === "all" ||
-        active === "creators") && (
-
-        <div>
-
-          <h2
-            className="
-              text-2xl
-              font-bold
-              mb-6
-            "
-          >
-            Creators
-          </h2>
-
-          <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Filter profile results">
-            {(["all", "creator", "team"] as const).map((filter) => <button
-              key={filter}
-              type="button"
-              aria-pressed={profileFilter === filter}
-              onClick={() => setProfileFilter(filter)}
-              className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition ${profileFilter === filter ? "border-purple-500/60 bg-purple-500/15 text-purple-200" : "border-zinc-800 text-zinc-400 hover:border-zinc-600"}`}
-            >{filter === "all" ? "All profiles" : filter === "team" ? "Teams" : "Creators"}</button>)}
-          </div>
-
-          <div
-            className="
-              grid
-              md:grid-cols-2
-              xl:grid-cols-3
-              gap-6
-            "
-          >
-
-            {visibleCreators.map((creator) => {
-
-              const isTeam =
-                creator.owner_type === "team";
-
-              const label = isTeam ? "TEAM" : "CREATOR";
-
-              const initial =
-                creator.name
-                  ?.charAt(0)
-                  ?.toUpperCase() || "?";
-
-              return (
-
-                <Link
-                  key={creator.id}
-                  href={`/creator/${creator.id}`}
-                  className="
-                    p-6
-                    rounded-3xl
-                    border
-                    border-zinc-800
-                    bg-zinc-900
-                    hover:border-purple-500
-                    transition
-                  "
-                >
-
-                  <div
-                    className="
-                      flex
-                      items-center
-                      gap-4
-                    "
-                  >
-
-                    {/* AVATAR */}
-
-                    <div
-                      className="
-                        w-14
-                        h-14
-                        shrink-0
-                        rounded-full
-                        overflow-hidden
-                        border
-                        border-zinc-700
-                        bg-zinc-950
-                        flex
-                        items-center
-                        justify-center
-                        text-lg
-                        font-semibold
-                        text-zinc-400
-                      "
-                    >
-
-                      {creator.avatar ? (
-
-                        <img
-                          src={creator.avatar}
-                          alt={creator.name}
-                          className="
-                            w-full
-                            h-full
-                            object-cover
-                          "
-                          onError={(e) => {
-                            e.currentTarget.style.display =
-                              "none";
-
-                            e.currentTarget.parentElement
-                              ?.classList.add(
-                                "avatar-fallback"
-                              );
-                          }}
-                        />
-
-                      ) : (
-
-                        initial
-
-                      )}
-
-                    </div>
-
-                    {/* IDENTITY */}
-
-                    <div>
-
-                      <h3
-                        className="
-                          text-lg
-                          font-semibold
-                        "
-                      >
-                        {creator.name}
-                      </h3>
-
-                      <span className={`mt-1 inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-wider ${isTeam ? "border-purple-500/40 bg-purple-500/10 text-purple-200" : "border-zinc-700 bg-zinc-800/80 text-zinc-300"}`}>
-                        {label}
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                </Link>
-
-              );
-
-            })}
-
-          </div>
-
-        </div>
-
-      )}
-
+function PersonCard({ person }: { person: SearchPerson }) {
+  return <article className={cardClass}>
+    <div className="flex items-center gap-4">
+      <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-800">
+        {person.avatar ? <img src={person.avatar} alt="" className="size-full object-cover" /> : person.name[0].toUpperCase()}
+      </span>
+      <div className="min-w-0">
+        <h3 className="font-semibold"><Link href={person.href} className="hover:text-purple-300">{person.name}</Link></h3>
+        {person.handle && <p className="text-sm text-purple-300">@{person.handle}</p>}
+        <p className="text-xs text-zinc-400">{kinds[person.identity_type]}</p>
+      </div>
     </div>
+    {person.tags.length > 0 && <p className="text-sm text-zinc-400">{person.tags.join(" · ")}</p>}
+    {person.skills && <p className="text-sm text-zinc-300">Skills · {person.skills}</p>}
+    {person.interests && <p className="text-sm text-zinc-300">Creative interests · {person.interests}</p>}
+    {person.looking_for && <p className="text-sm text-zinc-300">Looking for · {person.looking_for}</p>}
+    {person.availability && <p className="text-sm text-purple-200">{collaborationAvailability[person.availability]}</p>}
+    <FollowButton kind={person.kind} id={person.id}
+      className="inline-block rounded-xl border border-purple-500/40 px-3 py-2 text-sm text-purple-200 hover:border-purple-400 disabled:opacity-50" />
+  </article>;
+}
 
-  );
-
+export default function SearchResults({ data, active, setActive }: {
+  data: SearchData; active: SupportedSearchCategory; setActive: (category: SupportedSearchCategory) => void;
+}) {
+  const limit = active === "all" ? 6 : searchPageSize;
+  const groups = (["people", "creations", "contributions"] as const).filter(group =>
+    active === "all" ? data[group].length > 0 : active === group);
+  if (!groups.some(group => data[group].length)) return <p role="status" className="text-zinc-400">No matching results.</p>;
+  return <div className="space-y-12">
+    {groups.map(group => <section key={group}>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-2xl font-bold">{searchCategories[group]}</h2>
+        {active === "all" && data[group].length > limit && <button type="button" onClick={() => setActive(group)}
+          className="text-sm text-purple-300 hover:underline">View all {searchCategories[group].toLowerCase()}</button>}
+      </div>
+      <div className={gridClass}>
+        {group === "people" && data.people.slice(0, limit).map(person => <PersonCard key={person.kind + person.id} person={person} />)}
+        {group === "creations" && data.creations.slice(0, limit).map(mod => <ModCard key={mod.id}
+          mod={{ ...mod, title: mod.title ?? "Untitled", image: mod.image ?? "/placeholder.jpg" }}
+          likes={mod.likes ?? 0} downloads={mod.downloads ?? 0} />)}
+        {group === "contributions" && data.contributions.slice(0, limit).map(item => <article key={item.id} className={cardClass}>
+          <h3 className="font-semibold"><Link href={discussionHref(item)} className="hover:text-purple-300">{item.mod_title}</Link></h3>
+          <p className="text-sm text-zinc-400">{item.author_href
+            ? <Link href={item.author_href} className="hover:text-purple-300">{item.author_name}</Link> : item.author_name}</p>
+          <p className="text-sm leading-relaxed text-zinc-200">{item.excerpt}</p>
+          {item.recognized_by && <p className="text-xs text-purple-300">Recognized by {item.recognized_by}</p>}
+          <Link href={discussionHref(item)} className="text-sm text-purple-300 hover:underline">View contribution</Link>
+        </article>)}
+      </div>
+    </section>)}
+  </div>;
 }

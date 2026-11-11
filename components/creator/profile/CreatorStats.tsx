@@ -68,10 +68,7 @@ export default function CreatorStats({
     >
 
       {stats.map(([label, value, note]) => (
-
-        <div
-          key={String(label)}
-          className="
+        <div key={label} className="
             relative
             overflow-hidden
             rounded-2xl
@@ -82,9 +79,7 @@ export default function CreatorStats({
             py-3
             backdrop-blur-xl
             min-w-[180px]
-          "
-        >
-
+          ">
           {/* subtle atmosphere */}
           <div
             className="
@@ -137,7 +132,6 @@ export default function CreatorStats({
           )}
 
         </div>
-
       ))}
 
     </div>

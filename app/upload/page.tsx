@@ -33,6 +33,7 @@ export default function UploadPage() {
 
   const [authChecked, setAuthChecked] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
+  const [notifyFollowers, setNotifyFollowers] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -135,6 +136,7 @@ export default function UploadPage() {
     form,
     selectedCreator,
     collaborators,
+    notifyFollowers,
 
   });
 
@@ -186,6 +188,10 @@ export default function UploadPage() {
           }
 
           loading={loading}
+          publicationOptions={form.visibility !== "supporters" && form.release_state !== "supporters" && <label className="flex items-center gap-2 text-sm text-zinc-300">
+            <input type="checkbox" checked={notifyFollowers} onChange={event => setNotifyFollowers(event.target.checked)} />
+            Notify my followers about this new mod
+          </label>}
 
           creatorSelector={
 

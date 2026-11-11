@@ -1,9 +1,11 @@
 interface CreatorBioProps {
   bio?: string | null;
+  emptyText?: string;
 }
 
 export default function CreatorBio({
   bio,
+  emptyText = "No creator biography added yet.",
 }: CreatorBioProps) {
 
   return (
@@ -18,7 +20,7 @@ export default function CreatorBio({
       "
     >
       {bio ||
-        "No creator biography added yet."}
+        emptyText}
     </p>
 
   );

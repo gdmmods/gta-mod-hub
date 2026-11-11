@@ -22,7 +22,7 @@ export default function StatusSelector({
           mb-3
         "
       >
-        Visibility
+        Publication status
       </label>
 
       <select

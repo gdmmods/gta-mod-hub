@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import CreatorProfileSection from "@/components/creator-settings/CreatorProfileSection";
 
@@ -42,11 +43,15 @@ export default function CreatorSettingsForm({
 }: Props) {
 
   const router = useRouter();
+  const [uploading, setUploading] = useState(false);
 
   return (
 
     <form
-      onSubmit={handleSubmit}
+      onSubmit={event => {
+        if (uploading || loading) event.preventDefault();
+        else handleSubmit(event);
+      }}
       className="space-y-10"
     >
 
@@ -74,10 +79,8 @@ export default function CreatorSettingsForm({
 
     )}
 
-      <CreatorBrandingSection
-        form={form}
-        handleChange={handleChange}
-      />
+      <CreatorBrandingSection form={form} onUploadingChange={setUploading}
+        onChange={(field, value) => setForm((previous: typeof form) => ({ ...previous, [field]: value }))} />
 
       <section className="space-y-4">
 
@@ -342,7 +345,7 @@ export default function CreatorSettingsForm({
       />
 
       <CreatorSettingsSubmit
-        loading={loading}
+        loading={loading || uploading}
       />
 
     </form>

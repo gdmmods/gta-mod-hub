@@ -4,6 +4,7 @@ import { createClient }
 from "@supabase/supabase-js";
 import { parseCreatorBackupUrl } from "@/lib/server/creatorBackupUrl";
 import { normalizeModCategory } from "@/lib/vehicle-subcategories";
+import { isPublicModRelease, publicCreatorModAccess } from "@/lib/server/public-creator-mods";
 import { canUserUploadToCreator } from "@/lib/server/creator-upload-authorization";
 
 export async function POST(
@@ -122,179 +123,59 @@ export async function POST(
        CREATE MOD
     ----------------------------- */
 
-    const {
-      data: mod,
-      error: modError,
-    } = await supabase
-      .from("mods")
-      .insert([
-        {
-
-          /* BASIC */
-
-          title:
-            body.title,
-
-          category:
-            normalizedCategory,
-
-          description:
-            body.description,
-
-          creator:
-            creatorData?.name || null,
-
-          image:
-            body.image,
-
-          images:
-            parsedImages,
-
-          source_url:
-            body.source_url,
-
-          download_url:
-            body.download_url,
-
-          creator_backup_url:
-            creatorBackup.url,
-
-          features:
-            body.features,
-
-          requirements:
-            body.requirements,
-
-          notes:
-            body.notes,
-
-          credits:
-            body.credits,
-
-          /* MONETIZATION */
-
-          visibility:
-            body.visibility,
-
-          delivery_mode:
-            body.delivery_mode,
-
-          support_url:
-            body.support_url,
-
-          external_purchase_url:
-            body.external_purchase_url,
-
-          ownership_required:
-            body.ownership_required,
-
-          release_state:
-            body.release_state,
-
-          /* FUTURE MARKETPLACE */
-
-          is_paid:
-            body.is_paid,
-
-          price:
-            body.price,
-
-          /* SYSTEM */
-
-          creator_id:
-            body.creator_id,
-
-          created_by:
-            user.id,
-
-          downloads: 0,
-
-          likes: 0,
-
-          verified: false,
-
-        },
-      ])
-      .select()
-      .single();
-
-    if (
-      modError ||
-      !mod
-    ) {
-
-      console.error(
-        "MOD INSERT ERROR:",
-        JSON.stringify(
-          modError,
-          null,
-          2
-        )
-      );
-
-      return NextResponse.json(
-        {
-          error:
-            "Upload failed",
-        },
-        {
-          status: 500,
-        }
-      );
-
+    const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
+    const uploadId = body.uploadId ?? crypto.randomUUID();
+    const collaborators: unknown = body.collaborators ?? [];
+    const status = body.status ?? "published";
+    const visibility = body.visibility ?? "public";
+    const releaseState = body.release_state ?? "public";
+    const accessStates: readonly string[] = [...publicCreatorModAccess, "supporters"];
+    if (typeof uploadId !== "string" || !uuid.test(uploadId) ||
+        !Array.isArray(collaborators) || collaborators.some(id => typeof id !== "string" || !uuid.test(id)) ||
+        !["published", "draft", "pending", "archived"].includes(status) ||
+        !accessStates.includes(visibility) || !accessStates.includes(releaseState) ||
+        (body.notifyFollowers !== undefined && typeof body.notifyFollowers !== "boolean")) {
+      return NextResponse.json({ error: "Invalid publication options." }, { status: 400 });
     }
 
-    /* -----------------------------
-       PRIMARY CREATOR
-    ----------------------------- */
+    const { data: modId, error: modError } = await supabase.rpc("publish_uploaded_mod", {
+      p_id: uploadId,
+      p_collaborators: collaborators,
+      p_payload: {
+        title: body.title,
+        category: normalizedCategory,
+        description: body.description,
+        creator: creatorData.name || null,
+        image: body.image,
+        images: parsedImages,
+        source_url: body.source_url,
+        download_url: body.download_url,
+        creator_backup_url: creatorBackup.url,
+        features: body.features,
+        requirements: body.requirements,
+        notes: body.notes,
+        credits: body.credits,
+        visibility,
+        delivery_mode: body.delivery_mode,
+        support_url: body.support_url,
+        external_purchase_url: body.external_purchase_url,
+        ownership_required: body.ownership_required,
+        release_state: releaseState,
+        is_paid: body.is_paid,
+        price: body.price,
+        creator_id: body.creator_id,
+        created_by: user.id,
+        downloads: 0,
+        likes: 0,
+        verified: false,
+        status,
+        notify_followers_on_publication: body.notifyFollowers === true && isPublicModRelease({ status, visibility, release_state: releaseState }),
+      },
+    });
 
-    await supabase
-      .from("mod_creators")
-      .insert([
-        {
-
-          mod_id:
-            mod.id,
-
-          creator_id:
-            body.creator_id,
-
-          role:
-            "owner",
-
-        },
-      ]);
-
-    /* -----------------------------
-       COLLABORATORS
-    ----------------------------- */
-
-    if (
-      body.collaborators?.length
-    ) {
-
-      const rows =
-        body.collaborators.map(
-          (
-            creatorId: string
-          ) => ({
-
-            mod_id:
-              mod.id,
-
-            creator_id:
-              creatorId,
-
-            role:
-              "collaborator",
-
-          })
-        );
-
-      await supabase
-        .from("mod_creators")
-        .insert(rows);
-
+    if (modError || !modId) {
+      console.error("MOD INSERT ERROR:", modError);
+      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -302,7 +183,7 @@ export async function POST(
       success: true,
 
       modId:
-        mod.id,
+        modId,
 
     });
 

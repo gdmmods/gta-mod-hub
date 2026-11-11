@@ -27,7 +27,7 @@ export default function ModvaultConstitutionPage() {
     {
       title: "Community Before Extraction",
       text: "The platform should never become hostile to creators through predatory monetization, suppression, or excessive platform greed.",
-    },
+    },    
     {
       title: "Open Evolution",
       text: "Modvault evolves publicly. Systems may change, but foundational principles remain transparent and accessible.",
@@ -35,7 +35,11 @@ export default function ModvaultConstitutionPage() {
     {
       title: "Human Creativity Remains Central",
       text: "AI may assist creation, but human craftsmanship, identity, and originality remain core values of the platform.",
-    },    
+    },   
+    {
+      title: "Creativity Before Engagement",
+      text: "Social relationships should serve creativity. Creativity should not become a tool for generating social engagement. ModVault exists to encourage meaningful connections, constructive participation, recognition, and collaboration — not to turn creative expression into a competition for attention, popularity, or algorithmic visibility."
+    }, 
     {
       title: "Principle of Historical Continuity",
       text: "Meaningful contributions should be remembered. ModVault exists not only to preserve creative work, but to document the relationships, collaboration, and history through which creators, projects, communities, and platforms evolve over time."

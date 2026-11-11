@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type { ChangeEvent, FormEvent } from "react";
@@ -13,6 +14,8 @@ import {
 import {
   useRouter,
 } from "next/navigation";
+
+import { normalizeProfileLinks, profileSocialFields } from "@/lib/profile/fields";
 
 type CreatorSettingsValues = {
   name: string;
@@ -48,6 +51,7 @@ export default function useCreatorSettings(
   ] = useState(false);
 
   const [saveError, setSaveError] = useState<string | null>(null);
+  const savedUrls = useRef<Record<string, string>>({});
   const [savedOwnerType, setSavedOwnerType] = useState("user");
 
   const [form, setForm] =
@@ -246,6 +250,7 @@ export default function useCreatorSettings(
 
       });
 
+      savedUrls.current = { ...socials, avatar: creator.avatar || "", banner: creator.banner || "" };
       setSavedOwnerType(creator.owner_type || "user");
 
       setLoaded(true);
@@ -335,6 +340,11 @@ export default function useCreatorSettings(
       if (savedOwnerType === "team" && !form.team_id) {
         throw new Error("This Team profile is missing its team link. Contact support before saving.");
       }
+
+      const urls: Record<string, string> = { ...form.socials, avatar: form.avatar, banner: form.banner };
+      const changedUrls = [...profileSocialFields, "avatar", "banner", "patreon", "kofi", "store"]
+        .filter(field => urls[field] !== (savedUrls.current[field] ?? ""));
+      normalizeProfileLinks(urls, changedUrls);
 
       const { data: updatedCreator, error: updateError } = await supabase
         .from("creators")

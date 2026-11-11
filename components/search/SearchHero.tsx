@@ -39,10 +39,10 @@ export default function SearchHero({
       </h1>
 
       <input
-        type="text"
-        placeholder="
-          Search mods, creators...
-        "
+        type="search"
+        aria-label="Search ModVault"
+        maxLength={96}
+        placeholder="Search people, mods, contributions…"
         value={query}
         onChange={(e) =>
           setQuery(

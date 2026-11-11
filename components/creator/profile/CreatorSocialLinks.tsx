@@ -1,3 +1,5 @@
+import { publicProfileUrl } from "@/lib/profile/fields";
+
 interface CreatorSocialLinksProps {
   socials: Record<string, string>;
 }
@@ -38,7 +40,13 @@ export default function CreatorSocialLinks({
       icon: "✕",
       href: socials.instagram,
     },
-  ].filter((item) => item.href);
+    { key: "twitter", label: "X / Twitter", icon: "X", href: socials.twitter },
+    { key: "github", label: "GitHub", icon: "⌘", href: socials.github },
+  ].flatMap(item => {
+    const href = publicProfileUrl(item.href);
+    return href ? [{ ...item, href }] : [];
+  });
+  if (!links.length) return null;
 
   return (
 

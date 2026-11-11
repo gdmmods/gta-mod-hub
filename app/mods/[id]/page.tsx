@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase/client";
 
 import ModHero from "@/components/mod/ModHero";
 import ModSidebar from "@/components/mod/ModSidebar";
+import Announcements from "@/components/following/Announcements";
 import ModDiscussions from "@/components/discussions/ModDiscussions";
 import ModTabs from "@/components/mod/ModTabs";
 import RelatedMods from "@/components/mod/RelatedMods";
@@ -12,7 +13,7 @@ import { getExternalDownloadTotal } from "@/lib/server/external-download-counts"
 import { normalizeGtaInsideProjectUrl } from "@/lib/connectors/gtainside";
 import { normalizeGta5ModsProjectUrl } from "@/lib/connectors/sourceProjectUrl";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { isAuthorizedModEditor } from "@/lib/server/mod-edit-authorization";
+import { isPublicModRelease } from "@/lib/server/public-creator-mods";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export default async function ModPage({
 
 if (
   !mod ||
-  mod.status !== "published"
+  !isPublicModRelease(mod)
 ) {
 
   notFound();
@@ -66,22 +67,10 @@ if (
     );
   }
 
-  let canEdit = false;
   const authClient = await createSupabaseServerClient();
   const { data: { user } } = await authClient.auth.getUser();
-  if (user && mod.creator_id) {
-    const { data: linkedCreator } = await authClient
-      .from("creators")
-      .select("id, owner_id")
-      .eq("id", mod.creator_id)
-      .maybeSingle();
-    canEdit = isAuthorizedModEditor({
-      userId: user.id,
-      modCreatorId: mod.creator_id,
-      linkedCreatorId: linkedCreator?.id,
-      creatorOwnerId: linkedCreator?.owner_id,
-    });
-  }
+  const { data: canEditMod } = user ? await authClient.rpc("can_edit_mod", { p_mod: mod.id }) : { data: false };
+  const canEdit = canEditMod === true;
 
   /* ---------------------------------
      FAVORITES
@@ -417,67 +406,10 @@ if (
           {/* LEFT CONTENT */}
 <div className="min-w-0">
 
-  {mod.visibility === "supporters" && (
-    <div
-      className="
-        mb-5
-        rounded-[30px]
-        border
-        border-purple-500/10
-        bg-purple-500/5
-        p-6
-      "
-    >
-      <p
-        className="
-          text-[11px]
-          uppercase
-          tracking-[0.2em]
-          text-purple-400
-        "
-      >
-        Release Information
-      </p>
 
-      <h3
-        className="
-          text-lg
-          font-semibold
-          mt-2
-        "
-      >
-        Restricted / Supporter Release
-      </h3>
-
-      <p
-        className="
-          text-sm
-          text-zinc-400
-          mt-3
-          leading-relaxed
-        "
-      >
-        Release status is descriptive only.
-        ModVault does not provide, sell, or facilitate access to externally
-        restricted projects.
-      </p>
-
-      <p
-        className="
-          text-sm
-          text-zinc-500
-          mt-3
-          leading-relaxed
-        "
-      >
-        This project is documented as a restricted or supporter release.
-        Any external release remains subject to the creator's rights,
-        permissions, and the rules of the platform where it is distributed.
-      </p>
-    </div>
-  )}
 
   <ModTabs mod={mod} />
+  <Announcements id={mod.id} mod />
   <ModDiscussions targetId={mod.id} />
 
 </div>

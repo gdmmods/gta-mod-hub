@@ -11,6 +11,9 @@ import { toEditorReferences, toStoredReferences, type ReferenceSpan } from '@/li
 import StarSelector from '@/components/ratings/StarSelector';
 import RatingChannels, { refreshRatingChannels } from '@/components/ratings/RatingChannels';
 import DiscussionCard from './DiscussionCard';
+import DiscussionRecognition from './DiscussionRecognition';
+import { supabase } from '@/lib/supabase/client';
+import type { RecognitionState } from '@/lib/discussions/recognition';
 
 const button = 'rounded-xl border border-zinc-700 px-3 py-2 text-sm text-zinc-300 hover:border-purple-400 disabled:opacity-40';
 type ReplyPage = DiscussionResult & { page: number };
@@ -58,6 +61,25 @@ export default function ModDiscussions({ targetId }: { targetId: string }) {
   const requestScope = useRef(`${targetId}:${accountId}`);
   const result = focus ? thread : main;
   const identityBlocked = identityLoading || selecting || !!identityError;
+  const [recognition, setRecognition] = useState<{ scope: string; items: Record<string, RecognitionState> }>({ scope: "", items: {} });
+  const [recognitionVersion, setRecognitionVersion] = useState(0);
+  const recognitionScope = targetId + ":" + accountId;
+  const recognitionIds = [...result.items, ...Object.entries(replies).flatMap(([id, value]) => expanded[id] ? value.items : [])]
+    .map(item => item.id).join(",");
+
+  useEffect(() => {
+    if (!recognitionIds) return;
+    let current = true;
+    const ids = recognitionIds.split(",");
+    const requests = [];
+    for (let i = 0; i < ids.length; i += 200) {
+      requests.push(supabase.rpc("discussion_recognition_state", { p_mod: targetId, p_comments: ids.slice(i, i + 200) }));
+    }
+    void Promise.all(requests).then(responses => {
+      if (current) setRecognition({ scope: recognitionScope, items: Object.assign({}, ...responses.map(response => response.data ?? {})) });
+    });
+    return () => { current = false; };
+  }, [targetId, recognitionScope, recognitionIds, revision, recognitionVersion]);
 
   useEffect(() => {
     const sync = () => { setFocus(new URL(window.location.href).searchParams.get('comment')); setPage(1); setReplyTo(null); };
@@ -234,7 +256,15 @@ export default function ModDiscussions({ targetId }: { targetId: string }) {
     finally { setBusy(false); }
   }
   function renderCard(item: Discussion) {
+    const award = recognition.scope === recognitionScope ? recognition.items[item.id] : undefined;
     return <DiscussionCard key={item.id} item={item} context={false}>
+      {award && (award.active || award.canAward || award.canRevoke) && <DiscussionRecognition key={recognitionScope}
+        modId={targetId} commentId={item.id} state={award}
+        onChange={state => {
+          setRecognition(previous => previous.scope === recognitionScope
+            ? { ...previous, items: { ...previous.items, [item.id]: state } } : previous);
+          setRecognitionVersion(version => version + 1);
+        }} />}
       {editing === item.id ? <form className="mt-3 space-y-3" onSubmit={e => { e.preventDefault(); void mutate('edit', item); }}>
         <ReferenceEditor aria-label="Edit comment" value={editBody} references={editRefs} onDraft={(value, refs) => { setEditBody(value); setEditRefs(refs); }} rows={3} maxLength={4000} required className="w-full rounded-xl border border-zinc-700 bg-black p-3 text-sm" />
         <button disabled={busy || !editBody.trim()} className={button}>Save edit</button> <button type="button" onClick={() => setEditing(null)} className={button}>Cancel</button>

@@ -32,7 +32,7 @@ export default function NavbarSearch() {
         transition
       "
     >
-      Search mods, creators...
+      Search ModVault…
     </Link>
 
   );

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { modSubmitAction, uploadPublicationStatus } from "@/lib/forms/mod-publication";
+import { useRef, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
@@ -9,17 +10,21 @@ export default function useUploadSubmit({
   form,
   selectedCreator,
   collaborators,
+  notifyFollowers,
 
 }: any) {
 
   const [loading, setLoading] =
     useState(false);
 
+  const uploadId = useRef<string | null>(null);
+
   async function handleSubmit(
-    e: any
+    e: React.FormEvent<HTMLFormElement>
   ) {
 
     e.preventDefault();
+    const status = uploadPublicationStatus(modSubmitAction(e.nativeEvent));
 
     setLoading(true);
 
@@ -77,6 +82,9 @@ export default function useUploadSubmit({
             body: JSON.stringify({
 
               ...form,
+              status,
+              uploadId: uploadId.current ??= crypto.randomUUID(),
+              notifyFollowers,
 
               creator_id:
                 selectedCreator,
@@ -160,7 +168,7 @@ export default function useUploadSubmit({
       -------------------------------- */
 
       alert(
-        "Mod uploaded!"
+        status === "draft" ? "Draft saved." : "Mod uploaded!"
       );
 
       window.location.href =

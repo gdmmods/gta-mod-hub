@@ -50,6 +50,9 @@ export default function EditModPage() {
 
     loading,
     loaded,
+    firstPublicSave,
+    notifyFollowers,
+    setNotifyFollowers,
 
     handleChange,
     handleSubmit,
@@ -167,6 +170,7 @@ export default function EditModPage() {
       <ModFormContainer>
 
           <ModForm
+            editing
 
             form={form}
             setForm={setForm}
@@ -180,6 +184,18 @@ export default function EditModPage() {
             }
 
             loading={loading}
+          publicationOptions={firstPublicSave && (
+            <label className="flex items-center gap-2 text-sm text-zinc-300">
+              <input type="checkbox" checked={notifyFollowers} onChange={event => setNotifyFollowers(event.target.checked)} />
+              Notify my followers about this new mod
+            </label>
+          )}
+          afterSubmit={!firstPublicSave && form.status === "published" && form.visibility === "public" && (
+            <button type="submit" name="afterSave" value="version-update" disabled={loading}
+              className="rounded-xl border border-purple-500/30 px-4 py-2 text-sm text-purple-200 hover:bg-purple-500/10 disabled:opacity-50">
+              Save and write a version update
+            </button>
+          )}
 
             dangerZone={true}
 

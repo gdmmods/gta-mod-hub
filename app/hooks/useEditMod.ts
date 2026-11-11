@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
 import { defaultModForm }from "@/lib/forms/defaultModForm";
+import { editPublicationStatus, modSubmitAction } from "@/lib/forms/mod-publication";
+import { isPublicModRelease } from "@/lib/server/public-creator-mods";
 import { parseCreatorBackupUrl } from "@/lib/server/creatorBackupUrl";
 import { normalizeModCategory } from "@/lib/vehicle-subcategories";
 
@@ -34,6 +36,10 @@ export default function useEditMod(modId: string | string[]) {
 
   const [form, setForm] =
   useState(defaultModForm);
+  const [firstPublicationPending, setFirstPublicationPending] = useState(false);
+  const [notifyFollowers, setNotifyFollowers] = useState(false);
+  const firstPublicSave = firstPublicationPending && (form.status === "draft" || form.status === "published") &&
+    isPublicModRelease({ ...form, status: "published" });
 
   useEffect(() => {
     if (!modId) return;
@@ -55,6 +61,8 @@ export default function useEditMod(modId: string | string[]) {
       return;
     }
 
+    setFirstPublicationPending(data.first_publication_pending === true && !isPublicModRelease(data));
+    setNotifyFollowers(false);
     setForm({
   ...defaultModForm,
   ...data,
@@ -157,6 +165,7 @@ export default function useEditMod(modId: string | string[]) {
 
     setForm((prev) => ({
       ...prev,
+      ...(name === "visibility" && prev.release_state === "supporters" ? { release_state: value } : {}),
 
       [name]:
         type === "checkbox"
@@ -170,6 +179,9 @@ export default function useEditMod(modId: string | string[]) {
     e: React.FormEvent
   ) {
     e.preventDefault();
+    const action = modSubmitAction(e.nativeEvent);
+    const status = editPublicationStatus(form.status, action);
+    if (action === "archive" && status === "archived" && !confirm("Archive this mod? It will be removed from public access.")) return;
 
     const backup = parseCreatorBackupUrl(form.creator_backup_url);
     if (!backup.valid) {
@@ -179,12 +191,12 @@ export default function useEditMod(modId: string | string[]) {
 
     setLoading(true);
 
-    const { error } =
+    const { data: saved, error } =
       await supabase
         .from("mods")
         .update({
-          status:
-            form.status,
+          ...(firstPublicSave && status === "published" ? { notify_followers_on_publication: notifyFollowers } : {}),
+          status,
 
           title:
             form.title,
@@ -251,16 +263,22 @@ export default function useEditMod(modId: string | string[]) {
           price:
             form.price,
         })
-        .eq("id", modId);
+        .eq("id", modId)
+        .eq("status", form.status)
+        .select("id")
+        .maybeSingle();
 
     setLoading(false);
 
-          if (error) {
+    if (error || !saved) {
       console.error(error);
+      alert("Could not save this mod. Check your editing permissions and try again.");
       return;
     }
 
-    window.location.href = "/dashboard";
+    window.location.href = action === "version-update"
+      ? "/mods/" + modId + "?compose=version#announcements"
+      : "/dashboard";
   }
 
   async function handleDelete() {
@@ -291,6 +309,9 @@ export default function useEditMod(modId: string | string[]) {
 
     loading,
     loaded,
+    firstPublicSave,
+    notifyFollowers,
+    setNotifyFollowers,
 
     handleChange,
     handleSubmit,

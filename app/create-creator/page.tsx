@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import { useRouter } from "next/navigation";
+import NewHandleField, { checkNewHandle } from "@/components/profile/NewHandleField";
 
 import {
   useEffect,
@@ -16,7 +17,7 @@ export default function CreateCreatorPage() {
   const [name, setName] = useState("");
   const [tagline, setTagline] = useState("");
   const [bio, setBio] = useState("");
-  const [games, setGames] = useState<any[]>([]);
+  const [games, setGames] = useState<{ id: string; name: string }[]>([]);
   const [selectedGames, setSelectedGames] = useState<string[]>([]);
 
   const [saving, setSaving] = useState(false);
@@ -49,95 +50,31 @@ export default function CreateCreatorPage() {
       loadGames();
     }, []);
 
+  const [handle, setHandle] = useState("");
+  const [creationError, setCreationError] = useState("");
+
   async function createCreator() {
     setSaving(true);
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      alert("You must be logged in.");
-      setSaving(false);
-      return;
-    }
-
-    console.log("CREATE CREATOR USER:", user);
-console.log("CREATE CREATOR USER ID:", user?.id);
-console.log("CREATE CREATOR EMAIL:", user?.email);
-
-    const {
-      data: creator,
-      error: creatorError,
-    } = await supabase
-      .from("creators")
-      .insert({
-        name,
-        tagline,
-        bio,
-        owner_id: user.id,
-        status: "active",
-        games: selectedGames,
-      })
-      .select()
-      .single();
-
-    if (creatorError) {
-      console.log(
-  JSON.stringify(
-    creatorError,
-    null,
-    2
-  )
-);
-
-      alert(
-        "Failed to create creator profile."
-      );
-
-      setSaving(false);
-      return;
-    }
-
-    const {
-      error: membershipError,
-    } = await supabase
-      .from("creator_members")
-      .insert({
-        creator_id: creator.id,
-        profile_id: user.id,
-        role: "owner",
-        status: "approved",
-        verified: true,
+    setCreationError("");
+    try {
+      const candidate = handle.trim().toLowerCase();
+      const unavailable = await checkNewHandle(candidate);
+      if (unavailable) {
+        setCreationError(unavailable);
+        return;
+      }
+      const { data, error } = await supabase.rpc("create_identity_with_handle", {
+        p_handle: candidate, p_name: name, p_tagline: tagline, p_bio: bio,
+        p_games: selectedGames, p_expected_founder: null,
       });
-
-    if (membershipError) {
-      console.error(
-        membershipError
-      );
-
-      alert(
-        "Creator created but membership failed."
-      );
-
+      if (error || !data) {
+        setCreationError(error?.message ?? "Could not create your creator profile.");
+        return;
+      }
+      router.push("/creator/" + data);
+    } finally {
       setSaving(false);
-      return;
     }
-
-    const { error: aliasError } = await supabase
-        .from("creator_aliases")
-        .insert({
-            creator_id: creator.id,
-            alias: name.trim(),
-        });
-
-        if (aliasError) {
-        console.error(aliasError);
-        }
-
-    router.push(
-      `/creator/${creator.id}`
-    );
   }
 
   return (
@@ -257,6 +194,8 @@ console.log("CREATE CREATOR EMAIL:", user?.email);
               space-y-6
             "
           >
+
+            <NewHandleField value={handle} onChange={setHandle} />
 
             <div>
 
@@ -478,6 +417,7 @@ console.log("CREATE CREATOR EMAIL:", user?.email);
                 community trust.
               </p>
 
+              {creationError && <p role="alert" className="mb-4 text-sm text-rose-300">{creationError}</p>}
               <button
                 onClick={
                   createCreator

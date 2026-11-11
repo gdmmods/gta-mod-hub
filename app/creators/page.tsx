@@ -40,7 +40,8 @@ export default async function CreatorsPage() {
   const { data: mods } = await supabase
     .from("mods")
     .select("id, image, likes, downloads")
-    .in("id", modIds);
+    .in("id", modIds).eq("status", "published")
+    .in("visibility", ["public", "early_access"]).in("release_state", ["public", "early_access"]);
 
   /* -----------------------------
      BUILD MOD MAP

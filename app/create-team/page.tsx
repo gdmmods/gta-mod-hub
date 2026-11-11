@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-import { recordActivity } from "@/lib/activity/recordActivity";
+import NewHandleField, { checkNewHandle } from "@/components/profile/NewHandleField";
 
 import { supabase } from "@/lib/supabase/client";
 import { useCreatorContext } from "@/app/contexts/CreatorContext";
@@ -11,7 +10,7 @@ import { useCreatorContext } from "@/app/contexts/CreatorContext";
 export default function CreateTeamPage() {
 
   const router = useRouter();
-  const { activeCreator } = useCreatorContext();
+  const { activeCreator, loading: identityLoading, selecting } = useCreatorContext();
 
   const [loading, setLoading] = useState(false);
 
@@ -23,254 +22,37 @@ export default function CreateTeamPage() {
 
   });
 
-  async function handleSubmit(
-    e: React.FormEvent
-  ) {
+  const [handle, setHandle] = useState("");
+  const [creationError, setCreationError] = useState("");
 
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    setLoading(true);
-
-    try {
-
-      const {
-        data: {
-          user,
-        },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-
-        alert("You must be logged in.");
-
-        setLoading(false);
-
-        return;
-
-      }
-
-      const slug =
-        form.name
-          .toLowerCase()
-          .trim()
-          .replace(/[^a-z0-9]+/g, "-");
-
-      const founderCreator = activeCreator;
-      if (!founderCreator || founderCreator.owner_type !== "user") {
-        alert("Choose an active personal creator profile to create a team.");
-        setLoading(false);
-        return;
-      }
-
-      const [{ data: ownership, error: ownershipError }, { data: ownerCreator, error: ownerCreatorError }] = await Promise.all([
-        supabase.from("creator_members").select("id")
-          .eq("creator_id", founderCreator.id).eq("profile_id", user.id)
-          .eq("role", "owner").eq("status", "approved").maybeSingle(),
-        supabase.from("creators").select("id")
-          .eq("id", founderCreator.id).eq("owner_id", user.id)
-          .eq("owner_type", "user").maybeSingle(),
-      ]);
-
-      if (ownershipError || ownerCreatorError || !ownership || !ownerCreator) {
-        alert("The active creator profile is not an approved personal profile you own.");
-        setLoading(false);
-        return;
-      }
-
-      /* ---------------------------
-         CREATE TEAM
-      ---------------------------- */
-
-      const {
-        data: team,
-        error: teamError,
-      } = await supabase
-        .from("teams")
-        .insert({
-
-          name: form.name,
-
-          slug,
-
-          owner_id:
-            founderCreator.id,
-
-        })
-        .select()
-        .single();
-
-      if (teamError) {
-
-        console.log(
-          "TEAM ERROR:",
-          JSON.stringify(
-            teamError,
-            null,
-            2
-          )
-        );
-
-        console.error(
-          teamError
-        );
-
-        alert(
-          "Failed to create team."
-        );
-
-        setLoading(false);
-
-        return;
-
-      }
-
-
-
-/* ---------------------------
-         CREATE TEAM CREATOR
-      ---------------------------- */
-
-      console.log("USER ID:", user.id);
-
-const {
-  data: creator,
-  error: creatorError,
-} = await supabase
-  .from("creators")
-  .insert({
-
-    name: form.name,
-
-    tagline: form.tagline,
-
-    bio: form.bio,
-
-    creator_type: "team",
-
-    status: "active",
-
-    owner_type: "team",
-
-    owner_id: team.id,
-
-    team_id: team.id,
-
-  })
-  .select()
-  .single();
-
-console.log(
-  "CREATOR ERROR:",
-  creatorError
-);
-
-console.log(
-  "CREATOR DATA:",
-  creator
-);
-
-      if (creatorError) {
-
-        console.error(
-          creatorError
-        );
-
-        alert(
-          "Failed to create team creator."
-        );
-
-        setLoading(false);
-
-        return;
-
-      }
-
-
-      await supabase
-      .from("teams")
-      .update({
-        creator_id: creator.id,
-      })
-      .eq("id", team.id);
-
-      const {
-  error: creatorMemberError,
-} = await supabase
-  .from("creator_members")
-  .insert({
-
-    profile_id:
-      user.id,
-
-    creator_id:
-      creator.id,
-
-    role:
-      "owner",
-
-    status:
-      "approved",
-
-    verified:
-      true,
-
-  });
-
-  if (creatorMemberError) {
-  console.error(creatorMemberError);
-
-  alert("Failed to create creator membership.");
-
-  setLoading(false);
-
-  return;
-}
-
-await recordActivity({
-  eventType: "team_created",
-
-  actor: {
-    type: "creator",
-    id: creator.id,
-  },
-
-  target: {
-    type: "team",
-    id: team.id,
-  },
-
-  visibility: "public",
-
-  title: "Team created",
-
-  summary: `${creator.name} created the team ${team.name}.`,
-
-  metadata: {
-    creatorName: creator.name,
-    teamName: team.name,
-  },
-});
-
-      router.push(
-        `/dashboard/creator/${creator.id}/settings`
-      );
-
-    } catch (error) {
-
-      console.error(
-        error
-      );
-
-      alert(
-        "Unexpected error creating team."
-      );
-
-    } finally {
-
-      setLoading(false);
-
+    if (identityLoading || selecting) return;
+    if (!activeCreator || activeCreator.owner_type !== "user") {
+      setCreationError("Choose an active personal creator profile to create a team.");
+      return;
     }
-
+    setLoading(true);
+    setCreationError("");
+    try {
+      const candidate = handle.trim().toLowerCase();
+      const unavailable = await checkNewHandle(candidate);
+      if (unavailable) {
+        setCreationError(unavailable);
+        return;
+      }
+      const { data, error } = await supabase.rpc("create_identity_with_handle", {
+        p_handle: candidate, p_name: form.name, p_tagline: form.tagline, p_bio: form.bio,
+        p_games: [], p_expected_founder: activeCreator.id,
+      });
+      if (error || !data) {
+        setCreationError(error?.message ?? "Could not create your team.");
+        return;
+      }
+      router.push("/dashboard/creator/" + data + "/settings");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -333,6 +115,8 @@ await recordActivity({
           onSubmit={handleSubmit}
           className="space-y-6"
         >
+
+          <NewHandleField value={handle} onChange={setHandle} />
 
           <div>
 
@@ -441,6 +225,7 @@ await recordActivity({
 
           </div>
 
+          {creationError && <p role="alert" className="text-sm text-rose-300">{creationError}</p>}
           <div
             className="
               flex
@@ -450,7 +235,7 @@ await recordActivity({
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || identityLoading || selecting}
               className="
                 rounded-2xl
                 bg-purple-600

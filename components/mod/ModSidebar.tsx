@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import LikeButton from "@/components/LikeButton";
+import FollowButton from "@/components/following/FollowButton";
 import FavoriteModButton from "@/components/FavoriteModButton";
 import ReleaseStatusBadge from "@/components/mod/ReleaseStatusBadge";
 import DownloadButton from "@/components/DownloadButton";
@@ -344,6 +345,8 @@ export default function ModSidebar({
           />
 
         </div>
+
+        <FollowButton kind="mod" id={mod.id} className="block w-full rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-3 text-center text-sm font-semibold text-purple-200 hover:bg-purple-500/20 disabled:opacity-50" />
 
         {(mod.visibility === "public" || mod.visibility === "early_access") && (
           <ModSourceButtons

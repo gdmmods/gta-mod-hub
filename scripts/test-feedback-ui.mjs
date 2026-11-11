@@ -51,6 +51,7 @@ function load(path) {
   const compiled=ts.transpileModule(readFileSync(new URL(path,root),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
   const require=name=>{
     if(name==='@/lib/discussions/references') return load('lib/discussions/references.ts');
+    if(name==='./DiscussionRecognition') return {default:()=>null};
     if(name==='./ReferenceEditor') return load('components/discussions/ReferenceEditor.tsx');
     if(name==='@/lib/ratings/colors') return load('lib/ratings/colors.ts');
     if(name==='./ExternalRatingRefresh') return {__esModule:true,default:()=>null};
@@ -58,7 +59,7 @@ function load(path) {
     if(name==='react'||name==='react/jsx-runtime') return runtimeRequire(name);
     if(name==='next/link') return {__esModule:true,default:props=>React.createElement('a',props,props.children)};
     if(name==='@/app/contexts/CreatorContext') return {useCreatorContext:()=>identity};
-    if(name==='@/lib/supabase/client') return {supabase:{rpc:async()=>{channelRequests++;return {data:{[mod]:channelFixture??{internal:latestRating.count?{user:{average:latestRating.average,count:latestRating.count}}:{},external:[]}}};}}};
+    if(name==='@/lib/supabase/client') return {supabase:{rpc:async(name)=>{if(name==='discussion_recognition_state') return {data:{}};channelRequests++;return {data:{[mod]:channelFixture??{internal:latestRating.count?{user:{average:latestRating.average,count:latestRating.count}}:{},external:[]}}};}}};
     const files={'@/lib/discussions/types':'lib/discussions/types.ts','@/lib/discussions/thread-state':'lib/discussions/thread-state.ts','@/components/ratings/StarSelector':'components/ratings/StarSelector.tsx','@/components/ratings/RatingChannels':'components/ratings/RatingChannels.tsx','./DiscussionCard':'components/discussions/DiscussionCard.tsx','./types':'lib/discussions/types.ts'};
     assert.ok(files[name],name);return load(files[name]);
   };

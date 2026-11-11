@@ -1,5 +1,6 @@
 "use client";
 
+import { followingEventHref, isModActivity } from "@/lib/notifications/followingPresentation";
 import { discussionPresentation } from "@/lib/notifications/discussionPresentation";
 import { discussionEventHref } from "@/lib/discussions/types";
 import styles from "./NotificationDropdown.module.css";
@@ -49,6 +50,7 @@ interface Notification {
 type CategoryId =
   | "all"
   | "projects"
+  | "mods"
   | "assets"
   | "knowledge"
   | "showcases"
@@ -72,6 +74,11 @@ const CATEGORIES: Category[] = [
     id: "all",
     label: "All Activity",
     icon: "/images/icons/allactivity.png",
+  },
+  {
+    id: "mods",
+    label: "Mods",
+    icon: "/images/icons/mods.svg",
   },
   {
     id: "projects",
@@ -122,10 +129,11 @@ function getCategory(event: ActivityEvent | null): CategoryId {
     return "teams";
   }
 
+  if (isModActivity(event)) return "mods";
+
   if (
     type.includes("comment") ||
     type.includes("review") ||
-    type.includes("mod_") ||
     type.includes("project_") ||
     type.includes("release")
   ) {
@@ -192,7 +200,7 @@ function getTitle(event: ActivityEvent | null, accountId: string | null, pending
 
 function getNotificationHref(notification: Notification): string {
   const event = getEvent(notification.activity_events);
-  const commentHref = discussionEventHref(event);
+  const commentHref = discussionEventHref(event) ?? followingEventHref(event);
   if (commentHref) return commentHref;
   const metadata = event?.metadata ?? {};
   if (event?.event_type === "team_member_invited") {

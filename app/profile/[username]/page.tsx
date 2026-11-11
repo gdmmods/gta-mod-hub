@@ -1,85 +1,45 @@
-import { supabase } from "@/lib/supabase/client";
-import DiscussionHistory from "@/components/discussions/DiscussionHistory";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
+import CreatorHeader from "@/components/creator/profile/CreatorHeader";
+import CommunityContributions from "@/components/discussions/CommunityContributions";
+import DiscussionHistory from "@/components/discussions/DiscussionHistory";
+import FollowButton, { profileFollowClassName } from "@/components/following/FollowButton";
+import RelationshipStats, { type RelationshipCounts } from "@/components/following/RelationshipStats";
+import ProfileDetails from "@/components/profile/ProfileDetails";
+import ProfileHeroFrame from "@/components/profile/ProfileHeroFrame";
+import { loadPersonalProfile } from "@/lib/profile/personal";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-interface PageProps {
-  params: Promise<{
-    username: string;
-  }>;
-}
-
-export default async function ProfilePage({
-  params,
-}: PageProps) {
+export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
+  const client = await createSupabaseServerClient();
+  const [{ profile, error }, { data: { user } }, { data: counts }, { data: handle }] = await Promise.all([
+    loadPersonalProfile(client, "username", username.toLowerCase()),
+    client.auth.getUser(),
+    client.rpc("personal_relationship_counts", { p_username: username }),
+    client.rpc("get_personal_handle", { p_username: username.toLowerCase() }),
+  ]);
+  if (error) throw error;
+  if (!profile?.username) notFound();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("username", username.toLowerCase())
-    .single();
-
-
-
-  if (!profile) {
-    return (
-      <main className="min-h-screen bg-black text-white flex items-center justify-center">
-        <h1 className="text-3xl font-bold">
-          Profile not found
-        </h1>
-      </main>
-    );
-  }
-
-  return (
-    <>
+  const base = "/profile/" + encodeURIComponent(profile.username);
+  const name = profile.display_name || profile.username;
+  return <main className="min-h-screen bg-black text-white">
     <Navbar />
-    <main className="min-h-screen bg-black text-white">
-      <div className="max-w-5xl mx-auto px-6 py-20">
-
-        <div className="rounded-[32px] border border-zinc-800 bg-zinc-950 p-10">
-
-          <div className="flex items-center gap-6 mb-8">
-
-            {profile.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt={profile.username}
-                className="w-28 h-28 rounded-full object-cover border border-zinc-700"
-              />
-            ) : (
-              <div className="w-28 h-28 rounded-full bg-zinc-800" />
-            )}
-
-            <div>
-              <h1 className="text-5xl font-bold">
-                {profile.display_name || profile.username}
-              </h1>
-
-              <p className="text-zinc-400 mt-2">
-                @{profile.username}
-              </p>
-            </div>
-
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold mb-3">
-              About
-            </h2>
-
-            <p className="text-zinc-300">
-              {profile.bio || "No bio yet."}
-            </p>
-          </div>
-
-        </div>
-
-        <div className="mt-8">
-          <DiscussionHistory recent identity={{ type: 'user', id: profile.id }} historyHref={`/profile/${encodeURIComponent(profile.username)}/discussions`} />
-        </div>
-      </div>
-    </main>
-    </>
-  );
+    <ProfileHeroFrame name={name} avatar={profile.avatar_url} banner={profile.banner_url}
+      actions={<div className="mt-5 w-full space-y-3">
+        {user?.id !== profile.id && <FollowButton kind="user" id={profile.id} className={profileFollowClassName} />}
+        {user?.id === profile.id && <Link href="/settings" className="inline-block rounded-2xl border border-purple-500/30 bg-purple-600/20 px-5 py-3 text-sm font-medium text-purple-200 hover:border-purple-400">Edit Profile</Link>}
+      </div>}
+      header={<CreatorHeader name={name} handle={typeof handle === "string" ? handle : profile.username} profileType="USER"
+        relationshipRow={<RelationshipStats base={base} counts={(counts ?? {}) as RelationshipCounts} />} />}>
+      <ProfileDetails tagline={profile.tagline} interests={profile.interests} bio={profile.bio}
+        location={profile.location} socials={profile.socials ?? {}} personal />
+    </ProfileHeroFrame>
+    <div className="mx-auto max-w-[1450px] space-y-6 px-5 py-6">
+      <CommunityContributions identity={{ type: "user", id: profile.id }} />
+      <DiscussionHistory recent identity={{ type: "user", id: profile.id }} historyHref={base + "/discussions"} />
+    </div>
+  </main>;
 }

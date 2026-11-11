@@ -1,3 +1,4 @@
+import { isPublicModRelease } from "@/lib/server/public-creator-mods";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -14,7 +15,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing ID" }, { status: 400 });
     }
 
-    console.log("API HIT:", id);
+    const { data: mod } = await supabaseServer.from("mods").select("status,visibility,release_state").eq("id", id).maybeSingle();
+    if (!mod || !isPublicModRelease(mod)) return NextResponse.json({ error: "Mod not found" }, { status: 404 });
 
     // ⚠️ TEMP USER (MUST EXIST OR FK WILL FAIL)
     const user_id = "00000000-0000-0000-0000-000000000000";

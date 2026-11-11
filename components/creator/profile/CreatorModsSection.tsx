@@ -1,7 +1,8 @@
+import type { ComponentProps } from "react";
 import CreatorModsGrid from "./CreatorModsGrid";
 
 interface CreatorModsSectionProps {
-  mods: any[];
+  mods: ComponentProps<typeof CreatorModsGrid>["mods"];
 }
 
 export default function CreatorModsSection({
@@ -11,7 +12,9 @@ export default function CreatorModsSection({
   return (
 
     <section
+      id="published-mods"
       className="
+        scroll-mt-28
         max-w-[1450px]
         mx-auto
         px-6

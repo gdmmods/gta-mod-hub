@@ -6,7 +6,11 @@ import Navbar from "@/components/layout/Navbar";
 
 import ClaimCreatorButton from "@/components/creator/ClaimCreatorButton";
 import CreatorPageShell from "@/components/creator/profile/CreatorPageShell";
+import CommunityContributions from "@/components/discussions/CommunityContributions";
 import DiscussionHistory from "@/components/discussions/DiscussionHistory";
+import type { RelationshipCounts } from "@/components/following/RelationshipStats";
+import Announcements from "@/components/following/Announcements";
+import { countPublicCreatorMods, isPublicModRelease, publicCreatorModAccess } from "@/lib/server/public-creator-mods";
 import CreatorHero from "@/components/creator/profile/CreatorHero";
 import CreatorActivity from "@/components/creator/profile/CreatorActivity";
 import CreatorFeaturedMod from "@/components/creator/profile/CreatorFeaturedMod";
@@ -21,6 +25,7 @@ import { normalizeGta5ModsProjectUrl } from "@/lib/connectors/sourceProjectUrl";
 
 type CreatorGame = { id: string; name: string; slug: string };
 type CreatorMod = PublicTeamMod & {
+  status: string | null;
   mod_creators?: Array<{ creators: { id: string; name: string }[] | { id: string; name: string } | null }>;
 };
 type FeaturedCardMod = { id: string; title: string; image: string; likes: number | null; downloads: number | null };
@@ -190,7 +195,7 @@ export default async function CreatorPage({
           .select("id,title,image,category,description,likes,downloads,source_url,tags,visibility,release_state,origin")
           .in("id", teamModIds)
           .eq("status", "published")
-          .in("visibility", ["public", "early_access"]);
+          .in("visibility", publicCreatorModAccess).in("release_state", publicCreatorModAccess);
         if (teamModsError) console.error("TEAM PUBLISHED MODS ERROR:", teamModsError);
         teamPublishedMods = (publishedTeamMods ?? []) as TeamFeatureModRow[];
         const modsById = new Map<string, PublicTeamMod>(teamPublishedMods.map((mod) => [mod.id, {
@@ -244,12 +249,7 @@ export default async function CreatorPage({
 
   }
 
-  const modIds =
-    relations
-      ?.map(
-        (r) => r.mod_id
-      )
-      .filter(Boolean) || [];
+  const modIds = [...new Set((relations ?? []).map(relation => relation.mod_id).filter(Boolean))];
 
   /* -----------------------------
      FETCH MODS
@@ -257,8 +257,7 @@ export default async function CreatorPage({
 
   let modsData: CreatorMod[] = [];
 
-  if (modIds.length > 0) {
-
+  {
     const {
       data,
       error,
@@ -274,7 +273,8 @@ export default async function CreatorPage({
         downloads,
         source_url,
         tags,
-    
+        status,
+
         visibility,
         release_state,
         early_access,
@@ -286,7 +286,10 @@ export default async function CreatorPage({
           )
         )
       `)
-      .in("id", modIds);
+      .or([
+        "and(creator_id.eq." + creator.id + ",status.eq.published,visibility.in.(" + publicCreatorModAccess.join(",") + "),release_state.in.(" + publicCreatorModAccess.join(",") + "))",
+        ...(modIds.length ? ["id.in.(" + modIds.join(",") + ")"] : []),
+      ].join(","));
 
     if (error) {
 
@@ -302,12 +305,15 @@ export default async function CreatorPage({
 
   }
 
+  const publicModCount = countPublicCreatorMods(modsData);
+  const collectionMods = modsData.filter(isPublicModRelease);
+
   /* -----------------------------
      NORMALIZE MODS
   ----------------------------- */
 
   const mods =
-  modsData.map(
+  collectionMods.map(
     (m) => ({
       id: m.id,
 
@@ -372,12 +378,13 @@ export default async function CreatorPage({
     );
 
   const isTeamProfile = creator.owner_type === "team";
-  const publishedModsForExternalCounts = !isTeamProfile && modIds.length
+  const publicModIds = collectionMods.map(mod => mod.id);
+  const publishedModsForExternalCounts = !isTeamProfile && publicModIds.length
     ? await supabase.from("mods")
       .select("id, origin, source_url")
-      .in("id", modIds)
+      .in("id", publicModIds)
       .eq("status", "published")
-      .in("visibility", ["public", "early_access"])
+      .in("visibility", publicCreatorModAccess).in("release_state", publicCreatorModAccess)
     : { data: [], error: null };
   if (publishedModsForExternalCounts.error) console.error("CREATOR EXTERNAL COUNT MOD LOAD ERROR:", publishedModsForExternalCounts.error);
   const publishedExternalMods = publishedModsForExternalCounts.data ?? [];
@@ -408,7 +415,6 @@ export default async function CreatorPage({
 
   // Creator profiles retain their existing statistics; team profiles override
   // these values below using the public owner + active-member mod set.
-  let profileModsCount = isTeamProfile ? 0 : mods.length;
   let profileTotalLikes = isTeamProfile ? 0 : totalLikes;
   let profileClicks = isTeamProfile ? 0 : totalDownloads;
   let profileExternalDownloadSummary = externalDownloadSummary;
@@ -453,7 +459,6 @@ export default async function CreatorPage({
       console.error(`TEAM CLICK TOTALS LOAD ERROR (${clickTotalsError.code}): ${clickTotalsError.message}`);
     }
     const teamStats = calculateTeamProfileStats(eligibleTeamMods, clickRows ?? []);
-    profileModsCount = teamStats.modsCount;
     profileTotalLikes = teamStats.totalLikes;
     profileClicks = clickTotalsTableMissing ? sumLegacyDownloadClicks(eligibleTeamMods) : teamStats.totalClicks;
 
@@ -520,6 +525,16 @@ export default async function CreatorPage({
         )
       : creator.socials || {};
 
+  const [{ data: relationshipResult, error: relationshipError }, { data: handle }] = await Promise.all([
+    supabase.rpc("creator_relationship_counts", { p_creator: creatorId }),
+    supabase.rpc("get_creator_handle", { p_creator: creatorId }),
+  ]);
+  let relationships = (relationshipResult ?? {}) as RelationshipCounts;
+  if (relationshipError) {
+    const { data: followState } = await supabase.rpc("follow_state", { p_kind: "creator", p_id: creatorId });
+    if (typeof followState?.count === "number") relationships = { followers: followState.count };
+  }
+
   return (
 
     <CreatorPageShell>
@@ -527,21 +542,28 @@ export default async function CreatorPage({
       {/* NAVBAR */}
       <Navbar />
 
-      {archivedTeam && <p className="relative mx-auto mt-6 max-w-6xl rounded-2xl border border-amber-500/30 bg-zinc-900 px-6 py-4 text-sm text-amber-200">Archived team · This profile preserves the team's contributions and history. Team publishing and management are inactive.</p>}
+      {archivedTeam && <p className="relative mx-auto mt-6 max-w-6xl rounded-2xl border border-amber-500/30 bg-zinc-900 px-6 py-4 text-sm text-amber-200">Archived team · This profile preserves the team&apos;s contributions and history. Team publishing and management are inactive.</p>}
       {/* HERO */}
       <CreatorHero
         creator={creator}
         bannerImage={bannerImage}
+        handle={typeof handle === "string" ? handle : undefined}
         socials={socials}
-        modsCount={profileModsCount}
+        modsCount={publicModCount}
         totalLikes={profileTotalLikes}
         totalDownloads={profileClicks}
         externalDownloadSummary={profileExternalDownloadSummary}
         isManaged={isManaged}
+        relationships={relationships}
         creatorGames={creatorGames}
       />
 
-      <DiscussionHistory recent className="relative mx-auto max-w-[1450px] px-5 py-6" identity={{ type: 'creator', id: creatorId }} historyHref={`/creator/${creatorId}/discussions`} />
+      <div className="relative mx-auto mt-5 grid max-w-[1450px] items-start gap-4 px-6 lg:grid-cols-2">
+        <Announcements id={creatorId} compact />
+        <CommunityContributions identity={{ type: "creator", id: creatorId }} publishedMods={publicModCount}
+          showModsLink={mods.length > 0} />
+      </div>
+      <DiscussionHistory recent className="relative mx-auto mt-5 max-w-[1450px] px-6" identity={{ type: 'creator', id: creatorId }} historyHref={`/creator/${creatorId}/discussions`} />
 
       {/* FEATURED CREATIONS */}
       <CreatorFeaturedMod
@@ -552,7 +574,10 @@ export default async function CreatorPage({
 
       {/* MODS FIRST */}
       {creator.owner_type === "team" ? (
-        <PublicTeamRoster members={publicTeamMembers} modsByCreator={teamModsByCreator} />
+        <>
+          {mods.length > 0 && <CreatorModsSection mods={mods} />}
+          <PublicTeamRoster members={publicTeamMembers} modsByCreator={teamModsByCreator} />
+        </>
       ) : (
         <CreatorModsSection mods={mods} />
       )}

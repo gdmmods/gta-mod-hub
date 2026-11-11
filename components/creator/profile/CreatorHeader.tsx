@@ -1,23 +1,28 @@
 "use client";
 
+import type { ReactNode } from "react";
 import CreatorVerificationBadge from "./CreatorVerificationBadge";
 
 interface CreatorHeaderProps {
   name: string;
-  profileType: "TEAM" | "CREATOR";
+  profileType: "TEAM" | "CREATOR" | "USER";
+  handle?: string;
   verified?: boolean | null;
   status?: string | null;
   isManaged?: boolean;
+  relationshipRow?: ReactNode;
   games?: Array<{ id: string; name: string }>;
 }
 
 export default function CreatorHeader({
   name,
+  handle,
   profileType,
   verified,
   status,
   isManaged,
   games,
+  relationshipRow,
 }: CreatorHeaderProps) {
 
   return (
@@ -48,6 +53,7 @@ export default function CreatorHeader({
             font-black
             tracking-[-0.04em]
             leading-none
+            [overflow-wrap:anywhere]
             text-white
           "
         >
@@ -89,8 +95,10 @@ export default function CreatorHeader({
 
       </div>
 
-      {/* SUBTEXT */}
-      <div
+      {handle && <p className="text-sm text-zinc-400 [overflow-wrap:anywhere]">@{handle}</p>}
+      {relationshipRow}
+
+      {profileType !== "USER" && <div
         className="
           flex
           flex-wrap
@@ -214,7 +222,7 @@ export default function CreatorHeader({
 
         )}
 
-      </div>
+      </div>}
 
     </div>
 
