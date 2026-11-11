@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+import ts from 'typescript';
+let user={id:'account'};let result={data:{rating:{count:1}},error:null};const calls=[];
+const client={auth:{getUser:async()=>({data:{user},error:null})},rpc:async(name,args)=>{calls.push({name,args});return result;}};
+const compiled=ts.transpileModule(readFileSync(new URL('../app/api/mod-ratings/route.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+const context={exports:{},Response,Request,URL,require:name=>{assert.equal(name,'@/lib/supabase/server');return{createSupabaseServerClient:async()=>client};}};
+vm.runInNewContext(compiled,context);const{GET,POST}=context.exports;
+const modId='00000000-0000-0000-0000-000000000020';
+const post=(body,origin='http://localhost:3000')=>POST(new Request('http://localhost:3000/api/mod-ratings',{method:'POST',headers:{'Content-Type':'application/json',...(origin?{origin}:{})},body:JSON.stringify(body)}));
+assert.equal((await post({action:'rate',modId,value:5},'https://other.example')).status,403);
+assert.equal((await post({action:'rate',modId,value:5},null)).status,403);assert.equal(calls.length,0);
+user=null;assert.equal((await post({action:'rate',modId,value:5})).status,401);
+user={id:'account'};
+for(const value of [0,6,2.5,'5',null]) assert.equal((await post({action:'rate',modId,value})).status,400);
+assert.equal((await post({action:'rate',modId,value:4,creatorId:'invalid'})).status,400);
+assert.equal((await post({action:'rate',modId,value:4,accountId:'forged'})).status,200);
+assert.equal(calls.at(-1).name,'submit_mod_feedback');assert.equal(calls.at(-1).args.p_body,null);assert.ok(!('accountId' in calls.at(-1).args));
+assert.equal((await post({action:'moderate',ratingId:modId,valid:false,reason:''})).status,400);
+assert.equal((await post({action:'moderate',ratingId:modId,valid:false,reason:'Abusive vote'})).status,200);
+assert.equal(calls.at(-1).name,'moderate_mod_rating');
+for(const [code,status] of [['42501',403],['P0001',429],['PGRST202',503]]){result={data:null,error:{code,message:'Rejected'}};assert.equal((await post({action:'rate',modId,value:3})).status,status);}
+result={data:{count:0,average:null},error:null};const read=await GET(new Request(`http://localhost:3000/api/mod-ratings?modId=${modId}`));assert.equal(read.status,200);assert.equal(read.headers.get('cache-control'),'private, no-store');
+assert.equal((await GET(new Request('http://localhost:3000/api/mod-ratings?modId=invalid'))).status,400);
+console.log('Rating API checks passed: auth, same origin, numeric validation, account spoofing, separate rating/moderation actions, backend failures and uncached reads.');

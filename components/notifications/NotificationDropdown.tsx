@@ -1,5 +1,11 @@
 "use client";
 
+import { discussionPresentation } from "@/lib/notifications/discussionPresentation";
+import { discussionEventHref } from "@/lib/discussions/types";
+import styles from "./NotificationDropdown.module.css";
+
+import { isTeamInvitationBroadcast, teamInvitationTitle, teamInvitationSummary } from "@/lib/notifications/teamInvitationPresentation";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -53,6 +59,12 @@ interface Category {
   id: CategoryId;
   label: string;
   icon: string;
+}
+
+interface CreatorIdentity {
+  id: string;
+  name: string;
+  avatar: string | null;
 }
 
 const CATEGORIES: Category[] = [
@@ -142,9 +154,12 @@ function getCategory(event: ActivityEvent | null): CategoryId {
   return "all";
 }
 
-function getTitle(event: ActivityEvent | null, accountId: string | null): string {
+function getTitle(event: ActivityEvent | null, accountId: string | null, pendingInvitationIds: Set<string>): string {
+  const discussion = discussionPresentation(event);
+  if (discussion) return discussion.title;
   if (event?.event_type === "team_member_invited") {
-    return event.metadata?.senderProfileId === accountId ? "Team invitation sent" : "Team invitation";
+    const invitationId = event.metadata?.invitationId;
+    return teamInvitationTitle(event.metadata, accountId, typeof invitationId === "string" && pendingInvitationIds.has(invitationId));
   }
   if (event?.title) return event.title;
 
@@ -177,8 +192,13 @@ function getTitle(event: ActivityEvent | null, accountId: string | null): string
 
 function getNotificationHref(notification: Notification): string {
   const event = getEvent(notification.activity_events);
+  const commentHref = discussionEventHref(event);
+  if (commentHref) return commentHref;
   const metadata = event?.metadata ?? {};
-  if (event?.event_type === "team_member_invited") return "/activity";
+  if (event?.event_type === "team_member_invited") {
+    return isTeamInvitationBroadcast(metadata) && typeof metadata.teamCreatorId === "string"
+      ? "/creator/" + encodeURIComponent(metadata.teamCreatorId) : "/activity";
+  }
   if (event?.event_type === "team_member_joined" || event?.event_type === "team_member_left") {
     const teamCreatorId = metadata.teamCreatorId;
     if (typeof teamCreatorId === "string" && teamCreatorId) return "/creator/" + encodeURIComponent(teamCreatorId);
@@ -186,22 +206,47 @@ function getNotificationHref(notification: Notification): string {
   return "/activity";
 }
 
-function getDescription(event: ActivityEvent | null, accountId: string | null): string {
+function getDescription(
+  event: ActivityEvent | null,
+  accountId: string | null,
+  creatorIdentities: Record<string, CreatorIdentity>,
+  pendingInvitationIds: Set<string>
+): string {
+  const discussion = discussionPresentation(event);
+  if (discussion) return discussion.summary;
   if (event?.event_type === "team_member_invited") {
     const metadata = event.metadata ?? {};
-    const teamName = typeof metadata.teamName === "string" ? metadata.teamName : "the team";
-    if (metadata.senderProfileId === accountId) {
-      const recipientName = typeof metadata.recipientCreatorName === "string" ? metadata.recipientCreatorName : "a creator";
-      return "You invited " + recipientName + " to join " + teamName + ".";
-    }
-    return "You've been invited to join " + teamName + ".";
+
+    const teamCreatorId =
+      typeof metadata.teamCreatorId === "string"
+        ? metadata.teamCreatorId
+        : null;
+
+    const senderCreatorId =
+      typeof metadata.senderCreatorId === "string"
+        ? metadata.senderCreatorId
+        : null;
+
+    const teamName = teamCreatorId
+      ? creatorIdentities[teamCreatorId]?.name
+      : null;
+
+    const leaderName = senderCreatorId
+      ? creatorIdentities[senderCreatorId]?.name
+      : null;
+
+    const recipientCreatorId = typeof metadata.recipientCreatorId === "string" ? metadata.recipientCreatorId : null;
+    const invitationId = metadata.invitationId;
+    return teamInvitationSummary(metadata, accountId, typeof invitationId === "string" && pendingInvitationIds.has(invitationId), {
+      recipientName: recipientCreatorId ? creatorIdentities[recipientCreatorId]?.name : null,
+      teamName,
+      leaderName: metadata.recipientProfileId === accountId ? leaderName : null,
+    });
   }
+
   if (event?.summary) return event.summary;
 
   switch (event?.event_type) {
-    case "team_member_invited":
-      return "You've received a team invitation.";
-
     case "team_member_joined":
       return "A creator joined a team.";
 
@@ -264,6 +309,7 @@ export default function NotificationDropdown({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [accountId, setAccountId] = useState<string | null>(null);
   const [pendingInvitationIds, setPendingInvitationIds] = useState<Set<string>>(new Set());
+  const [creatorIdentities, setCreatorIdentities] = useState<Record<string, CreatorIdentity>>({});
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -294,30 +340,70 @@ export default function NotificationDropdown({
       const result = (await getNotifications(user.id) as Notification[])
         .filter((notification) => !notification.archived_at)
         .slice(0, 50);
+
       setNotifications(result);
-      const pendingIds = new Set<string>();
-      const incomingResponse = await fetch("/api/team-invitations", { cache: "no-store" }).catch(() => null);
-      if (incomingResponse?.ok) {
-        const payload = await incomingResponse.json();
-        for (const invitation of payload.invitations ?? []) {
-          if (invitation.status === "pending" && typeof invitation.invitation_id === "string") pendingIds.add(invitation.invitation_id);
+
+      // Collect creator IDs needed for team notification identities.
+      const creatorIds = new Set<string>();
+
+      for (const notification of result) {
+        const event = getEvent(notification.activity_events);
+        if (event?.event_type !== "team_member_invited") continue;
+
+        const metadata = event.metadata ?? {};
+
+        if (typeof metadata.teamCreatorId === "string") {
+          creatorIds.add(metadata.teamCreatorId);
+        }
+
+        if (typeof metadata.senderCreatorId === "string") {
+          creatorIds.add(metadata.senderCreatorId);
+        }
+
+        const recipientCreatorId =
+          typeof metadata.recipientCreatorId === "string"
+            ? metadata.recipientCreatorId
+            : typeof metadata.creatorProfileId === "string"
+              ? metadata.creatorProfileId
+              : null;
+
+        if (recipientCreatorId) {
+          creatorIds.add(recipientCreatorId);
         }
       }
-      const outgoingTeamIds = [...new Set(result.flatMap((notification) => {
-        const event = getEvent(notification.activity_events);
-        const metadata = event?.metadata ?? {};
-        return event?.event_type === "team_member_invited" && metadata.senderProfileId === user.id && typeof metadata.teamId === "string" ? [metadata.teamId] : [];
-      }))];
-      const outgoingResults = await Promise.all(outgoingTeamIds.map(async (teamId) => {
-        const response = await fetch("/api/team-invitations?teamId=" + encodeURIComponent(teamId), { cache: "no-store" }).catch(() => null);
-        if (!response?.ok) return [];
-        const payload = await response.json();
-        return payload.invitations ?? [];
-      }));
-      for (const invitations of outgoingResults) {
-        for (const invitation of invitations) {
-          if (invitation.status === "pending" && typeof invitation.invitation_id === "string") pendingIds.add(invitation.invitation_id);
+
+      // Fetch all relevant creator identities in one request.
+      if (creatorIds.size > 0) {
+        const { data: creators, error: creatorsError } = await supabase
+          .from("creators")
+          .select("id, name, avatar")
+          .in("id", [...creatorIds]);
+
+        if (creatorsError) {
+          console.error("Could not load notification creator identities:", creatorsError);
+          setCreatorIdentities({});
+        } else {
+          const identities: Record<string, CreatorIdentity> = {};
+
+          for (const creator of creators ?? []) {
+            identities[creator.id] = {
+              id: creator.id,
+              name: creator.name || "Creator",
+              avatar: creator.avatar || null,
+            };
+          }
+
+          setCreatorIdentities(identities);
         }
+      } else {
+        setCreatorIdentities({});
+      }
+      const pendingIds = new Set<string>();
+      const statusResponse = await fetch("/api/team-invitations?activity=true", { cache: "no-store" });
+      if (!statusResponse.ok) throw new Error("Could not load invitation activity status.");
+      const statusPayload = await statusResponse.json();
+      for (const invitation of statusPayload.invitations ?? []) {
+        if (invitation.status === "pending") pendingIds.add(invitation.invitation_id);
       }
       setPendingInvitationIds(pendingIds);
     } catch (cause) {
@@ -584,7 +670,10 @@ export default function NotificationDropdown({
               </span>
             </div>
 
-            <div className="max-h-[460px] overflow-y-auto">
+            <div
+              className={`${styles.feedScrollbar} max-h-[460px] overflow-y-auto`}
+              style={{ scrollbarColor: "#a855f7 #000000", scrollbarWidth: "thin", colorScheme: "dark" }}
+            >
               {loading && notifications.length === 0 ? (
                 <div className="
                   flex min-h-[240px] items-center
@@ -649,12 +738,19 @@ export default function NotificationDropdown({
 
                     const metadata = event?.metadata ?? {};
 
-                    const creatorProfileId =
-                      typeof metadata.creatorProfileId === "string"
-                        ? metadata.creatorProfileId
-                        : typeof metadata.recipientCreatorId === "string"
-                          ? metadata.recipientCreatorId
+                    const recipientCreatorId =
+                      typeof metadata.recipientCreatorId === "string"
+                        ? metadata.recipientCreatorId
+                        : typeof metadata.creatorProfileId === "string"
+                          ? metadata.creatorProfileId
                           : null;
+
+                    const teamCreatorId =
+                      typeof metadata.teamCreatorId === "string"
+                        ? metadata.teamCreatorId
+                        : null;
+
+                    const isTeamInvitation = event?.event_type === "team_member_invited";
 
                     return (
                       <li key={notification.id}>
@@ -683,13 +779,21 @@ export default function NotificationDropdown({
                             bg-zinc-900/70
                             ">
                             <img
-                            src={
-                            CATEGORIES.find((item) => item.id === category)?.icon ??
-                            "/images/icons/allactivity.png"
-                            }
-                            alt=""
-                            aria-hidden="true"
-                            className="h-10 w-10 object-contain"
+                              src={
+                                isTeamInvitation && teamCreatorId
+                                  ? creatorIdentities[teamCreatorId]?.avatar ||
+                                    "/images/icons/teams.png"
+                                  : CATEGORIES.find((item) => item.id === category)?.icon ??
+                                    "/images/icons/allactivity.png"
+                              }
+                              alt=""
+                              aria-hidden="true"
+                              className={
+                                isTeamInvitation && teamCreatorId &&
+                                creatorIdentities[teamCreatorId]?.avatar
+                                  ? "h-10 w-10 rounded-lg object-cover"
+                                  : "h-10 w-10 object-contain"
+                              }
                             /> </span>
 
 
@@ -706,7 +810,7 @@ export default function NotificationDropdown({
                                   : "font-semibold text-white"
                                 }
                               `}>
-                                {getTitle(event, accountId)}
+                                {getTitle(event, accountId, pendingInvitationIds)}
                               </span>
 
                               <span className="
@@ -725,7 +829,7 @@ export default function NotificationDropdown({
                               mt-1 block text-xs
                               leading-5 text-zinc-400
                             ">
-                              {getDescription(event, accountId)}
+                              {getDescription(event, accountId, creatorIdentities, pendingInvitationIds)}
                             </span>
 
                             <span className="
@@ -746,13 +850,22 @@ export default function NotificationDropdown({
                                 <span className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-200">Pending</span>
                               )}
 
-                              {creatorProfileId && (
-                                <span className="
-                                  flex items-center gap-1
-                                  text-[10px] text-zinc-500
-                                ">
-                                  <UserRound size={11} />
-                                  Creator activity
+                              {isTeamInvitation && !isTeamInvitationBroadcast(metadata) && recipientCreatorId && (
+                                <span className="flex min-w-0 items-center gap-1.5 text-[10px] text-zinc-400">
+                                  {creatorIdentities[recipientCreatorId]?.avatar ? (
+                                    <img
+                                      src={creatorIdentities[recipientCreatorId].avatar!}
+                                      alt=""
+                                      aria-hidden="true"
+                                      className="h-4 w-4 shrink-0 rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <UserRound size={12} className="shrink-0" />
+                                  )}
+
+                                  <span className="truncate">
+                                    {creatorIdentities[recipientCreatorId]?.name ?? "Creator"}
+                                  </span>
                                 </span>
                               )}
 

@@ -1,3 +1,4 @@
+import { useRouter } from 'next/navigation';
 import CreatorProfileSection from "@/components/creator-settings/CreatorProfileSection";
 
 import CreatorBrandingSection from "@/components/creator-settings/CreatorBrandingSection";
@@ -40,7 +41,7 @@ export default function CreatorSettingsForm({
 
 }: Props) {
 
-  console.log("FORM:", form);
+  const router = useRouter();
 
   return (
 
@@ -68,13 +69,7 @@ export default function CreatorSettingsForm({
       {form.owner_type === "team" && (
   <TeamControls
     creator={form}
-    onTeamDeleted={() => {
-      setForm((previous: any) => ({
-        ...previous,
-        owner_type: "individual",
-        team_id: null,
-      }));
-    }}
+    onTeamArchived={() => router.replace('/dashboard')}
   />
 
     )}

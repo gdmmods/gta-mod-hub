@@ -11,6 +11,7 @@ import DashboardCreatorManager from "@/components/dashboard/DashboardCreatorMana
 import DashboardCreatorOverview from "@/components/dashboard/DashboardCreatorOverview";
 import PageLoader from "@/components/ui/PageLoader";
 import DashboardRoadmapPreview from "@/components/dashboard/DashboardRoadmapPreview";
+import ArchivedTeams from '@/components/team/ArchivedTeams';
 import TeamControls from "@/components/dashboard/TeamControls";
 import TeamMembership from "@/components/dashboard/TeamMembership";
 import useDashboardData from "@/app/hooks/useDashboardData";
@@ -42,9 +43,10 @@ export default function DashboardPage() {
         {creator?.owner_type === "team" ? (creator.team_id && isTeamOwner ? <TeamControls
           key={creator.id}
           creator={{ id: creator.id, name: creator.name, team_id: creator.team_id }}
-          onTeamDeleted={() => setRefreshKey((previous) => previous + 1)}
-        /> : null) : null}        {creator?.owner_type === "user" && <TeamMembership creatorId={creator.id} />}
+          onTeamArchived={() => setRefreshKey((previous) => previous + 1)}
+        /> : null) : null}        {creator?.owner_type === "user" && <TeamMembership key={creator.id} creatorId={creator.id} />}
 
+        <ArchivedTeams refreshKey={refreshKey} onRestored={() => setRefreshKey(previous => previous + 1)} />
         <DashboardRoadmapPreview />
         <DashboardStats creatorCount={creatorIds.length} modCount={mods.length} />
         {mods.length === 0 ? (

@@ -1,3 +1,5 @@
+import { normalizeGtaInsideProjectUrl } from "./sourceProjectUrl";
+export { normalizeGtaInsideProjectUrl } from "./sourceProjectUrl";
 import type { DiscoveredProject, PlatformConnector } from "./types";
 import { normalizeGtaInsideImageUrl } from "./gtaInsideImageUrl";
 
@@ -29,29 +31,6 @@ function getAttribute(tag: string, name: string): string | null {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = tag.match(new RegExp(`\\b${escaped}\\s*=\\s*(["'])(.*?)\\1`, "i"));
   return match?.[2] ? decodeHtml(match[2].trim()) : null;
-}
-
-export function normalizeGtaInsideProjectUrl(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  try {
-    const url = new URL(value);
-    if (
-      url.protocol !== "https:" ||
-      !GTAINSIDE_HOSTS.has(url.hostname.toLowerCase()) ||
-      url.username || url.password || url.port
-    ) return null;
-
-    const path = url.pathname.replace(/\/$/, "");
-    if (!/^\/gta5\/(?:[a-z0-9-]+\/)+\d+-[a-z0-9][a-z0-9-]*$/i.test(path)) return null;
-
-    url.hostname = "www.gtainside.com";
-    url.pathname = path;
-    url.search = "";
-    url.hash = "";
-    return url.href;
-  } catch {
-    return null;
-  }
 }
 
 export function getGtaInsideExternalId(value: unknown): string | null {

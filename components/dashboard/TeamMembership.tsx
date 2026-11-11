@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 type Team = { id: string; name: string; slug: string; publicCreatorId: string | null; isOwner: boolean; isMember: boolean; isLegacyOwnerRow: boolean };
-type Invitation = { invitation_id: string; team_id: string; team_name: string; team_creator_id: string | null; sender_name: string | null; message: string | null; status: string; expires_at: string | null };
+type Invitation = { recipient_creator_id: string; recipient_creator_name: string; invitation_id: string; team_id: string; team_name: string; team_creator_id: string | null; sender_name: string | null; message: string | null; status: string; expires_at: string | null };
 
 export default function TeamMembership({ creatorId }: { creatorId: string }) {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -31,7 +31,7 @@ export default function TeamMembership({ creatorId }: { creatorId: string }) {
 
     const [teamsResult, invitationsResult] = await Promise.allSettled([
       loadJson(`/api/team-memberships?creatorId=${encodeURIComponent(creatorId)}`, "Could not load team membership."),
-      loadJson("/api/team-invitations", "Could not load invitations."),
+      loadJson(`/api/team-invitations?creatorId=${encodeURIComponent(creatorId)}`, "Could not load invitations."),
     ]);
 
     if (teamsResult.status === "fulfilled") {
@@ -86,12 +86,12 @@ export default function TeamMembership({ creatorId }: { creatorId: string }) {
     try {
       const response = await fetch("/api/team-invitations", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "respond", invitationId: invitation.invitation_id, accept }),
+        body: JSON.stringify({ action: "respond", invitationId: invitation.invitation_id, recipientCreatorId: invitation.recipient_creator_id, accept }),
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error || "Invitation response failed.");
       const state = payload.result?.status;
-      setNotice(state === "team_unavailable" ? `The ${invitation.team_name} invitation cannot be accepted because the team is unavailable.` : state === "expired" ? `The ${invitation.team_name} invitation has expired.` : state === "already_member" ? `You already belong to ${invitation.team_name}.` : accept ? `You joined ${invitation.team_name}.` : `You declined the ${invitation.team_name} invitation.`);
+      setNotice(state === "team_unavailable" ? `The ${invitation.team_name} invitation cannot be accepted because the team is unavailable.` : state === "expired" ? `The ${invitation.team_name} invitation has expired.` : state === "already_member" ? `${invitation.recipient_creator_name} already belongs to ${invitation.team_name}.` : state === "accepted" ? `${invitation.recipient_creator_name} joined ${invitation.team_name}.` : state === "declined" ? `${invitation.recipient_creator_name} declined the ${invitation.team_name} invitation.` : `This invitation is ${String(state ?? "unavailable").replaceAll("_", " ")}.`);
       await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Invitation response failed.");
@@ -131,13 +131,13 @@ export default function TeamMembership({ creatorId }: { creatorId: string }) {
             const pending = invitation.status === "pending";
             return <li key={invitation.invitation_id} className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div><p className="font-medium">{invitation.team_name}</p><p className="text-xs text-zinc-500">Invited by {invitation.sender_name || "the team owner"}</p></div>
+                <div><p className="font-medium">{invitation.team_name}</p><p className="text-xs text-zinc-500">For {invitation.recipient_creator_name} / Invited by {invitation.sender_name || "the team owner"}</p></div>
                 <span className="rounded-full border border-zinc-700 px-2.5 py-1 text-xs capitalize text-zinc-300">{invitation.status.replaceAll("_", " ")}</span>
               </div>
               {invitation.message && <p className="mt-3 text-sm text-zinc-300">{invitation.message}</p>}
               {invitation.team_creator_id && <Link href={`/creator/${invitation.team_creator_id}`} className="mt-3 inline-block text-sm text-purple-300 hover:text-purple-200">View team page →</Link>}
               {pending && <div className="mt-4 flex gap-2">
-                <button type="button" disabled={respondingId !== null} onClick={() => void respond(invitation, true)} className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold disabled:opacity-50">{respondingId === invitation.invitation_id ? "Saving…" : "Accept"}</button>
+                <button type="button" disabled={respondingId !== null} onClick={() => void respond(invitation, true)} className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold disabled:opacity-50">{respondingId === invitation.invitation_id ? "Saving…" : `Accept as ${invitation.recipient_creator_name}`}</button>
                 <button type="button" disabled={respondingId !== null} onClick={() => void respond(invitation, false)} className="rounded-lg border border-zinc-700 px-4 py-2 text-sm disabled:opacity-50">Decline</button>
               </div>}
             </li>;

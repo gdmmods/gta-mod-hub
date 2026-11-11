@@ -5,6 +5,7 @@ import {
   useState,
 } from "react";
 
+import type { ModCardData } from "@/components/mod/ModCard";
 import { supabase } from "@/lib/supabase/client";
 
 export default function useSearch(
@@ -12,12 +13,12 @@ export default function useSearch(
 ) {
 
   const [mods, setMods] =
-    useState<any[]>([]);
+    useState<(ModCardData & { likes: number; downloads: number })[]>([]);
 
   const [
     creators,
     setCreators,
-  ] = useState<any[]>([]);
+  ] = useState<{ id: string; name: string; avatar: string | null; owner_type: string | null }[]>([]);
 
   const [loading, setLoading] =
     useState(false);
@@ -38,7 +39,12 @@ export default function useSearch(
           id,
           title,
           image,
-          status
+          description,
+          category,
+          likes,
+          downloads,
+          creator,
+          mod_creators(creators(id,name))
         `)
         .eq(
           "status",
@@ -92,7 +98,19 @@ export default function useSearch(
       ----------------------------- */
 
       setMods(
-        modData || []
+        (modData ?? []).map(mod => ({
+          id: mod.id,
+          title: mod.title ?? "Untitled",
+          image: mod.image ?? "/placeholder.jpg",
+          description: mod.description ?? undefined,
+          category: mod.category ?? undefined,
+          likes: mod.likes ?? 0,
+          downloads: mod.downloads ?? 0,
+          creator: mod.creator ?? undefined,
+          mod_creators: (mod.mod_creators ?? []).flatMap(({ creators }) =>
+            (Array.isArray(creators) ? creators : creators ? [creators] : []).map(creator => ({ creators: creator }))
+          ),
+        }))
       );
 
       setCreators(

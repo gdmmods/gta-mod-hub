@@ -60,7 +60,7 @@ assert.match(membershipUi, /Public team page/);
 assert.match(controls, /Invite a creator/);
 assert.match(controls, /\/api\/team-invitations/);
 assert.match(invitationRoute, /respond_to_team_invitation/);
-assert.match(invitationRoute, /rpc\("get_my_team_invitations"\)/);
+assert.match(invitationRoute, /rpc\("get_creator_team_invitations",/);
 assert.match(invitationRoute, /create_team_invitation/);
 assert.doesNotMatch(controls, /Permissions|TeamInvitesTab|can_manage_members/);
 assert.doesNotMatch(await readFile(new URL("app/dashboard/page.tsx", root), "utf8"), /InvitationInbox/);

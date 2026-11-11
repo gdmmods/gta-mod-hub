@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 
 import ClaimCreatorButton from "@/components/creator/ClaimCreatorButton";
 import CreatorPageShell from "@/components/creator/profile/CreatorPageShell";
+import DiscussionHistory from "@/components/discussions/DiscussionHistory";
 import CreatorHero from "@/components/creator/profile/CreatorHero";
 import CreatorActivity from "@/components/creator/profile/CreatorActivity";
 import CreatorFeaturedMod from "@/components/creator/profile/CreatorFeaturedMod";
@@ -159,6 +160,10 @@ export default async function CreatorPage({
   if (managedError) console.error("CREATOR MANAGEMENT STATUS ERROR:", managedError);
   const isManaged = managedResult === true;
 
+  const { data: teamLifecycle } = creator.owner_type === 'team' && creator.team_id
+    ? await supabase.from('teams').select('status').eq('id', creator.team_id).maybeSingle()
+    : { data: null };
+  const archivedTeam = teamLifecycle?.status === 'archived';
   let publicTeamMembers: PublicTeamMember[] = [];
   const teamModsByCreator: Record<string, PublicTeamMod[]> = {};
   let teamModRelationships: Array<{ creator_id: string; mod_id: string }> = [];
@@ -522,6 +527,7 @@ export default async function CreatorPage({
       {/* NAVBAR */}
       <Navbar />
 
+      {archivedTeam && <p className="relative mx-auto mt-6 max-w-6xl rounded-2xl border border-amber-500/30 bg-zinc-900 px-6 py-4 text-sm text-amber-200">Archived team · This profile preserves the team's contributions and history. Team publishing and management are inactive.</p>}
       {/* HERO */}
       <CreatorHero
         creator={creator}
@@ -534,6 +540,8 @@ export default async function CreatorPage({
         isManaged={isManaged}
         creatorGames={creatorGames}
       />
+
+      <DiscussionHistory recent className="relative mx-auto max-w-[1450px] px-5 py-6" identity={{ type: 'creator', id: creatorId }} historyHref={`/creator/${creatorId}/discussions`} />
 
       {/* FEATURED CREATIONS */}
       <CreatorFeaturedMod
@@ -581,7 +589,7 @@ export default async function CreatorPage({
               creator={creator}
             />
 
-            {!isManaged && (
+            {!isManaged && !archivedTeam && (
 
               <div id="claim-profile">
 

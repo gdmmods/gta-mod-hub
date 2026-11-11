@@ -1,5 +1,7 @@
 "use client";
 
+import { discussionPresentation } from "@/lib/notifications/discussionPresentation";
+import { discussionEventHref } from "@/lib/discussions/types";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
@@ -31,9 +33,12 @@ function eventOf(notification: Notification): ActivityEvent | null {
 }
 
 function titleOf(event: ActivityEvent | null, accountId: string | null, pendingInvitationIds: Set<string>): string {
+  const discussion = discussionPresentation(event);
+  if (discussion) return discussion.title;
   if (event?.event_type === "team_member_invited") {
     if (event.metadata?.senderProfileId !== accountId) return "Team invitation";
     const invitationId = event.metadata?.invitationId;
+
     return typeof invitationId === "string" && pendingInvitationIds.has(invitationId) ? "Pending team invitation" : "Team invitation sent";
   }
   if (event?.title) return event.title;
@@ -43,6 +48,8 @@ function titleOf(event: ActivityEvent | null, accountId: string | null, pendingI
 }
 
 function summaryOf(event: ActivityEvent | null, accountId: string | null, pendingInvitationIds: Set<string>): string {
+  const discussion = discussionPresentation(event);
+  if (discussion) return discussion.summary;
   if (event?.event_type === "team_member_invited") {
     const metadata = event.metadata ?? {};
     const teamName = typeof metadata.teamName === "string" ? metadata.teamName : "the team";
@@ -58,6 +65,8 @@ function summaryOf(event: ActivityEvent | null, accountId: string | null, pendin
 }
 
 function destinationOf(event: ActivityEvent | null): string {
+  const commentHref = discussionEventHref(event);
+  if (commentHref) return commentHref;
   if (event?.event_type === "team_member_invited") return "/activity";
   if (event?.event_type === "team_member_joined" || event?.event_type === "team_member_left") {
     const creatorId = event.metadata?.teamCreatorId;
@@ -189,6 +198,8 @@ export default function ActivityPage() {
       setRespondingId(null);
     }
   }
+
+
 
   const unreadCount = notifications.filter((item) => !item.is_read).length;
 

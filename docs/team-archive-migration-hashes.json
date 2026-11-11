@@ -1,0 +1,5 @@
+{
+  "supabase/migrations/20261031103144_team_archive_lifecycle.sql": "638e63b3b00cc87f820c78defc07a3c4aa12fbfe93db06e07a0471fdb7822d7d",
+  "supabase/migrations/20261031100736_unified_discussions.sql": "505f06eda8008a2b358d2f2092c0bc62bf7e7f9cbc79f01cd1c455ca08ff95c0",
+  "docs/team-archive-apply.sql": "9387a13a5fe436efa7789bf43e1b7615c72573b9ee6685502e95a01712cc51d8"
+}

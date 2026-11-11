@@ -1,9 +1,10 @@
 "use client";
 
+import ModCard, { type ModCardData } from "@/components/mod/ModCard";
 import { useState } from "react";
 import Link from "next/link";
 
-type SearchMod = { id: string; title: string; image: string | null };
+type SearchMod = ModCardData & { likes: number; downloads: number };
 type SearchCreator = { id: string; name: string; avatar: string | null; owner_type: string | null };
 
 type Props = {
@@ -54,44 +55,7 @@ export default function SearchResults({
 
             {mods.map((mod) => (
 
-              <Link
-                key={mod.id}
-                href={`/mods/${mod.id}`}
-                className="
-                  rounded-3xl
-                  overflow-hidden
-                  border
-                  border-zinc-800
-                  bg-zinc-900
-                  hover:border-purple-500
-                  transition
-                "
-              >
-
-                <img
-                  src={mod.image || "/placeholder.jpg"}
-                  alt={mod.title}
-                  className="
-                    w-full
-                    h-52
-                    object-cover
-                  "
-                />
-
-                <div className="p-5">
-
-                  <h3
-                    className="
-                      text-lg
-                      font-semibold
-                    "
-                  >
-                    {mod.title}
-                  </h3>
-
-                </div>
-
-              </Link>
+              <ModCard key={mod.id} mod={mod} likes={mod.likes} downloads={mod.downloads} />
 
             ))}
 

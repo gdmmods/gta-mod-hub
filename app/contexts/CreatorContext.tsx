@@ -13,6 +13,8 @@ import type { ReactNode } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 
+import { filterOperationalCreators } from '@/lib/team/operational-creators';
+
 export type CreatorOption = {
   id: string;
   name: string;
@@ -28,13 +30,14 @@ type CreatorMembershipRow = {
 };
 
 type CreatorContextType = {
+  accountId: string | null;
   creators: CreatorOption[];
   activeCreatorId: string | null;
   activeCreator: CreatorOption | null;
   loading: boolean;
   selecting: boolean;
   error: string | null;
-  selectActiveCreator: (creatorId: string) => Promise<boolean>;
+  selectActiveCreator: (creatorId: string | null) => Promise<boolean>;
   refresh: () => Promise<void>;
 };
 
@@ -127,9 +130,10 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
         throw new Error("Could not load your approved creator profiles.");
       }
 
-      const options = getCreatorOptions(
+      const options = await filterOperationalCreators(supabase, getCreatorOptions(
         (membershipResult.data ?? []) as unknown as CreatorMembershipRow[]
-      );
+      ));
+      if (version !== loadVersion.current) return;
       setCreators(options);
 
       if (profileResult.error || !profileResult.data) {
@@ -141,7 +145,7 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
 
       const selectedCreatorId = options.some((creator) => creator.id === savedCreatorId)
         ? savedCreatorId
-        : options[0]?.id ?? null;
+        : null;
 
       if (savedCreatorId !== selectedCreatorId) {
         setActiveCreatorId(selectedCreatorId);
@@ -216,9 +220,9 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
     await loadForAccount(data.user?.id ?? null, true);
   }, [loadForAccount]);
 
-  const selectActiveCreator = useCallback(async (creatorId: string) => {
+  const selectActiveCreator = useCallback(async (creatorId: string | null) => {
     if (!accountId || loading || selecting) return false;
-    if (!creators.some((creator) => creator.id === creatorId)) {
+    if (creatorId !== null && !creators.some((creator) => creator.id === creatorId)) {
       setError("That creator is not available to your account.");
       return false;
     }
@@ -240,18 +244,22 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      const { data: membership, error: membershipError } = await supabase
-        .from("creator_members")
-        .select("creator_id")
-        .eq("profile_id", accountAtStart)
-        .eq("creator_id", creatorId)
-        .eq("status", "approved")
-        .maybeSingle();
+      if (creatorId !== null) {
+        const { data: membership, error: membershipError } = await supabase
+          .from("creator_members")
+          .select("creator_id")
+          .eq("profile_id", accountAtStart)
+          .eq("creator_id", creatorId)
+          .eq("status", "approved")
+          .maybeSingle();
 
-      if (membershipError || !membership) {
-        setError("You no longer have approved access to that creator.");
-        void loadForAccount(accountAtStart, true);
-        return false;
+        const selected = creators.find(c => c.id === creatorId);
+        const operational = selected ? await filterOperationalCreators(supabase, [selected]) : [];
+        if (membershipError || !membership || operational.length === 0) {
+          setError("You no longer have approved access to that creator.");
+          void loadForAccount(accountAtStart, true);
+          return false;
+        }
       }
 
       const { data: updatedProfile, error: saveError } = await supabase
@@ -279,12 +287,19 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
     }
   }, [accountId, activeCreatorId, creators, loadForAccount, loading, selecting]);
 
+  useEffect(() => {
+    const onFocus = () => { void refresh(); };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [refresh]);
+
   const activeCreator = useMemo(
     () => creators.find((creator) => creator.id === activeCreatorId) ?? null,
     [activeCreatorId, creators]
   );
 
   const value = useMemo<CreatorContextType>(() => ({
+    accountId,
     creators,
     activeCreatorId,
     activeCreator,
@@ -293,7 +308,7 @@ export function CreatorProvider({ children }: { children: ReactNode }) {
     error,
     selectActiveCreator,
     refresh,
-  }), [creators, activeCreatorId, activeCreator, loading, selecting, error, selectActiveCreator, refresh]);
+  }), [accountId, creators, activeCreatorId, activeCreator, loading, selecting, error, selectActiveCreator, refresh]);
 
   return <CreatorContext.Provider value={value}>{children}</CreatorContext.Provider>;
 }

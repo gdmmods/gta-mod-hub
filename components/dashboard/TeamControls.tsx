@@ -5,12 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import TeamDangerZone from "@/components/team/TeamDangerZone";
 
-type Props = { creator: { id: string; name: string; team_id: string }; onTeamDeleted: () => void };
+type Props = { creator: { id: string; name: string; team_id: string }; onTeamArchived: () => void };
 type Member = { creator_id: string; creator_name: string; creator_avatar: string | null; joined_at: string };
 type Candidate = { creator_id: string; creator_name: string; creator_avatar: string | null; verified: boolean | null };
 type Invitation = { invitation_id: string; recipient_creator_id: string; recipient_name: string | null; status: string; message: string | null; expires_at: string | null; created_at: string };
 
-export default function TeamControls({ creator, onTeamDeleted }: Props) {
+export default function TeamControls({ creator, onTeamArchived }: Props) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -167,7 +167,7 @@ export default function TeamControls({ creator, onTeamDeleted }: Props) {
           </li>)}
         </ul>}
       </div>}
-      {ownerVerified && <TeamDangerZone creator={creator} onTeamDeleted={onTeamDeleted} />}
+      {ownerVerified && <TeamDangerZone creator={creator} onTeamArchived={onTeamArchived} />}
     </section>
   );
 }

@@ -64,7 +64,7 @@ export default function CreatorOwnershipGuard({
 
       let authorized = creator.owner_type === "user" && creator.owner_id === user.id;
       if (creator.owner_type === "team" && creator.team_id) {
-        const { data: team } = await supabase.from("teams").select("owner_id").eq("id", creator.team_id).maybeSingle();
+        const { data: team } = await supabase.from("teams").select("owner_id").eq("status", "active").eq("id", creator.team_id).maybeSingle();
         if (team?.owner_id) {
           const [{ data: ownerCreator }, { data: ownership }] = await Promise.all([
             supabase.from("creators").select("id").eq("id", team.owner_id).eq("owner_type", "user").eq("owner_id", user.id).maybeSingle(),

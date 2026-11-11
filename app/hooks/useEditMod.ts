@@ -8,6 +8,8 @@ import { defaultModForm }from "@/lib/forms/defaultModForm";
 import { parseCreatorBackupUrl } from "@/lib/server/creatorBackupUrl";
 import { normalizeModCategory } from "@/lib/vehicle-subcategories";
 
+import { filterOperationalCreators } from '@/lib/team/operational-creators';
+
 export default function useEditMod(modId: string | string[]) {
   const [loading, setLoading] =
     useState(false);
@@ -103,7 +105,7 @@ export default function useEditMod(modId: string | string[]) {
         item.creator
     ) || [];
 
-  setCreators(creators);
+  setCreators(await filterOperationalCreators(supabase, creators));
 
   /* -----------------------------
    ALL CREATORS
@@ -116,7 +118,9 @@ export default function useEditMod(modId: string | string[]) {
     .from("creators")
     .select(`
       id,
-      name
+      name,
+      owner_type,
+      team_id
     `)
     .order(
       "name",
@@ -133,13 +137,9 @@ export default function useEditMod(modId: string | string[]) {
 
   } else {
 
-    setAllCreators(
-      creatorData || []
-    );
-
-    setFilteredCreators(
-      creatorData || []
-    );
+    const operationalCreators = await filterOperationalCreators(supabase, creatorData ?? []);
+    setAllCreators(operationalCreators);
+    setFilteredCreators(operationalCreators);
 
   }
 

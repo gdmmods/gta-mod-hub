@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
+import { filterOperationalCreators } from '@/lib/team/operational-creators';
+
 export default function useDashboardData(activeCreatorId: string | null, refreshKey: number) {
   const [loading, setLoading] = useState(true);
   const [mods, setMods] = useState<any[]>([]);
@@ -29,7 +31,12 @@ export default function useDashboardData(activeCreatorId: string | null, refresh
           .eq("status", "approved");
         if (membershipsError) throw membershipsError;
 
-        const ids = [...new Set((memberships ?? []).map((membership) => membership.creator_id))];
+        const membershipIds = [...new Set((memberships ?? []).map((membership) => membership.creator_id))];
+        const { data: identities, error: identityError } = membershipIds.length
+          ? await supabase.from('creators').select('id,owner_type,team_id').in('id', membershipIds)
+          : { data: [], error: null };
+        if (identityError) throw identityError;
+        const ids = (await filterOperationalCreators(supabase, identities ?? [])).map(c => c.id);
         if (cancelled) return;
         setCreatorIds(ids);
 

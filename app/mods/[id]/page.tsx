@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase/client";
 
 import ModHero from "@/components/mod/ModHero";
 import ModSidebar from "@/components/mod/ModSidebar";
+import ModDiscussions from "@/components/discussions/ModDiscussions";
 import ModTabs from "@/components/mod/ModTabs";
 import RelatedMods from "@/components/mod/RelatedMods";
 import ModMetaGrid from "@/components/mod/ModMetaGrid";
@@ -371,6 +372,7 @@ if (
           <div className="min-w-0">
 
             <ModHero
+              canRefreshRatings={canEdit && mod.status === "published" && (mod.visibility === "public" || mod.visibility === "early_access")}
               mod={mod}
               images={images}
             />
@@ -476,6 +478,7 @@ if (
   )}
 
   <ModTabs mod={mod} />
+  <ModDiscussions targetId={mod.id} />
 
 </div>
 

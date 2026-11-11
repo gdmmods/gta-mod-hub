@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { parseGtaInsideVotes } from '../lib/ratings/gtainside-votes.mjs';
+const controls = (positive, negative) => '<button class="btn btn-primary ratingButton" value="1" disabled><i class="fa fa-thumbs-up"></i> '+positive+'</button> <button class="btn btn-primary ratingButton" value="-1" disabled><i class="fa fa-thumbs-down"></i> '+negative+'</button>';
+assert.deepEqual(parseGtaInsideVotes(controls(4,0)),{status:'success',positive:4,negative:0});
+assert.deepEqual(parseGtaInsideVotes(controls(0,0)),{status:'success',positive:0,negative:0});
+assert.deepEqual(parseGtaInsideVotes(controls(4,-1)),{status:'invalid'});
+assert.deepEqual(parseGtaInsideVotes(controls(4,2147483648)),{status:'invalid'});
+assert.deepEqual(parseGtaInsideVotes(controls(4,0)+controls(1,1)),{status:'invalid'});
+assert.deepEqual(parseGtaInsideVotes('<i class="fa fa-thumbs-up"></i> 10'),{status:'unavailable'});
+console.log('GTAInside native listing controls passed: zero, positive/negative, invalid and unavailable.');

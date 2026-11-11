@@ -1,3 +1,4 @@
+import RatingChannels from "@/components/ratings/RatingChannels";
 import Link from "next/link";
 
 type FeaturedMod = {
@@ -89,9 +90,9 @@ export default function CreatorFeaturedMod({
             </div>
           </div>
         ) : (
-        <Link
-          href={`/mods/${mostDownloaded?.id}`}
+        <div className="relative"
         >
+          <Link href={`/mods/${mostDownloaded?.id}`} aria-label={mostDownloaded?.title} className="absolute inset-0 z-10 rounded-[inherit] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-purple-400" />
 
           <div
             className="
@@ -164,6 +165,7 @@ export default function CreatorFeaturedMod({
               >
                 {mostDownloaded?.title}
               </h3>
+                {mostDownloaded?.id && <RatingChannels modId={mostDownloaded.id} />}
 
               <div
                 className="
@@ -190,13 +192,13 @@ export default function CreatorFeaturedMod({
 
           </div>
 
-        </Link>
+        </div>
         )}
 
         {/* MOST LIKED */}
-        <Link
-          href={`/mods/${mostLiked?.id}`}
+        <div className="relative"
         >
+          <Link href={`/mods/${mostLiked?.id}`} aria-label={mostLiked?.title} className="absolute inset-0 z-10 rounded-[inherit] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-purple-400" />
 
           <div
             className="
@@ -269,6 +271,7 @@ export default function CreatorFeaturedMod({
               >
                 {mostLiked?.title}
               </h3>
+                {mostLiked?.id && <RatingChannels modId={mostLiked.id} />}
 
               <div
                 className="
@@ -293,7 +296,7 @@ export default function CreatorFeaturedMod({
 
           </div>
 
-        </Link>
+        </div>
 
       </div>
 

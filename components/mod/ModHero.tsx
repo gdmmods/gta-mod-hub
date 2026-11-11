@@ -1,19 +1,22 @@
 "use client";
 
+import RatingChannels from "@/components/ratings/RatingChannels";
 import { useEffect, useState } from "react";
 
 export default function ModHero({
   mod,
   images,
+  canRefreshRatings = false,
 }: {
-  mod: any;
+  mod: { id: string; title: string; image?: string | null; source_url?: string | null };
   images: string[];
+  canRefreshRatings?: boolean;
 }) {
 
   const galleryImages = [
     mod.image,
     ...(images || []),
-  ].filter(Boolean);
+  ].filter((image): image is string => Boolean(image));
 
   const uniqueImages = [
     ...new Set(galleryImages),
@@ -105,212 +108,218 @@ export default function ModHero({
     <div className="space-y-4">
 
       {/* HERO */}
-      <div
-        className="
-          group
-          relative
-          overflow-hidden
-          rounded-[32px]
-          border
-          border-zinc-900
-          bg-black
-          cursor-pointer
-          shadow-[0_0_50px_rgba(168,85,247,0.05)]
-        "
-        onClick={() =>
-          setLightboxOpen(true)
-        }
-      >
-
-        {/* IMAGE */}
-        <img
-          src={selectedImage}
-          alt={mod.title}
-          className="
-            w-full
-            h-[340px]
-            md:h-[420px]
-            xl:h-[470px]
-            object-cover
-            transition-transform
-            duration-700
-            group-hover:scale-[1.02]
-          "
-        />
-
-        {/* OVERLAY */}
+      <div className="relative">
         <div
           className="
-            absolute
-            inset-0
-            bg-gradient-to-t
-            from-black/40
-            via-transparent
-            to-black/10
+            group
+            relative
+            overflow-hidden
+            rounded-[32px]
+            border
+            border-zinc-900
+            bg-black
+            cursor-pointer
+            shadow-[0_0_50px_rgba(168,85,247,0.05)]
           "
-        />
-
-        {/* TOP BAR */}
-        <div
-          className="
-            absolute
-            top-4
-            left-4
-            right-4
-            flex
-            items-center
-            justify-between
-          "
+          onClick={() =>
+            setLightboxOpen(true)
+          }
         >
 
+          {/* IMAGE */}
+          <img
+            src={selectedImage}
+            alt={mod.title}
+            className="
+              w-full
+              h-[340px]
+              md:h-[420px]
+              xl:h-[470px]
+              object-cover
+              transition-transform
+              duration-700
+              group-hover:scale-[1.02]
+            "
+          />
+
+          {/* OVERLAY */}
           <div
             className="
+              absolute
+              inset-0
+              bg-gradient-to-t
+              from-black/40
+              via-transparent
+              to-black/10
+            "
+          />
+
+          {/* TOP BAR */}
+          <div
+            className="
+              absolute
+              top-4
+              left-4
+              right-4
               flex
               items-center
-              gap-2
-              rounded-full
-              border
-              border-white/10
-              bg-black/40
-              px-3
-              py-1.5
-              text-[11px]
-              uppercase
-              tracking-[0.2em]
-              text-zinc-300
-              backdrop-blur-xl
+              justify-between
             "
           >
-
-            <div
-              className="
-                h-2
-                w-2
-                rounded-full
-                bg-purple-500
-              "
-            />
-
-            Gallery
-
-          </div>
-
-          <div
-            className="
-              rounded-full
-              border
-              border-white/10
-              bg-black/40
-              px-3
-              py-1.5
-              text-xs
-              text-white
-              backdrop-blur-xl
-            "
-          >
-            Expand
-          </div>
-
-        </div>
-
-        {/* BOTTOM BAR */}
-        <div
-          className="
-            absolute
-            bottom-4
-            left-4
-            right-4
-            flex
-            items-center
-            justify-between
-          "
-        >
-
-          <div
-            className="
-              rounded-full
-              border
-              border-white/10
-              bg-black/40
-              px-3
-              py-1.5
-              text-xs
-              text-zinc-300
-              backdrop-blur-xl
-            "
-          >
-            {currentIndex + 1} /{" "}
-            {uniqueImages.length}
-          </div>
-
-          {uniqueImages.length > 1 && (
 
             <div
               className="
                 flex
                 items-center
                 gap-2
+                rounded-full
+                border
+                border-white/10
+                bg-black/40
+                px-3
+                py-1.5
+                text-[11px]
+                uppercase
+                tracking-[0.2em]
+                text-zinc-300
+                backdrop-blur-xl
               "
             >
 
-              <button
-                onClick={(e) => {
-
-                  e.stopPropagation();
-                  goPrev();
-
-                }}
+              <div
                 className="
-                  flex
-                  h-10
-                  w-10
-                  items-center
-                  justify-center
+                  h-2
+                  w-2
                   rounded-full
-                  border
-                  border-white/10
-                  bg-black/40
-                  text-white
-                  backdrop-blur-xl
-                  transition
-                  hover:bg-white/10
+                  bg-purple-500
                 "
-              >
-                ←
-              </button>
+              />
 
-              <button
-                onClick={(e) => {
-
-                  e.stopPropagation();
-                  goNext();
-
-                }}
-                className="
-                  flex
-                  h-10
-                  w-10
-                  items-center
-                  justify-center
-                  rounded-full
-                  border
-                  border-white/10
-                  bg-black/40
-                  text-white
-                  backdrop-blur-xl
-                  transition
-                  hover:bg-white/10
-                "
-              >
-                →
-              </button>
+              Gallery
 
             </div>
 
-          )}
+            <div
+              className="
+                rounded-full
+                border
+                border-white/10
+                bg-black/40
+                px-3
+                py-1.5
+                text-xs
+                text-white
+                backdrop-blur-xl
+              "
+            >
+              Expand
+            </div>
+
+          </div>
+
+          {/* BOTTOM BAR */}
+          <div
+            className="
+              absolute
+              bottom-4
+              left-4
+              right-4
+              flex
+              items-center
+              justify-between
+            "
+          >
+
+            <div
+              className="
+                rounded-full
+                border
+                border-white/10
+                bg-black/40
+                px-3
+                py-1.5
+                text-xs
+                text-zinc-300
+                backdrop-blur-xl
+              "
+            >
+              {currentIndex + 1} /{" "}
+              {uniqueImages.length}
+            </div>
+
+            {uniqueImages.length > 1 && (
+
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-2
+                "
+              >
+
+                <button
+                  onClick={(e) => {
+
+                    e.stopPropagation();
+                    goPrev();
+
+                  }}
+                  className="
+                    flex
+                    h-10
+                    w-10
+                    items-center
+                    justify-center
+                    rounded-full
+                    border
+                    border-white/10
+                    bg-black/40
+                    text-white
+                    backdrop-blur-xl
+                    transition
+                    hover:bg-white/10
+                  "
+                >
+                  ←
+                </button>
+
+                <button
+                  onClick={(e) => {
+
+                    e.stopPropagation();
+                    goNext();
+
+                  }}
+                  className="
+                    flex
+                    h-10
+                    w-10
+                    items-center
+                    justify-center
+                    rounded-full
+                    border
+                    border-white/10
+                    bg-black/40
+                    text-white
+                    backdrop-blur-xl
+                    transition
+                    hover:bg-white/10
+                  "
+                >
+                  →
+                </button>
+
+              </div>
+
+            )}
+
+          </div>
 
         </div>
 
+        <div className={`pointer-events-none relative flex justify-end px-3 pt-2 sm:absolute sm:bottom-4 sm:left-20 sm:px-0 sm:pt-0 ${uniqueImages.length > 1 ? "sm:right-[7.25rem]" : "sm:right-4"}`}>
+          <RatingChannels modId={mod.id} variant="gallery" primaryUrl={mod.source_url} canRefresh={canRefreshRatings} />
+        </div>
       </div>
 
       {/* THUMBNAILS */}
@@ -337,6 +346,8 @@ export default function ModHero({
 
                 <button
                   key={`${image}-${index}`}
+                  aria-label={`Show gallery image ${index + 1}`}
+                  aria-pressed={active}
                   onClick={() =>
                     setSelectedImage(
                       image
@@ -370,6 +381,7 @@ export default function ModHero({
 
                   <img
                     src={image}
+                    alt=""
                     className="
                       h-[82px]
                       w-[140px]

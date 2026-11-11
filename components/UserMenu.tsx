@@ -156,6 +156,8 @@ const menuRef =
 
             <>
 
+              <Link href="/discussions" onClick={() => setOpen(false)} className="flex px-4 py-3 text-sm transition hover:bg-zinc-800">Discussions</Link>
+
               {/* FAVORITES */}
 
               <Link

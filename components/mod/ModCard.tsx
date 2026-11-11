@@ -1,5 +1,6 @@
 "use client";
 
+import RatingChannels from "@/components/ratings/RatingChannels";
 import Link from "next/link";
 
 import HoverActions from "../HoverActionsClient";
@@ -10,7 +11,7 @@ type Creator = {
   name: string;
 };
 
-type Mod = {
+export type ModCardData = {
   id: string;
   title: string;
   description?: string;
@@ -37,7 +38,7 @@ export default function ModCard({
   showCreator = true,
   variant = "default",
 }: {
-  mod: Mod;
+  mod: ModCardData;
   likes: number;
   downloads: number;
 
@@ -221,52 +222,49 @@ export default function ModCard({
 
           </div>
 
-          {/* CENTER ACTIONS */}
-          <div
-            className="
-              absolute
-              inset-0
-              flex
-              items-center
-              justify-center
-              opacity-0
-              group-hover:opacity-100
-              transition-all
-              duration-300
-              bg-black/40
-              backdrop-blur-[2px]
-            "
-          >
-
+          {onLike && onDownload && (
             <div
               className="
-                translate-y-5
-                group-hover:translate-y-0
-                transition-transform
+                absolute
+                inset-0
+                flex
+                items-center
+                justify-center
+                opacity-0
+                group-hover:opacity-100
+                transition-all
                 duration-300
+                bg-black/40
+                backdrop-blur-[2px]
               "
-              onClick={(e) =>
-                e.stopPropagation()
-              }
             >
 
-              <HoverActions
-                id={mod.id}
-                likes={likes}
-                source_url={
-                  mod.source_url || "#"
+              <div
+                className="
+                  translate-y-5
+                  group-hover:translate-y-0
+                  transition-transform
+                  duration-300
+                "
+                onClick={(e) =>
+                  e.stopPropagation()
                 }
-                onLike={
-                  onLike || (() => {})
-                }
-                onDownload={
-                  onDownload || (() => {})
-                }
-              />
+              >
+
+                <HoverActions
+                  id={mod.id}
+                  likes={likes}
+                  source_url={
+                    mod.source_url || "#"
+                  }
+                  onLike={onLike}
+                  onDownload={onDownload}
+                />
+
+              </div>
 
             </div>
-
-          </div>
+          )}
 
           {/* BOTTOM FADE */}
           <div
@@ -339,6 +337,9 @@ export default function ModCard({
             "No description provided."}
         </p>
 
+        <div className="min-h-4">
+          <RatingChannels modId={mod.id} primaryUrl={mod.source_url} />
+        </div>
         {/* STATS */}
         <div
           className="

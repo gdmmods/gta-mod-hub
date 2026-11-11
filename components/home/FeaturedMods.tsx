@@ -1,3 +1,4 @@
+import RatingChannels from "@/components/ratings/RatingChannels";
 import Link from "next/link";
 import PageContainer from "@/components/layout/PageContainer";
 import Section from "@/components/layout/Section";
@@ -44,11 +45,11 @@ export default function FeaturedMods({
               .join(" • ");
 
             return (
-              <Link
+              <div
                 key={mod.id}
-                href={`/mods/${mod.id}`}
-                className="group block"
+                className="relative group block"
               >
+                <Link href={`/mods/${mod.id}`} aria-label={mod.title} className="absolute inset-0 z-10 rounded-[inherit] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-purple-400" />
                 <article className="relative h-[340px] overflow-hidden rounded-[34px] border border-zinc-800">
                   <img
                     src={mod.image || "/placeholder.jpg"}
@@ -68,13 +69,14 @@ export default function FeaturedMods({
                         by {creators}
                       </p>
                     )}
+                    <RatingChannels modId={mod.id} />
                     <div className="mt-4 flex items-center gap-5 text-sm text-zinc-300">
                       <span>❤️ {mod.likes ?? 0}</span>
                       <span>⬇ {mod.downloads ?? 0}</span>
                     </div>
                   </div>
                 </article>
-              </Link>
+              </div>
             );
           })}
         </div>

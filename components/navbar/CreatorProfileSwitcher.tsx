@@ -10,6 +10,7 @@ import { useCreatorContext } from "@/app/contexts/CreatorContext";
 export default function CreatorProfileSwitcher() {
   const [open, setOpen] = useState(false);
   const {
+    accountId,
     activeCreator,
     activeCreatorId,
     creators,
@@ -19,7 +20,7 @@ export default function CreatorProfileSwitcher() {
     selectActiveCreator,
   } = useCreatorContext();
 
-  async function handleSelect(creatorId: string) {
+  async function handleSelect(creatorId: string | null) {
     if (await selectActiveCreator(creatorId)) setOpen(false);
   }
 
@@ -32,7 +33,7 @@ export default function CreatorProfileSwitcher() {
     );
   }
 
-  if (creators.length === 0) {
+  if (!accountId) {
     return error ? (
       <span role="status" title={error} className="max-w-40 text-xs text-amber-300">
         Creator selection unavailable
@@ -45,7 +46,7 @@ export default function CreatorProfileSwitcher() {
       <button
         type="button"
         onClick={() => setOpen((previous) => !previous)}
-        aria-label={activeCreator ? `Active Creator: ${activeCreator.name}` : "Choose an Active Creator"}
+        aria-label={activeCreator ? `Active Creator: ${activeCreator.name}` : "Publishing identity: Personal"}
         aria-expanded={open}
         className="
           group flex h-11 items-center gap-2
@@ -87,14 +88,21 @@ export default function CreatorProfileSwitcher() {
           <div className="absolute right-0 top-full z-50 mt-3 w-[min(320px,calc(100vw-24px))] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
             <div className="border-b border-zinc-800 px-4 py-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                Active Creator
+                Publishing identity
               </p>
               <p className="mt-1 text-xs text-zinc-400">
-                Creator actions use this profile when permitted.
+                Comments use this identity. Creator actions require permission.
               </p>
             </div>
 
             <div className="max-h-80 overflow-y-auto p-2">
+              <button type="button" onClick={() => void handleSelect(null)} disabled={selecting}
+                aria-pressed={activeCreatorId === null}
+                className={`mb-1 flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm disabled:opacity-60 ${activeCreatorId === null ? 'border-purple-500/20 bg-purple-500/10' : 'border-transparent hover:bg-zinc-900'}`}>
+                <UserRound size={19} className="text-zinc-400" />
+                <span className="flex-1 text-zinc-200">Personal identity</span>
+                {activeCreatorId === null && <span className="text-xs text-purple-300">Active</span>}
+              </button>
               {creators.map((creator) => {
                 const selected = creator.id === activeCreatorId;
 

@@ -1,6 +1,7 @@
+import CreatorTier from "@/components/ratings/CreatorTier";
 type Props = {
 
-  creator: { name: string; owner_type?: string | null } | null;
+  creator: { id?: string; name: string; owner_type?: string | null } | null;
 
   modCount: number;
 
@@ -210,14 +211,7 @@ export default function DashboardCreatorOverview({
         "
       >
 
-        <span>
-          <span className="text-zinc-500">
-            Tier
-          </span>{" "}
-          <span className="text-purple-400 font-medium">
-            Trusted Creator
-          </span>
-        </span>
+        <CreatorTier creatorId={creator?.id} />
 
         <span>
           <span className="text-zinc-500">

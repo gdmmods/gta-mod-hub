@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
+import DiscussionHistory from "@/components/discussions/DiscussionHistory";
 import Navbar from "@/components/layout/Navbar";
 
 interface PageProps {
@@ -18,8 +19,7 @@ export default async function ProfilePage({
     .eq("username", username.toLowerCase())
     .single();
 
-console.log("USERNAME PARAM:", username);
-console.log("PROFILE:", profile);
+
 
   if (!profile) {
     return (
@@ -75,6 +75,9 @@ console.log("PROFILE:", profile);
 
         </div>
 
+        <div className="mt-8">
+          <DiscussionHistory recent identity={{ type: 'user', id: profile.id }} historyHref={`/profile/${encodeURIComponent(profile.username)}/discussions`} />
+        </div>
       </div>
     </main>
     </>

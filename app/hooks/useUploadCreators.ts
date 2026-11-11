@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useCreatorContext } from "@/app/contexts/CreatorContext";
 import { supabase } from "@/lib/supabase/client";
 
+import { filterOperationalCreators } from '@/lib/team/operational-creators';
+
 export default function useUploadCreators() {
   const { creators: approvedCreators, activeCreatorId, loading } = useCreatorContext();
   const [allCreators, setAllCreators] = useState<any[]>([]);
@@ -21,10 +23,10 @@ export default function useUploadCreators() {
     async function loadAllCreators() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const { data, error } = await supabase.from("creators").select("id,name").order("name", { ascending: true });
+      const { data, error } = await supabase.from("creators").select("id,name,owner_type,team_id").order("name", { ascending: true });
       if (cancelled) return;
       if (error) console.error("CREATOR SEARCH LOAD ERROR:", error);
-      setAllCreators(data || []);
+      setAllCreators(error ? [] : await filterOperationalCreators(supabase, data ?? []));
     }
     void loadAllCreators();
     return () => { cancelled = true; };

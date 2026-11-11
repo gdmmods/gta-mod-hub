@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  --modvault-nav-height: 75px;
+  scroll-padding-top: var(--modvault-nav-height);
   --background: #ffffff;
   --foreground: #171717;
 }

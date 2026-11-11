@@ -1,165 +1,32 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from 'react';
+import { useCreatorContext } from '@/app/contexts/CreatorContext';
 
-import {
-  deleteTeam,
-} from "@/lib/team/deleteTeam";
+type Props = { creator: { id: string; name: string; team_id: string }; onTeamArchived: () => void };
 
-type Props = {
-  creator: any;
-  onTeamDeleted: () => void;
-};
-
-export default function TeamDangerZone({
-  creator,
-  onTeamDeleted,
-}: Props) {
-
-  const [
-    deleting,
-    setDeleting,
-  ] = useState(false);
-
-  async function handleDeleteTeam() {
-
-    if (
-      !creator?.id ||
-      !creator?.team_id
-    ) {
-
-      alert(
-        "Missing team information."
-      );
-
-      return;
-
-    }
-
-    const confirmed =
-      window.confirm(
-        `Permanently delete "${creator.name}"?\n\nThis cannot be undone.`
-      );
-
-    if (!confirmed) return;
-
-    setDeleting(true);
-
+export default function TeamDangerZone({ creator, onTeamArchived }: Props) {
+  const { refresh } = useCreatorContext();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  async function archive() {
+    if (!window.confirm(`Archive "${creator.name}"?\n\nIts profile, contributions, comments and membership history will be preserved. Publishing and team management will stop. Pending invitations will expire. You can restore the team from Archived Teams.`)) return;
+    setBusy(true);
+    setError('');
     try {
-
-      await deleteTeam({
-
-        creatorId:
-          creator.id,
-
-        teamId:
-          creator.team_id,
-
-      });
-
-      alert(
-    "Team deleted successfully."
-    );
-
-    onTeamDeleted();
-
-    } catch (error) {
-
-      console.error(
-        "DELETE TEAM ERROR:",
-        error
-      );
-
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to delete team.";
-
-      alert(message);
-
-    } finally {
-
-      setDeleting(false);
-
-    }
-
+      const response = await fetch('/api/team-lifecycle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'archive', teamId: creator.team_id }) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Team could not be archived.');
+      await refresh();
+      onTeamArchived();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Team could not be archived.');
+    } finally { setBusy(false); }
   }
-
-  return (
-
-    <section
-      className="
-        mt-8
-        rounded-3xl
-        border
-        border-red-900/50
-        bg-red-950/10
-        p-8
-      "
-    >
-
-      <p
-        className="
-          text-xs
-          uppercase
-          tracking-[0.3em]
-          text-red-400
-          mb-3
-        "
-      >
-        Danger Zone
-      </p>
-
-      <h2
-        className="
-          text-2xl
-          font-bold
-          mb-3
-        "
-      >
-        Delete Team
-      </h2>
-
-      <p
-        className="
-          text-zinc-400
-          mb-6
-        "
-      >
-        Permanently delete this team and its team creator profile.
-        This action cannot be undone.
-      </p>
-
-      <button
-        type="button"
-        onClick={
-          handleDeleteTeam
-        }
-        disabled={deleting}
-        className="
-          rounded-xl
-          bg-red-600
-          px-6
-          py-3
-          font-semibold
-          text-white
-          transition
-          hover:bg-red-500
-          disabled:cursor-not-allowed
-          disabled:opacity-50
-        "
-      >
-
-        {deleting
-          ? "Deleting Team..."
-          : "Delete Team"}
-
-      </button>
-
-    </section>
-
-  );
-
+  return <section className="mt-8 rounded-3xl border border-zinc-700 bg-zinc-900/50 p-6">
+    <h3 className="mb-3 text-xl font-semibold">Archive Team</h3>
+    <p className="mb-5 text-sm text-zinc-400">Make this team inactive while preserving its identity and history. You can restore it from Archived Teams.</p>
+    {error && <p role="alert" className="mb-4 text-sm text-red-400">{error}</p>}
+    <button type="button" disabled={busy} onClick={() => void archive()} className="rounded-xl border border-amber-500/40 px-5 py-3 font-semibold text-amber-200 hover:bg-amber-500/10 disabled:opacity-50">{busy ? 'Archiving…' : 'Archive Team'}</button>
+  </section>;
 }

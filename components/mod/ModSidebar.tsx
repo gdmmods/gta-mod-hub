@@ -14,7 +14,25 @@ export default function ModSidebar({
   totalExternalDownloads,
   canEdit = false,
   clicks,
-}: any) {
+}: {
+  mod: {
+    id: string;
+    title: string;
+    verified?: string | boolean | null;
+    visibility?: string;
+    downloads?: number | null;
+    likes?: number | null;
+    download_url?: string | null;
+    source_url?: string | null;
+    creator_backup_url?: string | null;
+  };
+  creators: { id: string; name: string }[];
+  favoritesCount?: number | null;
+  sources: ModAdditionalSource[];
+  totalExternalDownloads?: number | null;
+  canEdit?: boolean;
+  clicks?: number | null;
+}) {
 
   return (
     <div
@@ -136,7 +154,7 @@ export default function ModSidebar({
           {creators.length ? (
             creators.map(
               (
-                creator: any,
+                creator,
                 i: number
               ) => (
 
@@ -321,7 +339,7 @@ export default function ModSidebar({
           <FavoriteModButton
             modId={mod.id}
             initialCount={
-              favoritesCount
+              favoritesCount ?? 0
             }
           />
 
@@ -332,7 +350,7 @@ export default function ModSidebar({
             modId={mod.id}
             primarySourceUrl={mod.source_url}
             creatorBackupUrl={mod.creator_backup_url}
-            sources={sources as ModAdditionalSource[]}
+            sources={sources}
           />
         )}
 

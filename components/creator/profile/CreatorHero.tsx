@@ -1,5 +1,6 @@
 "use client";
 
+import CreatorTier from "@/components/ratings/CreatorTier";
 import CreatorActions from "./CreatorActions";
 import CreatorAboutSection from "./CreatorAboutSection";
 import CreatorBio from "./CreatorBio";
@@ -269,6 +270,7 @@ const supportUrl =
 
               <div className="mt-10">
 
+                <CreatorTier creatorId={creator.id} />
                 <CreatorStats
                   modsCount={modsCount}
                   totalLikes={totalLikes}
